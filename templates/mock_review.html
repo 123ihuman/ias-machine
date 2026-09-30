@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ mock.name }} — Review</h2>
+<p>Compare your answers with the source pack. Self-mark to find weak topics.</p>
+
+{% for item in mock.items %}
+<div class="card mb-2">
+    <div class="card-body">
+        <h6>Q{{ loop.index }}. {{ item.question.text }}</h6>
+        <p class="small">
+            Your answer: <strong>{{ item.user_answer or '—' }}</strong>
+        </p>
+        <p class="small">
+            <strong>Topic:</strong> {{ item.question.topic }}
+            {% if item.question.year %} | <strong>Year:</strong> {{ item.question.year }}{% endif %}
+        </p>
+
+        {% if item.question.sources %}
+        <details class="mt-2">
+            <summary>📚 Book Sources ({{ item.question.sources|length }})</summary>
+            <ul class="mt-2">
+                {% for s in item.question.sources %}
+                <li>
+                    <a href="{{ url_for('book_detail', book_id=s.page.book.id) }}">
+                        {{ s.page.book.title }}
+                    </a> — Page {{ s.page.page_number }}
+                </li>
+                {% endfor %}
+            </ul>
+        </details>
+        {% endif %}
+
+        <details class="mt-2">
+            <summary>🔗 Ask AI about this question</summary>
+            <script>window.QT_{{ item.id }} = {{ item.question.text|tojson }};</script>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                <button type="button" class="btn btn-sm btn-outline-dark"
+                        onclick="window.open('https://chatgpt.com/?q=' + encodeURIComponent(window.QT_{{ item.id }}), '_blank')">ChatGPT</button>
+                <button type="button" class="btn btn-sm btn-outline-info"
+                        onclick="window.open('https://www.perplexity.ai/search?q=' + encodeURIComponent(window.QT_{{ item.id }}), '_blank')">Perplexity</button>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        onclick="window.open('https://gemini.google.com/app', '_blank')">Gemini</button>
+            </div>
+        </details>
+    </div>
+</div>
+{% endfor %}
+
+<a href="{{ url_for('mock_list') }}" class="btn btn-primary">← Back to Mocks</a>
+{% endblock %}

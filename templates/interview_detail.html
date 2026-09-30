@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ tr.topper or tr.filename }}</h3>
+<p>
+    Year: {{ tr.year or '—' }} | Rank: {{ tr.rank or '—' }} | Optional: {{ tr.optional or '—' }}
+    {% if tr.video_url %}<br>Source: <a href="{{ tr.video_url }}" target="_blank">{{ tr.video_url }}</a>{% endif %}
+</p>
+<a href="{{ url_for('interview_pdf', tid=tr.id) }}" class="btn btn-success btn-sm mb-3">Download PDF</a>
+
+<h4>Q&A Pairs ({{ tr.qas|length }})</h4>
+{% for qa in tr.qas %}
+<div class="card mb-2">
+    <div class="card-body">
+        <h6>Q{{ loop.index }}. {{ qa.question }}
+            <span class="badge bg-info text-dark">{{ qa.topic }}</span>
+        </h6>
+        <p style="white-space: pre-wrap;" class="mb-0">{{ qa.answer }}</p>
+    </div>
+</div>
+{% endfor %}
+
+<hr>
+<form action="{{ url_for('interview_delete', tid=tr.id) }}" method="post">
+    <button class="btn btn-sm btn-outline-danger">Delete Transcript</button>
+</form>
+{% endblock %}

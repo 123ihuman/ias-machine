@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🏆 UPSC Toppers Hall of Fame</h2>
+<p class="text-muted">Marks, ranks, optional subjects, and paper-wise breakdowns of CSE toppers.</p>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-3">
+        <select class="form-control" name="year">
+            <option value="">All Years</option>
+            {% for y in years %}<option value="{{ y }}" {% if y|string == year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <input class="form-control" name="q" value="{{ search }}" placeholder="Search by name...">
+    </div>
+    <div class="col-md-3"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Year</th><th>Rank</th><th>Name</th><th>Category</th>
+            <th>Optional</th><th>Written</th><th>Interview</th><th>Total</th><th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in toppers %}
+        <tr>
+            <td>{{ t.year }}</td>
+            <td>
+                {% if t.rank == 1 %}🥇
+                {% elif t.rank == 2 %}🥈
+                {% elif t.rank == 3 %}🥉
+                {% else %}{{ t.rank }}{% endif %}
+            </td>
+            <td><a href="{{ url_for('topper_detail', tid=t.id) }}">{{ t.name }}</a></td>
+            <td>{{ t.category or '—' }}</td>
+            <td>{{ t.optional_subject or '—' }}</td>
+            <td>{{ t.written_marks or '—' }}</td>
+            <td>{{ t.interview_marks or '—' }}</td>
+            <td><strong>{{ t.total_marks or '—' }}</strong></td>
+            <td><a href="{{ url_for('topper_detail', tid=t.id) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9">No toppers added yet. Go to <a href="{{ url_for('toppers_admin') }}">Admin</a> to add data.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+<a href="{{ url_for('toppers_admin') }}" class="btn btn-outline-secondary">⚙️ Manage Topper Data</a>
+{% endblock %}

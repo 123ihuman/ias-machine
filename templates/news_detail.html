@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ article.title }}</h3>
+<p>
+    <span class="badge bg-secondary">{{ article.source }}</span>
+    <span class="badge bg-info text-dark">{{ article.subject }}</span>
+    {% if article.published %}<span class="ms-2">{{ article.published }}</span>{% endif %}
+</p>
+<p><a href="{{ article.link }}" target="_blank" class="btn btn-outline-primary btn-sm">Read on Source Site →</a></p>
+
+<h5>Raw Content</h5>
+<div class="border p-3 mb-3" style="white-space: pre-wrap;">{{ article.summary_raw }}</div>
+
+<h5>🤖 AI Summary (UPSC-ready)</h5>
+{% if article.ai_summary %}
+<div class="card border-primary">
+    <div class="card-body" style="white-space: pre-wrap;">{{ article.ai_summary }}</div>
+</div>
+{% else %}
+<form action="{{ url_for('news_summarize', aid=article.id) }}" method="post">
+    <button class="btn btn-success">Generate 5-Bullet Summary</button>
+</form>
+{% endif %}
+
+<hr>
+<h4>🔗 Ask AI about this article</h4>
+<p class="small text-muted">Article text is auto-copied. Ask any AI for UPSC context.</p>
+
+<script>
+window.NEWS_TEXT = {{ (article.title + "\n\n" + (article.summary_raw or ''))[:1500]|tojson }} + "\n\nExplain this news for UPSC: which GS paper does it link to? Give 5 key points to remember.";
+</script>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <button type="button" class="btn btn-sm btn-outline-dark" data-news-url="https://chatgpt.com/?q={Q}">ChatGPT</button>
+    <button type="button" class="btn btn-sm btn-outline-info" data-news-url="https://www.perplexity.ai/search?q={Q}">Perplexity</button>
+    <button type="button" class="btn btn-sm btn-outline-dark" data-news-url="https://grok.com/?q={Q}">Grok</button>
+    <button type="button" class="btn btn-sm btn-outline-warning" data-news-url="https://claude.ai/new?q={Q}">Claude</button>
+    <button type="button" class="btn btn-sm btn-outline-danger" data-news-url="https://gemini.google.com/app">Gemini</button>
+    <button type="button" class="btn btn-sm btn-outline-success" id="copyNewsBtn">Copy</button>
+</div>
+
+<script>
+document.querySelectorAll('[data-news-url]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var tpl = this.getAttribute('data-news-url');
+        var t = window.NEWS_TEXT || '';
+        if (navigator.clipboard) navigator.clipboard.writeText(t).catch(function(){});
+        var url = tpl.indexOf('{Q}') !== -1 ? tpl.replace('{Q}', encodeURIComponent(t)) : tpl;
+        window.open(url, '_blank');
+    });
+});
+var cnb = document.getElementById('copyNewsBtn');
+if (cnb) cnb.addEventListener('click', function() {
+    if (navigator.clipboard) navigator.clipboard.writeText(window.NEWS_TEXT).then(function(){
+        cnb.innerText='Copied!'; setTimeout(function(){cnb.innerText='Copy';},1500);
+    });
+});
+</script>
+
+<hr>
+<form action="{{ url_for('news_delete', aid=article.id) }}" method="post">
+    <button class="btn btn-sm btn-outline-danger">Delete Article</button>
+</form>
+{% endblock %}

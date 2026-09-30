@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎤 Interview Prep</h2>
+<p class="text-muted">Real topper mock interviews, transcribed and searchable. Compare how different rankers answered the same question.</p>
+
+<div class="row">
+    <div class="col-md-8">
+        <form class="row g-2 mb-3" method="get">
+            <div class="col-md-6"><input class="form-control" name="q" value="{{ search }}" placeholder="Search Q&A (e.g., why IAS, Maoism)"></div>
+            <div class="col-md-4">
+                <select class="form-control" name="topic">
+                    <option value="">All Topics</option>
+                    {% for t in topics %}<option value="{{ t }}" {% if t == topic %}selected{% endif %}>{{ t }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2"><button class="btn btn-primary w-100">Search</button></div>
+        </form>
+
+        {% for qa in qas %}
+        <div class="card mb-2">
+            <div class="card-body">
+                <h6 class="mb-1">{{ qa.question }}</h6>
+                <p class="small text-muted mb-2">
+                    <span class="badge bg-info text-dark">{{ qa.topic }}</span>
+                    From: {{ qa.transcript.topper or qa.transcript.filename }} ({{ qa.transcript.year or '—' }})
+                </p>
+                <details>
+                    <summary class="text-primary">Show answer</summary>
+                    <p class="mt-2" style="white-space: pre-wrap;">{{ qa.answer }}</p>
+                </details>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">No Q&A loaded yet. Load a transcript on the right →</div>
+        {% endfor %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header">Load New Transcript</div>
+            <div class="card-body">
+                <form action="{{ url_for('interview_load') }}" method="post">
+                    <div class="mb-2"><input class="form-control" name="filename" placeholder="e.g., test1.txt" required></div>
+                    <div class="mb-2"><input class="form-control" name="topper" placeholder="Topper name"></div>
+                    <div class="row g-2 mb-2">
+                        <div class="col"><input class="form-control" name="year" type="number" placeholder="Year"></div>
+                        <div class="col"><input class="form-control" name="rank" placeholder="Rank"></div>
+                    </div>
+                    <div class="mb-2"><input class="form-control" name="optional" placeholder="Optional subject"></div>
+                    <div class="mb-2"><input class="form-control" name="video_url" placeholder="YouTube URL (optional)"></div>
+                    <button class="btn btn-primary w-100">Load</button>
+                </form>
+                <small class="text-muted d-block mt-2">File must be inside <code>transcripts/</code> folder.</small>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Loaded Interviews ({{ transcripts|length }})</div>
+            <ul class="list-group list-group-flush">
+                {% for t in transcripts %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <a href="{{ url_for('interview_detail', tid=t.id) }}">{{ t.topper or t.filename }}</a>
+                    <span class="badge bg-secondary">{{ t.qas|length }} Q&A</span>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">None yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ plan.name }}</h2>
+<p>
+    <strong>Exam:</strong> {{ plan.exam_date }} ·
+    <strong>Hours/day:</strong> {{ plan.hours_per_day }} ·
+    <strong>Subjects:</strong> {{ plan.subjects }}
+    {% if plan.weak_areas %} · <strong>Weak:</strong> {{ plan.weak_areas }}{% endif %}
+</p>
+
+{% if data.weeks %}
+    {% for week in data.weeks %}
+    <div class="card mb-3">
+        <div class="card-header bg-dark text-white">
+            <strong>Week {{ week.week }}</strong> — {{ week.theme }}
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">Day</th>
+                        <th>Morning</th>
+                        <th>Afternoon</th>
+                        <th>Evening</th>
+                        <th>Test</th>
+                        <th>Revision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in week.days %}
+                    <tr>
+                        <td><strong>D{{ d.day }}</strong></td>
+                        <td>{{ d.morning }}</td>
+                        <td>{{ d.afternoon }}</td>
+                        <td>{{ d.evening }}</td>
+                        <td>{% if d.test %}<span class="badge bg-danger">{{ d.test }}</span>{% endif %}</td>
+                        <td>{% if d.revision %}<span class="badge bg-info text-dark">{{ d.revision }}</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="alert alert-warning">Plan data missing. Try regenerating.</div>
+{% endif %}
+
+<a href="{{ url_for('study_plan_list') }}" class="btn btn-primary">← Back to Plans</a>
+{% endblock %}

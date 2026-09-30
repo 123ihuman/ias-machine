@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 Subject Weightage Analysis</h2>
+<p class="text-muted">Based on {{ total }} questions mapped to subjects in your database.</p>
+
+{% if weighted %}
+<div class="row">
+    <div class="col-md-6">
+        <h4>Overall Distribution</h4>
+        <table class="table table-striped">
+            <thead><tr><th>Subject</th><th>Questions</th><th>Share</th></tr></thead>
+            <tbody>
+                {% for w in weighted %}
+                <tr>
+                    <td>{{ w.subject }}</td>
+                    <td>{{ w.count }}</td>
+                    <td>
+                        <div class="progress" style="height:20px;">
+                            <div class="progress-bar bg-primary" style="width: {{ w.percent }}%">
+                                {{ w.percent }}%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <canvas id="weightChart" height="220"></canvas>
+    </div>
+</div>
+
+<hr>
+<h4>📅 Year × Subject Heatmap</h4>
+<div style="overflow-x:auto;">
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Subject</th>
+            {% for y in all_years %}<th class="text-center">{{ y }}</th>{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in subjects %}
+        <tr>
+            <td>{{ s }}</td>
+            {% for y in all_years %}
+                {% set c = subject_by_year.get(y, {}).get(s, 0) %}
+                <td class="text-center {% if c > 0 %}bg-info text-dark{% endif %}">{{ c if c else '' }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('weightChart');
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: {{ weighted | map(attribute='subject') | list | tojson }},
+        datasets: [{
+            data: {{ weighted | map(attribute='count') | list | tojson }},
+            backgroundColor: ['#0d6efd','#dc3545','#198754','#ffc107','#6f42c1','#fd7e14','#20c997','#6c757d']
+        }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+{% else %}
+<div class="alert alert-warning">No questions yet. Add past paper questions with subjects to see weightage.</div>
+{% endif %}
+{% endblock %}

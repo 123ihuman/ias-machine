@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Search Results for "{{ query }}"</h2>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search...">
+    </div>
+    <div class="col-md-3">
+        <select name="subject" class="form-control">
+            <option value="">All Subjects</option>
+            {% for s in subjects %}
+                <option value="{{ s }}" {% if s == subject %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="category" class="form-control">
+            <option value="">All Types</option>
+            <option value="book" {% if category=='book' %}selected{% endif %}>Books</option>
+            <option value="paper" {% if category=='paper' %}selected{% endif %}>Past Papers</option>
+            <option value="notes" {% if category=='notes' %}selected{% endif %}>Notes</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">Search</button>
+    </div>
+</form>
+
+{% if results %}
+    <p>{{ results|length }} results.</p>
+    {% for res in results %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h5>{{ res.book.title }} — Page {{ res.page_number }}
+                {% if res.ocr_used %}<span class="badge bg-warning text-dark">OCR</span>{% endif %}
+            </h5>
+            <p class="mb-1">{{ res.snippet }}</p>
+            <a href="{{ url_for('book_detail', book_id=res.book.id) }}" class="btn btn-sm btn-outline-primary">View Book</a>
+        </div>
+    </div>
+    {% endfor %}
+{% elif query %}
+    <p>No results found.</p>
+{% endif %}
+{% endblock %}

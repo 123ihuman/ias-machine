@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ exam.name }} — Result</h2>
+<p>
+    Mode: <span class="badge bg-secondary">{{ exam.mode }}</span> ·
+    Score: <strong>{{ exam.total_score or 0 }} / {{ exam.max_score }}</strong> ·
+    Status: {{ exam.status }}
+</p>
+
+{% if exam.mode == 'prelims' %}
+<div class="alert alert-info">
+    Prelims auto-scored. Review each question below — correct answer + explanation shown.
+</div>
+{% elif exam.status == 'submitted' %}
+<form action="{{ url_for('exam_evaluate', eid=exam.id) }}" method="post" class="mb-3">
+    <button class="btn btn-warning">🤖 Evaluate My Answers with AI</button>
+    <small class="text-muted d-block mt-1">AI will score each Mains/Essay answer and give feedback.</small>
+</form>
+{% endif %}
+
+{% for item in exam.items %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+        <span><strong>Q{{ item.q_number }}.</strong> {{ item.topic }} <span class="badge bg-info text-dark">{{ item.marks }}m</span></span>
+        <span>
+            {% if item.score is not none %}
+            <span class="badge bg-{% if item.score == item.marks %}success{% elif item.score > 0 %}warning text-dark{% else %}danger{% endif %}">
+                {{ item.score }} / {{ item.marks }}
+            </span>
+            {% endif %}
+            {% if item.time_taken %}<small class="text-muted ms-2">{{ item.time_taken }}s</small>{% endif %}
+        </span>
+    </div>
+    <div class="card-body">
+        <p style="white-space: pre-wrap;">{{ item.text }}</p>
+
+        {% if exam.mode == 'prelims' %}
+        <p>
+            <strong>Correct:</strong> {{ item.correct_option }} ·
+            <strong>Your answer:</strong>
+            <span class="{% if (item.user_answer or '')|upper == (item.correct_option or '')|upper %}text-success{% else %}text-danger{% endif %}">
+                {{ item.user_answer or '—' }}
+            </span>
+        </p>
+        {% if item.explanation %}
+        <div class="alert alert-secondary"><strong>Explanation:</strong> {{ item.explanation }}</div>
+        {% endif %}
+        {% else %}
+        <details class="mb-2">
+            <summary><strong>Your answer</strong></summary>
+            <div style="white-space:pre-wrap;" class="mt-2">{{ item.user_answer or '(not attempted)' }}</div>
+        </details>
+        {% if item.reference_answer %}
+        <details class="mb-2">
+            <summary><strong>Reference model answer</strong></summary>
+            <div style="white-space:pre-wrap;" class="mt-2">{{ item.reference_answer }}</div>
+        </details>
+        {% endif %}
+        {% if item.feedback %}
+        <div class="alert alert-info"><strong>AI Feedback:</strong><br><span style="white-space:pre-wrap;">{{ item.feedback }}</span></div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<a href="{{ url_for('exam_list') }}" class="btn btn-primary">← Back to Exams</a>
+{% endblock %}

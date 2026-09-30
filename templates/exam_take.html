@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="sticky-top bg-white border-bottom pb-2 mb-3" style="z-index:100;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-0">{{ exam.name }}</h4>
+            <small class="text-muted">{{ exam.mode }} · {{ exam.total_questions }} questions · {{ exam.duration_minutes }} min</small>
+        </div>
+        <div class="text-end">
+            <div><strong>Total: <span id="totalTimer" class="text-danger">--:--</span></strong></div>
+            <div><strong>Q <span id="qIndex">1</span>/{{ exam.total_questions }}</strong> · Per-Q: <span id="qTimer" class="text-warning">--s</span></div>
+        </div>
+    </div>
+    <div class="progress mt-2" style="height:8px;">
+        <div id="totalProgress" class="progress-bar bg-danger" style="width:100%"></div>
+    </div>
+</div>
+
+<form id="examForm" action="{{ url_for('exam_submit', eid=exam.id) }}" method="post">
+    {% for item in exam.items %}
+    <div class="exam-q card mb-3" data-qid="{{ item.id }}" data-marks="{{ item.marks }}"
+         data-perq="{{ exam.per_question_seconds }}" data-mode="{{ exam.mode }}"
+         style="{% if not loop.first %}display:none;{% endif %}">
+        <div class="card-body">
+            <h5>Q{{ item.q_number }}.
+                <small class="text-muted">
+                    <span class="badge bg-info text-dark">{{ item.topic }}</span>
+                    {{ item.marks }} marks
+                </small>
+            </h5>
+            <p style="white-space: pre-wrap;">{{ item.text }}</p>
+
+            {% if exam.mode == 'prelims' %}
+            <div class="mt-3">
+                {% for letter, opt in [('A', item.option_a), ('B', item.option_b), ('C', item.option_c), ('D', item.option_d)] %}
+                <label class="d-block mb-1">
+                    <input type="radio" name="q_{{ item.id }}" value="{{ letter }}"> <strong>{{ letter }}.</strong> {{ opt }}
+                </label>
+                {% endfor %}
+            </div>
+            {% else %}
+            <textarea class="form-control mt-2" name="q_{{ item.id }}" rows="10"
+                      placeholder="Write your answer. Timer auto-moves when time runs out."></textarea>
+            {% endif %}
+            <input type="hidden" name="t_{{ item.id }}" class="timeField" value="0">
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between mt-3">
+        <button type="button" class="btn btn-secondary" id="prevBtn">← Prev</button>
+        <button type="button" class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+    <button type="submit" class="btn btn-success btn-lg mt-3 w-100">Submit Exam</button>
+</form>
+
+<script>
+(function() {
+    const totalSeconds = {{ exam.duration_minutes }} * 60;
+    let totalLeft = totalSeconds;
+    const qCards = Array.from(document.querySelectorAll('.exam-q'));
+    let current = 0;
+    let perQLeft = parseInt(qCards[0].dataset.perq || '60');
+    let perQTotal = perQLeft;
+    let qStart = Date.now();
+
+    function fmt(s) {
+        s = Math.max(0, Math.floor(s));
+        const m = Math.floor(s / 60), r = s % 60;
+        return String(m).padStart(2,'0') + ':' + String(r).padStart(2,'0');
+    }
+
+    function show(i) {
+        // Save time for current question before switching
+        const oldCard = qCards[current];
+        const tf = oldCard.querySelector('.timeField');
+        if (tf) tf.value = Math.round((Date.now() - qStart) / 1000);
+        qCards.forEach((c, idx) => c.style.display = idx === i ? '' : 'none');
+        current = i;
+        document.getElementById('qIndex').innerText = (i + 1);
+        perQLeft = parseInt(qCards[i].dataset.perq || '60');
+        perQTotal = perQLeft;
+        qStart = Date.now();
+    }
+
+    document.getElementById('nextBtn').onclick = function() {
+        if (current < qCards.length - 1) show(current + 1);
+        else document.getElementById('examForm').submit();
+    };
+    document.getElementById('prevBtn').onclick = function() {
+        if (current > 0) show(current - 1);
+    };
+
+    const totalTimerEl = document.getElementById('totalTimer');
+    const qTimerEl = document.getElementById('qTimer');
+    const progressBar = document.getElementById('totalProgress');
+
+    const tick = setInterval(function() {
+        totalLeft--;
+        perQLeft--;
+
+        totalTimerEl.innerText = fmt(totalLeft);
+        qTimerEl.innerText = Math.max(0, perQLeft) + 's';
+        progressBar.style.width = (100 * totalLeft / totalSeconds) + '%';
+
+        // Per-question timeout → auto-advance
+        if (perQLeft <= 0) {
+            if (current < qCards.length - 1) {
+                show(current + 1);
+            } else {
+                // last question, auto-submit
+                clearInterval(tick);
+                alert('Per-question time is up. Submitting exam.');
+                document.getElementById('examForm').submit();
+            }
+        }
+
+        // Total time out → submit
+        if (totalLeft <= 0) {
+            clearInterval(tick);
+            alert('Total exam time is over. Auto-submitting.');
+            document.getElementById('examForm').submit();
+        }
+    }, 1000);
+})();
+</script>
+{% endblock %}

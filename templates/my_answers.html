@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Mains Answers</h2>
+<p>Total submissions: <strong>{{ total }}</strong> | Average score: <strong>{{ avg }}/50</strong></p>
+<table class="table table-sm">
+    <thead><tr><th>Date</th><th>Question</th><th>Words</th><th>Score</th><th></th></tr></thead>
+    <tbody>
+        {% for a in answers %}
+        <tr>
+            <td>{{ a.created_at.strftime('%Y-%m-%d') }}</td>
+            <td><a href="{{ url_for('question_detail', qid=a.question_id) }}">{{ a.question.text[:80] }}...</a></td>
+            <td>{{ a.word_count }}</td>
+            <td>{% if a.score %}<span class="badge bg-info text-dark">{{ a.score }}/50</span>{% endif %}</td>
+            <td>
+                <form action="{{ url_for('delete_student_answer', aid=a.id) }}" method="post">
+                    <button class="btn btn-sm btn-outline-danger">Del</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No answers submitted yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

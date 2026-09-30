@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Interview Evaluation</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Question:</strong> {{ sim.question }}</p>
+        <p><span class="badge bg-info text-dark">{{ sim.category }}</span></p>
+        <p>
+            <strong>Duration:</strong> {{ sim.duration_sec|round|int }}s ·
+            <strong>Words/min:</strong> {{ sim.words_per_min|round|int }} (ideal 120-160) ·
+            <strong>Filler words:</strong> {{ sim.filler_count }}
+        </p>
+        {% if sim.score %}<h4>Score: <span class="badge bg-success">{{ sim.score }}/50</span></h4>{% endif %}
+    </div>
+</div>
+
+<h5>Your Recording</h5>
+<audio controls class="w-100 mb-3" src="{{ url_for('interview_sim_audio', sid=sim.id) }}"></audio>
+
+<h5>Transcript</h5>
+<div class="border p-3 mb-3" style="white-space: pre-wrap;">{{ sim.transcript or '(no speech detected)' }}</div>
+
+<h5>AI Feedback</h5>
+<div class="border p-3" style="white-space: pre-wrap;">{{ sim.ai_feedback }}</div>
+
+<a href="{{ url_for('interview_sim_list') }}" class="btn btn-primary mt-3">← Back</a>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ book.title }}</h2>
+<p><strong>Author:</strong> {{ book.author }} | <strong>Subject:</strong> {{ book.subject }} | <strong>Type:</strong> {{ book.category }}</p>
+<a href="{{ url_for('download_book', book_id=book.id) }}" class="btn btn-success mb-3">Download PDF</a>
+
+{% if book.category == 'paper' %}
+<hr>
+<h3>Questions in this Paper ({{ book.questions|length }})</h3>
+<div class="row">
+<div class="col-12 mb-2">
+    <form action="{{ url_for('auto_extract_questions', book_id=book.id) }}" method="post" class="d-inline">
+        <button class="btn btn-warning"
+                onclick="return confirm('AI will scan this paper and auto-add all questions. Continue?')">
+            ⚡ Auto-Extract Questions from PDF
+        </button>
+    </form>
+    <small class="text-muted ms-2">Uses AI to scan OCR text and add all questions automatically.</small>
+</div>
+    <div class="col-md-7">
+        <table class="table table-sm">
+            <thead><tr><th>#</th><th>Question</th><th>Topic</th><th>Year</th><th>Type</th><th></th></tr></thead>
+            <tbody>
+                {% for q in book.questions %}
+                <tr>
+                    <td>{{ q.question_number }}</td>
+                    <td><a href="{{ url_for('question_detail', qid=q.id) }}">{{ q.text[:80] }}{% if q.text|length > 80 %}...{% endif %}</a></td>
+                    <td>{{ q.topic }}</td>
+                    <td>{{ q.year }}</td>
+                    <td>{{ q.qtype }}</td>
+                    <td>
+                        <form action="{{ url_for('delete_question', qid=q.id) }}" method="post" style="display:inline;">
+                            <button class="btn btn-sm btn-outline-danger">Del</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">No questions added yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">Add Question</div>
+            <div class="card-body">
+                <form action="{{ url_for('add_question', book_id=book.id) }}" method="post">
+                    <div class="mb-2"><input class="form-control" name="question_number" placeholder="Q. No. (e.g., 1)"></div>
+                    <div class="mb-2"><textarea class="form-control" name="text" rows="4" placeholder="Question text" required></textarea></div>
+                    <div class="mb-2"><input class="form-control" name="topic" placeholder="Topic (e.g., Federalism)"></div>
+                    <div class="row g-2 mb-2">
+                        <div class="col"><input class="form-control" name="year" placeholder="Year" type="number"></div>
+                        <div class="col"><input class="form-control" name="marks" placeholder="Marks" type="number"></div>
+                    </div>
+                    <div class="mb-2">
+                        <select class="form-control" name="qtype">
+                            <option value="">Type</option>
+                            <option>MCQ</option>
+                            <option>GS</option>
+                            <option>Essay</option>
+                            <option>Ethics</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary">Add Question</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<hr>
+<h3>Pages ({{ book.pages|length }})</h3>
+<div class="list-group">
+    {% for page in book.pages %}
+    <div class="list-group-item">
+        <h6>Page {{ page.page_number }} {% if page.ocr_used %}<span class="badge bg-warning text-dark">OCR</span>{% endif %}</h6>
+        <p class="mb-1">{{ page.text[:400] }}{% if page.text|length > 400 %}...{% endif %}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

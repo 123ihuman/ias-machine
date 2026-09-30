@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 Adaptive Mock Tests</h2>
+<p class="text-muted">
+    Mocks are generated from your own past-paper database, weighted by topic frequency.
+    The more PYQs you auto-extract, the smarter the mocks become.
+</p>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-3">
+            <div class="card-header">Create New Mock</div>
+            <div class="card-body">
+                <form action="{{ url_for('mock_create') }}" method="post">
+                    <div class="mb-2">
+                        <label>Number of questions</label>
+                        <input class="form-control" type="number" name="num_questions" value="20" min="5" max="100">
+                    </div>
+                    <div class="mb-3">
+                        <label>Mode</label>
+                        <select class="form-control" name="mode">
+                            <option value="weighted">Weighted (favor frequently-asked topics)</option>
+                            <option value="random">Random (equal chance for all)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100">Generate Mock</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <h5>Your Mocks ({{ mocks|length }})</h5>
+        <table class="table table-sm">
+            <thead><tr><th>Name</th><th>Questions</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for m in mocks %}
+                <tr>
+                    <td>{{ m.name }}</td>
+                    <td>{{ m.total_questions }}</td>
+                    <td>{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('mock_take', mid=m.id) }}" class="btn btn-sm btn-primary">Take</a>
+                        <a href="{{ url_for('mock_review', mid=m.id) }}" class="btn btn-sm btn-success">Review</a>
+                        <form action="{{ url_for('mock_delete', mid=m.id) }}" method="post" style="display:inline;">
+                            <button class="btn btn-sm btn-outline-danger">Del</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No mocks yet. Generate one on the left.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

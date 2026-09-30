@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 Cut-off Tracker</h2>
+<p class="text-muted">Enter your latest mock scores. See how far you are from the cut-off.</p>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">Your Scores</div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-2">
+                        <label>Prelims GS (out of 200)</label>
+                        <input class="form-control" type="number" step="0.01" name="prelims_score" placeholder="e.g., 95">
+                    </div>
+                    <div class="mb-2">
+                        <label>Mains Total (out of 1750)</label>
+                        <input class="form-control" type="number" step="1" name="mains_score" placeholder="e.g., 800">
+                    </div>
+                    <div class="mb-2">
+                        <label>Final Score (out of 2025)</label>
+                        <input class="form-control" type="number" step="1" name="final_score" placeholder="e.g., 1000">
+                    </div>
+                    <div class="mb-3">
+                        <label>Compare against year</label>
+                        <select class="form-control" name="target_year">
+                            {% for y in cutoffs.keys() | sort(reverse=True) %}
+                            <option value="{{ y }}" {% if y == 2024 %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100">Check My Chance</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        {% if result %}
+        <div class="card mb-3">
+            <div class="card-header">Your Standing vs {{ result.target_year }} Cut-off</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead><tr><th>Stage</th><th>Your Score</th><th>Cut-off</th><th>Gap</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>Prelims</td>
+                            <td>{{ result.user_prelims }}</td>
+                            <td>{{ result.base.prelims }}</td>
+                            <td>{{ result.prelims_gap }}</td>
+                            <td>{% if result.prelims_gap >= 0 %}✅ Safe{% else %}⚠️ Below{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td>Mains</td>
+                            <td>{{ result.user_mains }}</td>
+                            <td>{{ result.base.mains }}</td>
+                            <td>{{ result.mains_gap }}</td>
+                            <td>{% if result.mains_gap >= 0 %}✅ Safe{% else %}⚠️ Below{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td>Final</td>
+                            <td>{{ result.user_final }}</td>
+                            <td>{{ result.base.final }}</td>
+                            <td>{{ result.final_gap }}</td>
+                            <td>{% if result.final_gap >= 0 %}✅ Safe{% else %}⚠️ Below{% endif %}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <h5>📚 Historical Cut-offs</h5>
+        <table class="table table-sm">
+            <thead><tr><th>Year</th><th>Prelims (200)</th><th>Mains (1750)</th><th>Final (2025)</th></tr></thead>
+            <tbody>
+    {% for y, c in cutoffs.items() | sort(reverse=True) %}
+    <tr>
+        <td>{{ y }}
+            {% if c.status == 'expected' %}
+            <span class="badge bg-warning text-dark">Expected</span>
+            {% endif %}
+        </td>
+        <td>{{ c.prelims }}</td>
+        <td>{{ c.mains or '—' }}</td>
+        <td>{{ c.final or '—' }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Question Bank</h2>
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-2"><input class="form-control" name="year" placeholder="Year" value="{{ year }}"></div>
+    <div class="col-md-3">
+        <select class="form-control" name="subject">
+            <option value="">All Subjects</option>
+            {% for s in subjects %}<option value="{{ s }}" {% if s == subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3"><input class="form-control" name="topic" placeholder="Topic" value="{{ topic }}"></div>
+    <div class="col-md-2">
+        <select class="form-control" name="qtype">
+            <option value="">All Types</option>
+            <option {% if qtype=='MCQ' %}selected{% endif %}>MCQ</option>
+            <option {% if qtype=='GS' %}selected{% endif %}>GS</option>
+            <option {% if qtype=='Essay' %}selected{% endif %}>Essay</option>
+            <option {% if qtype=='Ethics' %}selected{% endif %}>Ethics</option>
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+
+{% if questions %}
+<p>{{ questions|length }} questions.</p>
+<table class="table table-sm table-striped">
+    <thead><tr><th>Year</th><th>Paper</th><th>#</th><th>Question</th><th>Topic</th><th>Sources</th></tr></thead>
+    <tbody>
+        {% for q in questions %}
+        <tr>
+            <td>{{ q.year }}</td>
+            <td>{{ q.paper.title[:30] }}</td>
+            <td>{{ q.question_number }}</td>
+            <td><a href="{{ url_for('question_detail', qid=q.id) }}">{{ q.text[:100] }}{% if q.text|length > 100 %}...{% endif %}</a></td>
+            <td>{{ q.topic }}</td>
+            <td>{{ q.sources|length }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No questions yet. Upload a past paper and add questions to it.</p>
+{% endif %}
+{% endblock %}

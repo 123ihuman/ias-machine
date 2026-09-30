@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⏱️ Exam Simulator</h2>
+<p class="text-muted">AI generates expected papers from your PYQ topics + latest news. Real timing pressure. Post-exam AI evaluation.</p>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-3">
+            <div class="card-header">Create New Exam</div>
+            <div class="card-body">
+                <form action="{{ url_for('exam_new') }}" method="post">
+                    <div class="mb-2">
+                        <label>Exam Type</label>
+                        <select class="form-control" name="mode">
+                            <option value="prelims">Prelims (MCQ, 2 marks each)</option>
+                            <option value="mains">Mains (GS, 10/15 marks)</option>
+                            <option value="essay">Essay (125 marks each)</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Number of Questions</label>
+                        <input class="form-control" type="number" name="num" value="10" min="1" max="30">
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col">
+                            <label>Total Duration (min)</label>
+                            <input class="form-control" type="number" name="duration" value="60" min="5">
+                        </div>
+                        <div class="col">
+                            <label>Per-Q Timer (sec)</label>
+                            <input class="form-control" type="number" name="per_q" value="60" min="20">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-100">Generate & Start</button>
+                    <small class="text-muted d-block mt-2">Per-Q timer auto-skips the question when time runs out. Total timer ends the exam.</small>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <h5>Past Exams ({{ exams|length }})</h5>
+        <table class="table table-sm">
+            <thead><tr><th>Name</th><th>Mode</th><th>Score</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for e in exams %}
+                <tr>
+                    <td>{{ e.name }}</td>
+                    <td><span class="badge bg-secondary">{{ e.mode }}</span></td>
+                    <td>{% if e.total_score is not none %}{{ e.total_score }}/{{ e.max_score }}{% else %}—{% endif %}</td>
+                    <td>{{ e.status }}</td>
+                    <td>
+                        <a href="{{ url_for('exam_take', eid=e.id) }}" class="btn btn-sm btn-primary">Open</a>
+                        <a href="{{ url_for('exam_result', eid=e.id) }}" class="btn btn-sm btn-success">Result</a>
+                        <form action="{{ url_for('exam_delete', eid=e.id) }}" method="post" style="display:inline;">
+                            <button class="btn btn-sm btn-outline-danger">Del</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No exams yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

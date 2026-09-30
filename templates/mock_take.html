@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ mock.name }}</h2>
+<p>Answer all {{ mock.total_questions }} questions. Then submit and review.</p>
+
+<form action="{{ url_for('mock_submit', mid=mock.id) }}" method="post">
+    {% for item in mock.items %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h6 class="mb-2">Q{{ loop.index }}. {{ item.question.text }}</h6>
+            <p class="small text-muted mb-2">
+                <span class="badge bg-info text-dark">{{ item.question.topic }}</span>
+                {% if item.question.year %}<span class="badge bg-secondary">{{ item.question.year }}</span>{% endif %}
+            </p>
+            <div>
+                {% for opt in ['A', 'B', 'C', 'D'] %}
+                <label class="me-3">
+                    <input type="radio" name="q_{{ item.id }}" value="{{ opt }}"> {{ opt }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <button class="btn btn-success btn-lg">Submit & Review</button>
+</form>
+{% endblock %}

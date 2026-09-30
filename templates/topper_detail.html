@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ topper.name }} — AIR {{ topper.rank }} ({{ topper.year }})</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p>
+            <strong>Roll No:</strong> {{ topper.roll_no or '—' }} |
+            <strong>Category:</strong> {{ topper.category or '—' }} |
+            <strong>Optional:</strong> {{ topper.optional_subject or '—' }} |
+            <strong>Attempt:</strong> {{ topper.attempt or '—' }}
+        </p>
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h5>Written (Mains)</h5>
+                <h3>{{ topper.written_marks or '—' }} <small class="text-muted">/ 1750</small></h3>
+            </div>
+            <div class="col-md-4">
+                <h5>Interview (PT)</h5>
+                <h3>{{ topper.interview_marks or '—' }} <small class="text-muted">/ 275</small></h3>
+            </div>
+            <div class="col-md-4">
+                <h5>Final Total</h5>
+                <h3 class="text-success">{{ topper.total_marks or '—' }} <small class="text-muted">/ 2025</small></h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if paper_marks %}
+<h4>📊 Paper-wise Breakdown</h4>
+<div class="row">
+    <div class="col-md-6">
+        <table class="table table-sm">
+            <thead><tr><th>Paper</th><th>Marks</th></tr></thead>
+            <tbody>
+                {% for key, label in [('essay','Essay'),('gs1','GS-I'),('gs2','GS-II'),('gs3','GS-III'),('gs4','GS-IV'),('optional1','Optional-I'),('optional2','Optional-II')] %}
+                    {% if paper_marks.get(key) %}
+                    <tr><td>{{ label }}</td><td>{{ paper_marks[key] }}</td></tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <canvas id="paperChart"></canvas>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = {{ paper_marks.keys()|list|tojson }};
+const values = {{ paper_marks.values()|list|tojson }};
+new Chart(document.getElementById('paperChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: 'Marks', data: values, backgroundColor: '#0d6efd' }] },
+    options: { plugins: { legend: { display: false } } }
+});
+</script>
+{% endif %}
+
+<a href="{{ url_for('toppers_list') }}" class="btn btn-primary mt-3">← Back to Toppers</a>
+{% endblock %}

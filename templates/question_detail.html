@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Question</h3>
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Paper:</strong> {{ q.paper.title }} | <strong>Year:</strong> {{ q.year }} | <strong>Q No:</strong> {{ q.question_number }} | <strong>Type:</strong> {{ q.qtype }} | <strong>Marks:</strong> {{ q.marks }}</p>
+        <p><strong>Topic:</strong> {{ q.topic }}</p>
+        <p style="white-space: pre-wrap;">{{ q.text }}</p>
+    </div>
+</div>
+
+<h4>📚 Source Pack ({{ q.sources|length }} book pages)</h4>
+{% if q.sources %}
+<table class="table table-sm">
+    <thead><tr><th>Book</th><th>Page</th><th>Note</th><th>Snippet</th><th></th></tr></thead>
+    <tbody>
+        {% for s in q.sources %}
+        <tr>
+            <td><a href="{{ url_for('book_detail', book_id=s.page.book.id) }}">{{ s.page.book.title }}</a></td>
+            <td>{{ s.page.page_number }}</td>
+            <td>{{ s.note }}</td>
+            <td>{{ s.page.text[:200] }}...</td>
+            <td>
+                <form action="{{ url_for('unlink_source', qid=q.id, src_id=s.id) }}" method="post">
+                    <button class="btn btn-sm btn-outline-danger">Remove</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No sources linked yet. Link book pages below — AI answers will be grounded in them.</p>
+{% endif %}
+
+<h4>🔗 Link a Book Page</h4>
+<form class="row g-2 mb-4" method="get" action="{{ url_for('source_search', qid=q.id) }}">
+    <div class="col-md-10"><input class="form-control" name="q" placeholder="Search books (e.g., Article 356)" required></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Search</button></div>
+</form>
+
+<hr>
+<h4>🔗 Ask External AI (opens in new tab)</h4>
+<p class="small text-muted">
+    Question is auto-copied to your clipboard. On AIs marked <em>pre-filled</em>, it opens with the question ready.
+</p>
+
+<script>
+window.QUESTION_TEXT = {{ q.text|tojson }};
+</script>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <button type="button" class="btn btn-sm btn-outline-dark" data-url="https://chatgpt.com/?q={Q}">ChatGPT <small>(pre-filled)</small></button>
+    <button type="button" class="btn btn-sm btn-outline-info" data-url="https://www.perplexity.ai/search?q={Q}">Perplexity <small>(pre-filled)</small></button>
+    <button type="button" class="btn btn-sm btn-outline-dark" data-url="https://grok.com/?q={Q}">Grok <small>(pre-filled)</small></button>
+    <button type="button" class="btn btn-sm btn-outline-warning" data-url="https://claude.ai/new?q={Q}">Claude <small>(pre-filled)</small></button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-url="https://chat.deepseek.com/">DeepSeek</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-url="https://www.kimi.com/">Kimi</button>
+    <button type="button" class="btn btn-sm btn-outline-danger" data-url="https://gemini.google.com/app">Gemini</button>
+    <button type="button" class="btn btn-sm btn-outline-success" id="copyQuestionBtn">Copy Question</button>
+</div>
+
+<script>
+document.querySelectorAll('[data-url]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var tpl = this.getAttribute('data-url');
+        var q = window.QUESTION_TEXT || '';
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(q).catch(function(){});
+        }
+        var url = tpl.indexOf('{Q}') !== -1 ? tpl.replace('{Q}', encodeURIComponent(q)) : tpl;
+        window.open(url, '_blank');
+    });
+});
+
+var copyBtn = document.getElementById('copyQuestionBtn');
+if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+        var q = window.QUESTION_TEXT || '';
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(q).then(function() {
+                copyBtn.innerText = 'Copied!';
+                setTimeout(function(){ copyBtn.innerText = 'Copy Question'; }, 1500);
+            });
+        }
+    });
+}
+</script>
+
+<hr>
+<h4>🤖 Generate AI Answers (In-App, via Groq)</h4>
+<p class="small text-muted">
+    AI writes a UPSC-style answer using the linked book sources above.
+    Answers are <strong>clearly marked as AI-generated</strong> — read them as starting points, then write your own.
+</p>
+<form action="{{ url_for('generate_answer', qid=q.id) }}" method="post" class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-3"><label><input type="checkbox" name="providers" value="groq"> Groq</label></div>
+        <div class="col-md-3"><label><input type="checkbox" name="providers" value="gemini"> Gemini</label></div>
+        <div class="col-md-3"><label><input type="checkbox" name="providers" value="openai"> OpenAI</label></div>
+        <div class="col-md-3"><label><input type="checkbox" name="providers" value="deepseek"> DeepSeek</label></div>
+    </div>
+    <button class="btn btn-primary mt-2">Generate from selected</button>
+</form>
+
+<hr>
+<h4>✍️ Write Your Mains Answer</h4>
+<form action="{{ url_for('submit_student_answer', qid=q.id) }}" method="post">
+    <textarea class="form-control mb-2" name="student_text" rows="10"
+              placeholder="Write your answer here. Use Intro – Body – Conclusion. Stick to word limit." required></textarea>
+    <button class="btn btn-success">Submit for AI Evaluation</button>
+</form>
+
+{% if q.student_answers %}
+<h4 class="mt-4">📋 Your Evaluations</h4>
+{% for sa in q.student_answers %}
+<div class="card mb-3 border-success">
+    <div class="card-header d-flex justify-content-between">
+        <span>
+            <strong>Your answer</strong> — {{ sa.word_count }} words
+            {% if sa.score %}<span class="badge bg-info text-dark ms-2">Score: {{ sa.score }}/50</span>{% endif %}
+        </span>
+        <form action="{{ url_for('delete_student_answer', aid=sa.id) }}" method="post">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+    </div>
+    <div class="card-body">
+        <details class="mb-2">
+            <summary><strong>Your submitted answer</strong></summary>
+            <div style="white-space:pre-wrap;" class="mt-2">{{ sa.text }}</div>
+        </details>
+        <details open>
+            <summary><strong>AI Feedback</strong></summary>
+            <div style="white-space:pre-wrap;" class="mt-2">{{ sa.evaluation }}</div>
+        </details>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if q.answers %}
+<h4>📝 Generated Answers ({{ q.answers|length }})</h4>
+{% for a in q.answers %}
+<div class="card mb-3 border-primary">
+    <div class="card-header d-flex justify-content-between">
+        <span>
+            <span class="badge bg-warning text-dark">AI-GENERATED</span>
+            {{ a.provider }} · {{ a.model }}
+        </span>
+        <form action="{{ url_for('delete_answer', aid=a.id) }}" method="post" style="display:inline;">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+    </div>
+    <div class="card-body" style="white-space: pre-wrap;">{{ a.text }}</div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

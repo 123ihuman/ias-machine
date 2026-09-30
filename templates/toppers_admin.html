@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⚙️ Manage Topper Data</h2>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-3">
+            <div class="card-header">Add New Topper</div>
+            <div class="card-body">
+                <form action="{{ url_for('topper_add') }}" method="post">
+                    <div class="row g-2 mb-2">
+                        <div class="col"><input class="form-control" name="year" type="number" placeholder="Year (2025)" required></div>
+                        <div class="col"><input class="form-control" name="rank" type="number" placeholder="Rank" required></div>
+                    </div>
+                    <input class="form-control mb-2" name="name" placeholder="Topper Name" required>
+                    <input class="form-control mb-2" name="roll_no" placeholder="Roll Number">
+                    <div class="row g-2 mb-2">
+                        <div class="col"><input class="form-control" name="category" placeholder="Category (General/OBC/EWS/SC/ST)"></div>
+                        <div class="col"><input class="form-control" name="optional_subject" placeholder="Optional Subject"></div>
+                    </div>
+                    <input class="form-control mb-2" name="attempt" placeholder="Attempt (e.g., 1st, 2nd, 3rd)">
+                    <div class="row g-2 mb-2">
+                        <div class="col"><input class="form-control" name="written_marks" type="number" step="0.01" placeholder="Written Marks"></div>
+                        <div class="col"><input class="form-control" name="interview_marks" type="number" step="0.01" placeholder="Interview Marks"></div>
+                    </div>
+                    <input class="form-control mb-3" name="total_marks" type="number" step="0.01" placeholder="Total Marks">
+                    <details>
+                        <summary>Paper-wise marks (optional)</summary>
+                        <div class="row g-2 mt-2">
+                            <div class="col-6"><input class="form-control" name="paper_essay" type="number" step="0.01" placeholder="Essay"></div>
+                            <div class="col-6"><input class="form-control" name="paper_gs1" type="number" step="0.01" placeholder="GS-I"></div>
+                            <div class="col-6"><input class="form-control" name="paper_gs2" type="number" step="0.01" placeholder="GS-II"></div>
+                            <div class="col-6"><input class="form-control" name="paper_gs3" type="number" step="0.01" placeholder="GS-III"></div>
+                            <div class="col-6"><input class="form-control" name="paper_gs4" type="number" step="0.01" placeholder="GS-IV"></div>
+                            <div class="col-6"><input class="form-control" name="paper_optional1" type="number" step="0.01" placeholder="Optional-I"></div>
+                            <div class="col-6"><input class="form-control" name="paper_optional2" type="number" step="0.01" placeholder="Optional-II"></div>
+                        </div>
+                    </details>
+                    <button class="btn btn-primary mt-3 w-100">Add Topper</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <h5>Existing Toppers ({{ toppers|length }})</h5>
+        <table class="table table-sm">
+            <thead><tr><th>Year</th><th>Rank</th><th>Name</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+                {% for t in toppers %}
+                <tr>
+                    <td>{{ t.year }}</td>
+                    <td>{{ t.rank }}</td>
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.total_marks or '—' }}</td>
+                    <td>
+                        <form action="{{ url_for('topper_delete', tid=t.id) }}" method="post" style="display:inline;">
+                            <button class="btn btn-sm btn-outline-danger">Del</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No toppers yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

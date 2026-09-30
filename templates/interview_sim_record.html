@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎙️ Interview Recording</h2>
+
+<div class="alert alert-info">
+    <strong>Question:</strong> {{ question }}
+    <br><span class="badge bg-secondary">{{ category }}</span>
+</div>
+
+<p>Click <strong>Start Recording</strong> and answer in 1–3 minutes. Speak clearly. Click <strong>Stop & Submit</strong> when done.</p>
+
+<div class="mb-3">
+    <button id="startBtn" class="btn btn-success btn-lg">● Start Recording</button>
+    <button id="stopBtn" class="btn btn-danger btn-lg" disabled>■ Stop & Submit</button>
+</div>
+
+<div class="alert alert-warning" id="status" style="display:none;">
+    <strong>Recording…</strong> <span id="timer">0s</span>
+</div>
+
+<div class="alert alert-info" id="preview" style="display:none;">
+    <strong>Preview your recording:</strong>
+    <audio id="player" controls class="w-100 mt-2"></audio>
+</div>
+
+<form id="uploadForm" action="{{ url_for('interview_sim_record') }}" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="question" value="{{ question }}">
+    <input type="hidden" name="category" value="{{ category }}">
+    <input type="hidden" name="duration" id="durationField" value="0">
+    <input type="file" name="audio" id="audioField" style="display:none;">
+</form>
+
+<script>
+let mediaRecorder, chunks = [], startTime, timerInterval;
+
+document.getElementById('startBtn').onclick = async function() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        chunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('player').src = url;
+            document.getElementById('preview').style.display = '';
+
+            const file = new File([blob], 'answer.webm', { type: 'audio/webm' });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('audioField').files = dt.files;
+        };
+        mediaRecorder.start();
+        startTime = Date.now();
+        document.getElementById('status').style.display = '';
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+
+        timerInterval = setInterval(() => {
+            document.getElementById('timer').innerText = Math.floor((Date.now() - startTime) / 1000) + 's';
+        }, 200);
+    } catch (e) {
+        alert('Microphone access denied or unavailable: ' + e.message);
+    }
+};
+
+document.getElementById('stopBtn').onclick = function() {
+    if (!mediaRecorder) return;
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    clearInterval(timerInterval);
+    const dur = (Date.now() - startTime) / 1000;
+    document.getElementById('durationField').value = dur;
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('stopBtn').disabled = true;
+    document.getElementById('startBtn').disabled = false;
+
+    document.getElementById('startBtn').innerText = '● Record Again';
+
+    setTimeout(() => {
+        if (confirm('Submit this recording for AI evaluation?')) {
+            document.getElementById('uploadForm').submit();
+        }
+    }, 500);
+};
+</script>
+{% endblock %}

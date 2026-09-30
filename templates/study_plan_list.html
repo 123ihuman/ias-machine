@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📅 Study Plan Generator</h2>
+<p class="text-muted">AI builds a day-by-day plan using your PYQ data, books, current affairs, and available time.</p>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-3">
+            <div class="card-header">Create New Plan</div>
+            <div class="card-body">
+                <form action="{{ url_for('study_plan_new') }}" method="post">
+                    <div class="mb-2">
+                        <label>Plan Name</label>
+                        <input class="form-control" name="name" placeholder="e.g., Prelims 2027 CSE">
+                    </div>
+                    <div class="mb-2">
+                        <label>Exam Date</label>
+                        <input class="form-control" type="date" name="exam_date" required>
+                    </div>
+                    <div class="mb-2">
+                        <label>Hours per day</label>
+                        <input class="form-control" type="number" name="hours" value="6" min="2" max="14">
+                    </div>
+                    <div class="mb-2">
+                        <label>Subjects (hold Ctrl/Cmd to select multiple)</label>
+                        <select class="form-control" name="subjects" multiple size="5">
+                            {% for s in subjects %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            <option value="Polity">Polity</option>
+                            <option value="History">History</option>
+                            <option value="Geography">Geography</option>
+                            <option value="Economy">Economy</option>
+                            <option value="Environment">Environment</option>
+                            <option value="Science & Tech">Science & Tech</option>
+                            <option value="Current Affairs">Current Affairs</option>
+                            <option value="Essay">Essay</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Weak areas</label>
+                        <textarea class="form-control" name="weak" rows="2" placeholder="e.g., Economy, Modern History"></textarea>
+                    </div>
+                    <button class="btn btn-primary w-100">Generate Plan</button>
+                    <small class="text-muted d-block mt-2">Plan is built from your PYQ topic trends + latest news.</small>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <h5>Your Plans ({{ plans|length }})</h5>
+        <table class="table table-sm">
+            <thead><tr><th>Name</th><th>Exam Date</th><th>Hrs/Day</th><th>Created</th><th></th></tr></thead>
+            <tbody>
+                {% for p in plans %}
+                <tr>
+                    <td><a href="{{ url_for('study_plan_view', pid=p.id) }}">{{ p.name }}</a></td>
+                    <td>{{ p.exam_date }}</td>
+                    <td>{{ p.hours_per_day }}</td>
+                    <td>{{ p.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <form action="{{ url_for('study_plan_delete', pid=p.id) }}" method="post" style="display:inline;">
+                            <button class="btn btn-sm btn-outline-danger">Del</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No plans yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

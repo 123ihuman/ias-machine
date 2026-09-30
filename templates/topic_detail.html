@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Topic: {{ topic }}</h2>
+<p>Appeared in years: {{ years|join(', ') or '—' }}</p>
+
+<h4>📝 Past Questions ({{ questions|length }})</h4>
+<table class="table table-sm">
+    <thead><tr><th>Year</th><th>Paper</th><th>#</th><th>Question</th><th>Sources</th></tr></thead>
+    <tbody>
+        {% for q in questions %}
+        <tr>
+            <td>{{ q.year }}</td>
+            <td>{{ q.paper.title[:40] }}</td>
+            <td>{{ q.question_number }}</td>
+            <td><a href="{{ url_for('question_detail', qid=q.id) }}">{{ q.text[:120] }}{% if q.text|length > 120 %}...{% endif %}</a></td>
+            <td>{{ q.sources|length }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4>📚 Source Pack — Book Pages for This Topic ({{ sources|length }})</h4>
+<p class="small text-muted">Read these exact pages. Write answers from here.</p>
+{% for s in sources %}
+<div class="card mb-2">
+    <div class="card-body">
+        <h6>{{ s.book.title }} — Page {{ s.page_number }}</h6>
+        {% if s.note %}<p class="text-info small">Note: {{ s.note }}</p>{% endif %}
+        <p class="mb-1 small">{{ s.snippet }}...</p>
+        <a href="{{ url_for('book_detail', book_id=s.book.id) }}" class="btn btn-sm btn-outline-primary">Open Book</a>
+    </div>
+</div>
+{% else %}
+<p>No source pages linked yet. Add sources under individual questions.</p>
+{% endfor %}
+{% endblock %}

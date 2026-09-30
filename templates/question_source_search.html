@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Search Sources for Question #{{ q.id }}</h3>
+<div class="alert alert-secondary">{{ q.text[:200] }}...</div>
+<form class="row g-2 mb-3" method="get" action="{{ url_for('source_search', qid=q.id) }}">
+    <div class="col-md-10"><input class="form-control" name="q" value="{{ query }}" placeholder="Search..." required></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Search</button></div>
+</form>
+
+{% for r in results %}
+<div class="card mb-2">
+    <div class="card-body">
+        <h6>{{ r.book.title }} — Page {{ r.page_number }}</h6>
+        <p class="mb-2">{{ r.snippet }}</p>
+        <form action="{{ url_for('link_source', qid=q.id) }}" method="post" class="row g-2">
+            <input type="hidden" name="page_id" value="{{ r.page.id }}">
+            <div class="col-md-9"><input class="form-control" name="note" placeholder="Optional note (why relevant?)"></div>
+            <div class="col-md-3"><button class="btn btn-success w-100">Link as Source</button></div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
