@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📷 Mains Photo Answer Evaluation</h2>
+<p class="text-muted">Write your answer on paper → photograph it → get AI evaluation with score.</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="mb-3">
+      <label class="form-label"><strong>Question</strong></label>
+      <textarea class="form-control" id="q" rows="3" placeholder="Paste the question here..." required></textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Marks</label>
+      <select class="form-select" id="marks">
+        <option value="10">10 marks (150 words)</option>
+        <option value="15" selected>15 marks (250 words)</option>
+        <option value="20">20 marks (300 words)</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label"><strong>Photo of your answer</strong></label>
+      <input class="form-control" type="file" id="photo" accept="image/*">
+      <small class="text-muted">Take a clear photo in good light. Dark pen, unlined paper works best.</small>
+    </div>
+    <button class="btn btn-primary w-100" id="submitBtn">📝 Submit for Evaluation</button>
+  </div>
+</div>
+
+<div class="alert alert-info" id="status" style="display:none">
+  <strong id="statusText">Processing...</strong> This takes ~15-30 seconds.
+</div>
+
+<div id="result" style="display:none">
+  <div class="card mb-3">
+    <div class="card-header">📄 Your Answer (OCR)</div>
+    <div class="card-body" id="textBox" style="white-space:pre-wrap;font-size:.9rem"></div>
+  </div>
+  <div class="card mb-3 border-primary">
+    <div class="card-header bg-primary text-white">
+      🎯 AI Evaluation <span id="scoreBadge" class="badge bg-warning text-dark float-end"></span>
+    </div>
+    <div class="card-body" id="evalBox" style="white-space:pre-wrap"></div>
+  </div>
+  <button class="btn btn-outline-primary" id="againBtn">📷 Evaluate Another</button>
+</div>
+
+<script>
+document.getElementById('submitBtn').onclick = async () => {
+  const q = document.getElementById('q').value.trim();
+  const marks = document.getElementById('marks').value;
+  const photo = document.getElementById('photo').files[0];
+  if (!q) { alert('Enter question'); return; }
+  if (!photo) { alert('Upload photo'); return; }
+
+  const fd = new FormData();
+  fd.append('question', q);
+  fd.append('marks', marks);
+  fd.append('photo', photo);
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('statusText').innerText = 'OCR + AI evaluation in progress...';
+  document.getElementById('result').style.display = 'none';
+
+  try {
+    const r = await fetch('/mains-photo/evaluate', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.error) {
+      alert(data.error);
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('submitBtn').disabled = false;
+      return;
+    }
+    document.getElementById('textBox').innerText = data.text;
+    document.getElementById('evalBox').innerText = data.evaluation;
+    if (data.score !== null) {
+      document.getElementById('scoreBadge').innerText = data.score + '/50';
+    }
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+  } catch(e) {
+    alert('Error: ' + e.message);
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+  }
+};
+
+document.getElementById('againBtn').onclick = () => {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('q').value = '';
+  document.getElementById('photo').value = '';
+};
+</script>
+{% endblock %}

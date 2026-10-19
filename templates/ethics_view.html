@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('ethics_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← All Cases</a>
+<h3>{{ case.title }}</h3>
+<span class="badge bg-secondary mb-3">{{ case.theme }}</span>
+
+<div class="card mb-3">
+  <div class="card-header">📋 Scenario</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ case.scenario }}</div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-3">
+      <div class="card-header bg-info text-dark">👥 Stakeholders</div>
+      <div class="card-body" style="white-space:pre-wrap">{{ case.stakeholders }}</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card mb-3">
+      <div class="card-header bg-warning text-dark">⚠️ Core Dilemma</div>
+      <div class="card-body" style="white-space:pre-wrap">{{ case.dilemma }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">🎯 Possible Courses of Action</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ case.options }}</div>
+</div>
+
+<div class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">🧭 Ethical Framework</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ case.framework }}</div>
+</div>
+
+<div class="card mb-3 border-success">
+  <div class="card-header bg-success text-white">✅ Recommended Verdict</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ case.verdict }}</div>
+</div>
+
+<form action="{{ url_for('ethics_delete', cid=case.id) }}" method="post">
+  <button class="btn btn-sm btn-outline-danger">Delete Case</button>
+</form>
+{% endblock %}

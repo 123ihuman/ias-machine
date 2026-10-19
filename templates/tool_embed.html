@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+  <h4 class="mb-0">{{ tool.icon }} {{ tool.title }}</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ full_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">↗ Full Tab</a>
+    <button class="btn btn-sm btn-warning" onclick="toggleFS()">⛶ Fullscreen</button>
+    <button class="btn btn-sm btn-info" onclick="reloadFrame()">🔄</button>
+    <a href="{{ url_for('tools_home') }}" class="btn btn-sm btn-secondary">← Back</a>
+  </div>
+</div>
+
+<div id="frameWrap" style="width:100%; height:calc(100vh - 180px); border-radius:10px; overflow:hidden; border:2px solid #30363d; background:#fff; position:relative">
+  <iframe id="toolFrame" src="{{ full_url }}" style="width:100%; height:100%; border:none; display:block" loading="lazy" allow="clipboard-write; fullscreen"></iframe>
+</div>
+
+<div class="alert alert-info py-2 small mt-2 mb-0">
+  💡 If the tool doesn't load, some browsers block iframe embedding for local URLs. Use <strong>↗ Full Tab</strong> instead.
+</div>
+
+<script>
+function toggleFS(){
+  const wrap = document.getElementById('frameWrap');
+  if (!document.fullscreenElement){
+    if (wrap.requestFullscreen) wrap.requestFullscreen().catch(()=>{});
+    else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+function reloadFrame(){
+  const f = document.getElementById('toolFrame');
+  f.src = f.src;
+}
+document.addEventListener('fullscreenchange', () => {
+  const w = document.getElementById('frameWrap');
+  if (document.fullscreenElement){
+    w.style.height = '100vh';
+    w.style.borderRadius = '0';
+  } else {
+    w.style.height = 'calc(100vh - 180px)';
+    w.style.borderRadius = '10px';
+  }
+});
+</script>
+{% endblock %}

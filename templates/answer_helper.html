@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>✍️ Answer Writing Helper</h2>
+<p class="text-muted">45+ topper-style visual formats. AI generates the answer as a diagram — not paragraphs.</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <label class="form-label small"><strong>Question / Topic</strong></label>
+    <textarea id="topic" class="form-control mb-2" rows="3" placeholder="e.g., Compare Buddhism and Jainism. Or: Examine GST Council in cooperative federalism (250 words)"></textarea>
+
+    <div class="row g-2 mb-2">
+      <div class="col-8">
+        <label class="form-label small">Visual Format</label>
+        <select id="fmt" class="form-select">
+          {% for key, val in formats.items() %}
+          <option value="{{ key }}">{{ val[0] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-4">
+        <label class="form-label small">Marks</label>
+        <select id="marks" class="form-select">
+          <option>10</option>
+          <option selected>15</option>
+          <option>20</option>
+          <option>125</option>
+          <option>250</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-2">
+      <div class="col-12">
+        <label class="form-label small"><strong>Answer Length</strong> (choose based on marks)</label>
+        <select id="length" class="form-select">
+          <option value="short">Short — ~150 words (10 marks)</option>
+          <option value="medium" selected>Medium — ~250 words (15 marks)</option>
+          <option value="long">Long — ~600 words (detailed Mains)</option>
+          <option value="essay">Essay — ~1100 words (2-3 pages, 250 marks)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary w-100" id="genBtn">🎨 Generate Visual Answer (Groq)</button>
+    <small class="text-muted d-block mt-2">AI uses Unicode arrows, boxes, tables — same as topper copies.</small>
+
+    <hr class="my-3">
+    <p class="small text-muted mb-2">🤝 <strong>Or ask other AIs directly</strong> — question auto-copies to clipboard, AI opens in new tab:</p>
+    <div class="d-flex flex-wrap gap-2 mb-2">
+      <button type="button" class="btn btn-sm btn-outline-dark" onclick="askExternal('chatgpt')">ChatGPT</button>
+      <button type="button" class="btn btn-sm btn-outline-info" onclick="askExternal('perplexity')">Perplexity</button>
+      <button type="button" class="btn btn-sm btn-outline-dark" onclick="askExternal('grok')">Grok</button>
+      <button type="button" class="btn btn-sm btn-outline-warning" onclick="askExternal('claude')">Claude</button>
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="askExternal('gemini')">Gemini</button>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="askExternal('deepseek')">DeepSeek</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="askExternal('kimi')">Kimi</button>
+    </div>
+    <button type="button" class="btn btn-sm btn-success w-100" onclick="copyFullPrompt()">📋 Copy Full Prompt (paste in any AI)</button>
+  </div>
+</div>
+
+<div class="alert alert-info" id="status" style="display:none">
+  <strong id="statusText">Drawing the answer...</strong> <span id="timer">0s</span>
+</div>
+
+<div id="result" style="display:none">
+  <div class="card mb-3 border-warning">
+    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+      <span id="fmtLabel">Visual Answer</span>
+      <span>
+        <span class="badge bg-dark me-2" id="wordCount">0 words</span>
+        <button class="btn btn-sm btn-outline-dark" onclick="copyAns()">📋 Copy</button>
+      </span>
+    </div>
+    <div class="card-body" style="background:#f8f9fa;overflow-x:auto">
+      <pre id="ansBox" style="white-space:pre;font-family:'Consolas','Courier New',monospace;font-size:.78rem;line-height:1.45;margin:0"></pre>
+    </div>
+  </div>
+  <div class="card mb-3 border-info">
+    <div class="card-header bg-info text-white">🤝 Compare Across AIs</div>
+    <div class="card-body">
+      <p class="small text-muted mb-2">Send the SAME prompt to other AIs — see which gives the best visual answer. Prompt auto-copies to clipboard.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-sm btn-outline-dark" onclick="askExternal('chatgpt')">ChatGPT</button>
+        <button type="button" class="btn btn-sm btn-outline-info" onclick="askExternal('perplexity')">Perplexity</button>
+        <button type="button" class="btn btn-sm btn-outline-dark" onclick="askExternal('grok')">Grok</button>
+        <button type="button" class="btn btn-sm btn-outline-warning" onclick="askExternal('claude')">Claude</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="askExternal('gemini')">Gemini</button>
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="askExternal('deepseek')">DeepSeek</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="askExternal('kimi')">Kimi</button>
+        <button type="button" class="btn btn-sm btn-success" onclick="copyFullPrompt()">📋 Copy Full Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <a href="{{ url_for('mains_photo') }}" class="btn btn-outline-primary">📷 Practice Writing It</a>
+    <button class="btn btn-outline-secondary" onclick="anotherFormat()">🔄 Another Format</button>
+  </div>
+</div>
+
+<script>
+document.getElementById('genBtn').onclick = async () => {
+  const topic = document.getElementById('topic').value.trim();
+  if (topic.length < 5) { alert('Enter a topic or question'); return; }
+  const fmt = document.getElementById('fmt').value;
+  const marks = document.getElementById('marks').value;
+  const length = document.getElementById('length').value;
+
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('statusText').innerText = 'Drawing the answer...';
+  const startT = Date.now();
+  const tInt = setInterval(() => {
+    document.getElementById('timer').innerText = Math.floor((Date.now() - startT)/1000) + 's';
+  }, 200);
+
+  const fd = new FormData();
+  fd.append('topic', topic);
+  fd.append('format', fmt);
+  fd.append('marks', marks);
+  fd.append('length', length);
+
+  try {
+    const r = await fetch('/answer-helper/generate', {method:'POST', body: fd});
+    const d = await r.json();
+    clearInterval(tInt);
+    if (d.error) {
+      alert(d.error);
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('genBtn').disabled = false;
+      return;
+    }
+    const ans = d.answer || '';
+    document.getElementById('ansBox').innerText = ans;
+    document.getElementById('fmtLabel').innerText = '🎨 ' + d.format;
+    const wc = ans.split(/\s+/).filter(w => w.length > 0).length;
+    document.getElementById('wordCount').innerText = wc + ' words';
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('genBtn').disabled = false;
+  } catch(e) {
+    clearInterval(tInt);
+    alert('Error: ' + e.message);
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('genBtn').disabled = false;
+  }
+};
+
+function copyAns() {
+  const t = document.getElementById('ansBox').innerText;
+  navigator.clipboard.writeText(t).then(() => alert('Copied'));
+}
+
+function anotherFormat() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('fmt').focus();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function buildPrompt() {
+  const topic = document.getElementById('topic').value.trim();
+  const fmtSel = document.getElementById('fmt');
+  const fmtName = fmtSel.options[fmtSel.selectedIndex].text;
+  const marks = document.getElementById('marks').value;
+  const lenSel = document.getElementById('length');
+  const lenName = lenSel.options[lenSel.selectedIndex].text;
+
+  const prompt = `You are a UPSC Mains topper. Generate a VISUAL answer in the format: ${fmtName}.
+
+TOPIC: ${topic}
+MARKS: ${marks}
+LENGTH: ${lenName}
+
+STRICT RULES:
+1) Use Unicode symbols: → ← ↑ ↓ ⇒ ● ○ ▪ ▸ • ★ ─ │ ┌ ┐ └ ┘ ├ ┤ ═ ║ ✅ ❌ ⭐ 【 】 ▬ ☀ ⟳
+2) Each line under 40 characters (mobile screen)
+3) Start with 【DIRECT ANSWER】 1-line definition
+4) Then the requested visual format with rich structure
+5) End with 【WAY FORWARD】 2-3 lines
+6) NEVER write paragraphs. Only headings + bullets + visuals
+7) Include real examples, data points, and case studies
+8) Include sub-headings in 【 】 for each major section
+9) Hit the target length — do not stop early
+10) Plain text only — no markdown, no HTML, no code fences`;
+  return prompt;
+}
+
+function copyFullPrompt() {
+  const p = buildPrompt();
+  navigator.clipboard.writeText(p).then(() => {
+    alert('✅ Prompt copied! Paste it into any AI.');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = p; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    alert('✅ Prompt copied!');
+  });
+}
+
+function askExternal(ai) {
+  const p = buildPrompt();
+  // Copy to clipboard
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(p).catch(() => {});
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = p; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }
+
+  const urls = {
+    chatgpt:   'https://chatgpt.com/?q=' + encodeURIComponent(p),
+    perplexity:'https://www.perplexity.ai/search?q=' + encodeURIComponent(p),
+    grok:      'https://grok.com/?q=' + encodeURIComponent(p),
+    claude:    'https://claude.ai/new?q=' + encodeURIComponent(p),
+    gemini:    'https://gemini.google.com/app',
+    deepseek:  'https://chat.deepseek.com/',
+    kimi:      'https://www.kimi.com/'
+  };
+  window.open(urls[ai] || urls.chatgpt, '_blank');
+}
+
+</script>
+{% endblock %}

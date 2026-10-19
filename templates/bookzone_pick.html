@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding:16px 14px;max-width:720px;margin:0 auto;font-family:Georgia,serif;">
+  <a href="/bookzone/c/{{ cat }}" style="color:#5b6bd4;text-decoration:none;font-size:13px;">← {{ cat_info.label }}</a>
+  <h2 style="margin:8px 0 6px;">Pick books for {{ cat_info.icon }} {{ cat_info.label }}</h2>
+  <p style="color:#666;margin:0 0 16px;font-size:13px;">Check the boxes and tap "Add Selected".</p>
+  <form method="post" action="/bookzone/assign">
+    <input type="hidden" name="cat" value="{{ cat }}">
+    <div style="display:flex;gap:8px;margin-bottom:14px;position:sticky;top:60px;background:#f7f5ee;padding:10px 0;z-index:10;">
+      <button type="submit" style="padding:10px 18px;background:{{ cat_info.color }};color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;">✅ Add Selected</button>
+      <input type="text" id="bzSearch" placeholder="Filter titles…" style="flex:1;padding:10px 14px;border:1px solid #ccc;border-radius:20px;font-size:14px;" oninput="bzFilter(this.value)">
+    </div>
+    <div id="bzList">
+      {% for b in books %}
+      <label class="bz-item" data-title="{{ (b.title or '')|lower }}" style="display:flex;gap:10px;align-items:flex-start;background:#fff;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,0.05);cursor:pointer;">
+        <input type="checkbox" name="book_ids" value="{{ b.id }}" style="margin-top:4px;">
+        <div style="flex:1;">
+          <div style="font-weight:600;font-size:14px;">{{ b.title or 'Untitled' }}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px;">{{ b.author or '—' }}{% if b.collection %} · currently: {{ b.collection }}{% endif %}</div>
+        </div>
+      </label>
+      {% endfor %}
+    </div>
+  </form>
+</div>
+<script>
+function bzFilter(q){q=(q||'').toLowerCase().trim();document.querySelectorAll('.bz-item').forEach(function(el){el.style.display=(!q||el.dataset.title.indexOf(q)!==-1)?'flex':'none';});}
+</script>
+{% endblock %}

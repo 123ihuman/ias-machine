@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-2 flex-wrap gap-2">
+  <h3 class="mb-0">⏱️ Timer / Stopwatch / Counter</h3>
+  <a href="{{ url_for('toolkit_home') }}" class="btn btn-sm btn-secondary">← Toolkit</a>
+</div>
+
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <button class="btn btn-primary btn-sm" onclick="showTab('timer')">⏳ Countdown</button>
+  <button class="btn btn-outline-primary btn-sm" onclick="showTab('stopwatch')">⏱️ Stopwatch</button>
+  <button class="btn btn-outline-primary btn-sm" onclick="showTab('counter')">🔢 Tally Counter</button>
+  <button class="btn btn-outline-primary btn-sm" onclick="showTab('pomodoro')">🍅 Pomodoro</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="tab-timer">
+  <div class="card"><div class="card-body text-center">
+    <h1 id="cdDisplay" style="font-size:3rem;font-family:monospace">25:00</h1>
+    <div class="d-flex gap-2 justify-content-center mb-3 flex-wrap">
+      <input type="number" id="cdMin" class="form-control" style="width:80px" value="25" min="1" placeholder="Min">
+      <input type="number" id="cdSec" class="form-control" style="width:80px" value="0" min="0" max="59" placeholder="Sec">
+    </div>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <button class="btn btn-success" onclick="startCD()">▶ Start</button>
+      <button class="btn btn-warning" onclick="pauseCD()">⏸ Pause</button>
+      <button class="btn btn-danger" onclick="resetCD()">⟲ Reset</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- STOPWATCH -->
+<div id="tab-stopwatch" style="display:none">
+  <div class="card"><div class="card-body text-center">
+    <h1 id="swDisplay" style="font-size:3rem;font-family:monospace">00:00.0</h1>
+    <div class="d-flex gap-2 justify-content-center flex-wrap mb-3">
+      <button class="btn btn-success" onclick="startSW()">▶ Start</button>
+      <button class="btn btn-warning" onclick="pauseSW()">⏸ Pause</button>
+      <button class="btn btn-danger" onclick="resetSW()">⟲ Reset</button>
+      <button class="btn btn-outline-primary" onclick="lapSW()">📍 Lap</button>
+    </div>
+    <div id="swLaps" class="text-start small"></div>
+  </div></div>
+</div>
+
+<!-- TALLY COUNTER -->
+<div id="tab-counter" style="display:none">
+  <div class="card"><div class="card-body text-center">
+    <h1 id="counterVal" style="font-size:4rem;color:#0d6efd;margin:0">0</h1>
+    <div class="d-flex gap-2 justify-content-center mb-3 mt-2 flex-wrap">
+      <button class="btn btn-danger btn-lg" onclick="decCount()">−</button>
+      <button class="btn btn-success btn-lg" onclick="incCount()">+</button>
+    </div>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <button class="btn btn-outline-secondary btn-sm" onclick="incCount(5)">+5</button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="incCount(10)">+10</button>
+      <button class="btn btn-outline-danger btn-sm" onclick="resetCount()">Reset</button>
+    </div>
+    <div class="mt-3"><small class="text-muted">Total taps: <span id="tapCount">0</span></small></div>
+  </div></div>
+</div>
+
+<!-- POMODORO -->
+<div id="tab-pomodoro" style="display:none">
+  <div class="card"><div class="card-body text-center">
+    <h2 id="pomMode" style="color:#dc3545">Work Session</h2>
+    <h1 id="pomDisplay" style="font-size:3rem;font-family:monospace">25:00</h1>
+    <div class="d-flex gap-2 justify-content-center flex-wrap mb-3">
+      <button class="btn btn-success" onclick="startPom()">▶ Start</button>
+      <button class="btn btn-warning" onclick="pausePom()">⏸ Pause</button>
+      <button class="btn btn-danger" onclick="resetPom()">⟲ Reset</button>
+    </div>
+    <small class="text-muted">Cycle: 25 min work → 5 min break → repeat. Every 4th = 15 min break.</small>
+    <div class="mt-2">Completed cycles: <strong id="pomCycles">0</strong></div>
+  </div></div>
+</div>
+
+<script>
+function showTab(t){
+  ['timer','stopwatch','counter','pomodoro'].forEach(x => document.getElementById('tab-' + x).style.display = x === t ? 'block' : 'none');
+}
+
+// ---- COUNTDOWN ----
+let cdInt = null, cdLeft = 1500, cdTotal = 1500;
+function fmtTime(s){ const m = Math.floor(s/60), sec = s%60; return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+function updateCD(){ document.getElementById('cdDisplay').innerText = fmtTime(cdLeft); if (cdLeft <= 0){ clearInterval(cdInt); cdInt = null; try{ new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'); }catch(e){} alert('Time up!'); } }
+function startCD(){
+  if (cdInt) return;
+  if (cdLeft === cdTotal){ cdTotal = (parseInt(document.getElementById('cdMin').value||25)*60) + parseInt(document.getElementById('cdSec').value||0); cdLeft = cdTotal; }
+  cdInt = setInterval(() => { cdLeft--; updateCD(); }, 1000);
+}
+function pauseCD(){ clearInterval(cdInt); cdInt = null; }
+function resetCD(){ clearInterval(cdInt); cdInt = null; cdTotal = (parseInt(document.getElementById('cdMin').value||25)*60) + parseInt(document.getElementById('cdSec').value||0); cdLeft = cdTotal; updateCD(); }
+document.getElementById('cdMin').oninput = resetCD;
+document.getElementById('cdSec').oninput = resetCD;
+
+// ---- STOPWATCH ----
+let swInt = null, swStart = 0, swElapsed = 0, swLaps = [];
+function fmtSW(ms){ const t = Math.floor(ms/100); const m = Math.floor(t/600), s = Math.floor((t/10)%60), d = t%10; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d; }
+function updateSW(){ document.getElementById('swDisplay').innerText = fmtSW(swElapsed + (swStart ? Date.now() - swStart : 0)); }
+function startSW(){ if (swInt) return; swStart = Date.now(); swInt = setInterval(updateSW, 100); }
+function pauseSW(){ if (swStart) swElapsed += Date.now() - swStart; swStart = 0; clearInterval(swInt); swInt = null; updateSW(); }
+function resetSW(){ clearInterval(swInt); swInt = null; swStart = 0; swElapsed = 0; swLaps = []; updateSW(); document.getElementById('swLaps').innerHTML = ''; }
+function lapSW(){ const cur = swElapsed + (swStart ? Date.now() - swStart : 0); swLaps.push(cur); document.getElementById('swLaps').innerHTML = swLaps.map((t,i) => `<div>Lap ${i+1}: ${fmtSW(t)}</div>`).reverse().join(''); }
+updateSW();
+
+// ---- COUNTER ----
+let counter = 0, taps = 0;
+function incCount(n=1){ counter += n; taps++; updateCount(); }
+function decCount(){ counter = Math.max(0, counter - 1); taps++; updateCount(); }
+function resetCount(){ if (confirm('Reset counter?')){ counter = 0; taps = 0; updateCount(); } }
+function updateCount(){ document.getElementById('counterVal').innerText = counter; document.getElementById('tapCount').innerText = taps; }
+
+// ---- POMODORO ----
+let pomInt = null, pomLeft = 25*60, pomMode = 'work', pomCycles = 0;
+function updatePom(){
+  document.getElementById('pomDisplay').innerText = fmtTime(pomLeft);
+  document.getElementById('pomMode').innerText = pomMode === 'work' ? 'Work Session' : 'Break Time';
+  document.getElementById('pomMode').style.color = pomMode === 'work' ? '#dc3545' : '#198754';
+  document.getElementById('pomCycles').innerText = pomCycles;
+}
+function startPom(){
+  if (pomInt) return;
+  pomInt = setInterval(() => {
+    pomLeft--;
+    if (pomLeft <= 0){
+      if (pomMode === 'work'){ pomCycles++; pomMode = (pomCycles % 4 === 0) ? 'longbreak' : 'break'; pomLeft = pomCycles % 4 === 0 ? 15*60 : 5*60; }
+      else { pomMode = 'work'; pomLeft = 25*60; }
+      try { alert(pomMode === 'work' ? 'Break over — back to work!' : 'Work session done — take a break!'); } catch(e){}
+    }
+    updatePom();
+  }, 1000);
+}
+function pausePom(){ clearInterval(pomInt); pomInt = null; }
+function resetPom(){ clearInterval(pomInt); pomInt = null; pomLeft = 25*60; pomMode = 'work'; pomCycles = 0; updatePom(); }
+updatePom();
+</script>
+{% endblock %}

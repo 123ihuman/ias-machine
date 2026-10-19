@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 PYQ Auto-Scorer</h2>
+<p class="text-muted">Take any past paper with a saved answer key → get instant score.</p>
+
+{% if not result %}
+<form method="post" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <label class="small">Exam</label>
+    <select class="form-select" name="exam" required>
+      {% set exams = [] %}
+      {% for a in available %}{% if a.exam not in exams %}{% set _ = exams.append(a.exam) %}<option>{{ a.exam }}</option>{% endif %}{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="small">Year</label>
+    <input class="form-control" name="year" type="number" required>
+  </div>
+  <div class="col-md-3">
+    <label class="small">Paper</label>
+    <input class="form-control" name="paper" placeholder="GS1 / CSAT" required>
+  </div>
+  <div class="col-md-2 d-flex align-items-end">
+    <button class="btn btn-primary w-100">▶ Start</button>
+  </div>
+</form>
+
+{% else %}
+<div class="card mb-3 border-primary">
+  <div class="card-body text-center">
+    <h2 class="mb-1">{{ result.score }} <small class="text-muted">/ {{ result.max_marks }}</small></h2>
+    <p class="mb-0">{{ result.correct }} correct · {{ result.wrong }} wrong · {{ result.blank }} blank</p>
+    <p class="text-muted small mb-0">{{ result.exam }} {{ result.year }} {{ result.paper }}</p>
+  </div>
+</div>
+
+<h5>Question-by-Question</h5>
+{% for d in result.details %}
+<div class="card mb-1 border-{% if d.status=='correct' %}success{% elif d.status=='wrong' %}danger{% else %}secondary{% endif %}">
+  <div class="card-body py-1 d-flex justify-content-between">
+    <span><strong>Q{{ d.q }}</strong></span>
+    <span>
+      You: <strong>{{ d.user }}</strong> ·
+      Correct: <strong>{{ d.correct_ans }}</strong>
+      {% if d.status=='correct' %}✅{% elif d.status=='wrong' %}❌{% else %}—{% endif %}
+    </span>
+  </div>
+</div>
+{% endfor %}
+
+<a href="{{ url_for('pyq_score') }}" class="btn btn-outline-primary mt-3">← Take Another</a>
+{% endif %}
+
+{% if not available and not result %}
+<div class="alert alert-info">
+  No answer keys saved yet. Go to <a href="{{ url_for('answer_key_home') }}">Answer Key Manager</a> to paste some.
+</div>
+{% endif %}
+{% endblock %}

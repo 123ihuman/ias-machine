@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📋 Universal Paste Box</h2>
+<p class="text-muted">Paste anything from Google Lens, other apps, or type. AI auto-detects and saves to right place.</p>
+
+<div class="row">
+  <div class="col-md-7">
+    <div class="card mb-3">
+      <div class="card-header">📥 Paste Content</div>
+      <div class="card-body">
+
+        <!-- Google Lens quick-launch button -->
+        <div class="alert alert-primary py-2 mb-3 d-flex justify-content-between align-items-center">
+          <div>
+            <strong>📸 Step 1:</strong> Scan with Google Lens
+          </div>
+          <a href="https://www.google.com/?olud" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+            Open Google Lens →
+          </a>
+        </div>
+
+        <textarea id="pasteInput" class="form-control mb-2" rows="10" placeholder="Paste from Google Lens / any app. Examples:&#10;&#10;• 'Q1. (b) Q2. (c) Q3. (a)' → auto-saves as Answer Key&#10;• 'Consider the following statements about...' → auto-saves as Question&#10;• 'Article 356 deals with President's Rule...' → auto-saves as Book Note&#10;• Any random fact → auto-saves as Note"></textarea>
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn btn-outline-secondary flex-grow-1" onclick="clearInput()">🗑 Clear</button>
+          <button class="btn btn-primary flex-grow-1" id="processBtn" onclick="processPaste()">🧠 Auto-Detect & Save</button>
+        </div>
+        <small class="text-muted">You don't need to choose the type. AI figures it out.</small>
+      </div>
+    </div>
+
+    <div id="resultBox" style="display:none">
+      <div class="card mb-3 border-success">
+        <div class="card-header bg-success text-white">✅ Saved</div>
+        <div class="card-body">
+          <p class="mb-1">Detected as: <strong id="resType"></strong></p>
+          <p class="mb-1">Subject: <strong id="resSubj"></strong> · Topic: <strong id="resTopic"></strong></p>
+          <p class="mb-1">Saved to: <strong id="resSaved"></strong></p>
+          <p class="mb-0 small text-muted" id="resMsg"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card mb-3 border-primary">
+      <div class="card-header bg-primary text-white">📱 Google Lens — Best OCR Method</div>
+      <div class="card-body">
+        <ol class="small mb-0">
+          <li>Install <strong>Google Lens</strong> app (or open Google app)</li>
+          <li>Point camera at question / book page / answer key</li>
+          <li>Wait for auto-detection (yellow highlight)</li>
+          <li>Tap <strong>"Copy text"</strong> button</li>
+          <li>Come back here → <strong>Paste → Auto-Save</strong></li>
+        </ol>
+        <hr>
+        <p class="small mb-0"><strong>Why Lens beats other OCR:</strong><br>
+        • 98% accuracy on clear photos<br>
+        • Handles Hindi + English<br>
+        • Works offline on phone<br>
+        • Free forever</p>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">📊 Recent Pastes ({{ recent|length }})</div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for p in recent[:10] %}
+          <li class="list-group-item py-2">
+            <div class="small">
+              <span class="badge bg-{% if p.detected_type=='answer_key' %}warning text-dark{% elif p.detected_type=='question' %}primary{% else %}secondary{% endif %}">{{ p.detected_type }}</span>
+              <span class="text-muted">{{ p.subject }}</span>
+              → <strong>{{ p.saved_to_table }}</strong>
+            </div>
+            <div class="small text-muted">{{ p.content[:80] }}...</div>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted small">No pastes yet</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function clearInput(){ document.getElementById('pasteInput').value = ''; document.getElementById('resultBox').style.display = 'none'; }
+
+async function processPaste(){
+  const text = document.getElementById('pasteInput').value.trim();
+  if (text.length < 10) { alert('Paste at least 10 characters'); return; }
+  const btn = document.getElementById('processBtn');
+  btn.disabled = true; btn.innerText = '🧠 Detecting...';
+  const fd = new FormData();
+  fd.append('content', text);
+  fd.append('source', 'google_lens');
+  try {
+    const r = await fetch('/paste/process', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { alert(d.error); btn.disabled = false; btn.innerText = '🧠 Auto-Detect & Save'; return; }
+    document.getElementById('resType').innerText = d.detected_type + ' (' + d.confidence + '% confidence)';
+    document.getElementById('resSubj').innerText = d.subject;
+    document.getElementById('resTopic').innerText = d.topic || '—';
+    document.getElementById('resSaved').innerText = d.saved_to;
+    document.getElementById('resMsg').innerText = d.message;
+    document.getElementById('resultBox').style.display = 'block';
+    document.getElementById('pasteInput').value = '';
+    btn.disabled = false; btn.innerText = '🧠 Auto-Detect & Save';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerText = '🧠 Auto-Detect & Save'; }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎫 Admit Card Generator</h2>
+<p class="text-muted">Create realistic exam admit cards for practice. Same layout as real UPSC/UPPSC admit cards — for mock exam simulation.</p>
+
+<a href="{{ url_for('admit_card_create') }}" class="btn btn-primary mb-3">+ Create New Admit Card</a>
+
+<h5>Your Admit Cards ({{ cards|length }})</h5>
+{% for c in cards %}
+<div class="card mb-2">
+  <div class="card-body py-2 d-flex justify-content-between align-items-center">
+    <div>
+      <strong>{{ c.candidate_name or 'Unnamed' }}</strong>
+      <div class="small text-muted">{{ c.exam_name[:60] }} · Roll {{ c.roll_number or '—' }}</div>
+    </div>
+    <div>
+      <a href="{{ url_for('admit_card_view', cid=c.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+      <a href="{{ url_for('admit_card_print', cid=c.id) }}" target="_blank" class="btn btn-sm btn-outline-success">PDF</a>
+      <form action="{{ url_for('admit_card_delete', cid=c.id) }}" method="post" style="display:inline">
+        <button class="btn btn-sm btn-outline-danger">Del</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">No admit cards yet. Create one to see the template.</div>
+{% endfor %}
+{% endblock %}

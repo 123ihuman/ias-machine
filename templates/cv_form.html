@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('cv_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← All CVs</a>
+<h2>{{ 'Edit CV' if cv else 'New CV' }}</h2>
+
+<form method="post" action="{{ url_for('cv_save') }}" enctype="multipart/form-data">
+  {% if cv %}<input type="hidden" name="cv_id" value="{{ cv.id }}">{% endif %}
+  <input type="hidden" name="existing_photo" value="{{ cv.photo_url if cv else '' }}">
+
+  <div class="card mb-3">
+    <div class="card-header">Template</div>
+    <div class="card-body">
+      <div class="d-flex flex-wrap gap-2">
+        {% for k, v in templates.items() %}
+        <label class="btn btn-outline-primary btn-sm">
+          <input type="radio" name="template" value="{{ k }}" {% if (cv and cv.template == k) or (not cv and k == 'classic') %}checked{% endif %}>
+          {{ v.label }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Personal Info</div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><input class="form-control" name="name" placeholder="Full Name *" value="{{ cv.name if cv else '' }}" required></div>
+        <div class="col-md-6"><input class="form-control" name="role" placeholder="Target Role / Title" value="{{ cv.role if cv else '' }}"></div>
+        <div class="col-md-6"><input class="form-control" name="email" placeholder="Email" value="{{ data.email if data else '' }}"></div>
+        <div class="col-md-6"><input class="form-control" name="phone" placeholder="Phone" value="{{ data.phone if data else '' }}"></div>
+        <div class="col-md-6"><input class="form-control" name="address" placeholder="City / Address" value="{{ data.address if data else '' }}"></div>
+        <div class="col-md-6"><input class="form-control" name="website" placeholder="Website" value="{{ data.website if data else '' }}"></div>
+        <div class="col-md-6"><input class="form-control" name="linkedin" placeholder="LinkedIn" value="{{ data.linkedin if data else '' }}"></div>
+        <div class="col-md-6"><input type="file" class="form-control" name="photo_file" accept="image/*"></div>
+        <div class="col-12"><textarea class="form-control" name="summary" rows="3" placeholder="Professional Summary (2-3 lines)">{{ data.summary if data else '' }}</textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <span>Education</span>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="addEdu()">+ Add</button>
+    </div>
+    <div class="card-body" id="eduList"></div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <span>Work Experience</span>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="addExp()">+ Add</button>
+    </div>
+    <div class="card-body" id="expList"></div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <span>Projects</span>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="addProj()">+ Add</button>
+    </div>
+    <div class="card-body" id="projList"></div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <span>Certifications</span>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCert()">+ Add</button>
+    </div>
+    <div class="card-body" id="certList"></div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Skills & Extras</div>
+    <div class="card-body">
+      <div class="mb-2"><input class="form-control" name="skills" placeholder="Skills (comma separated)" value="{{ data.skills if data else '' }}"></div>
+      <div class="mb-2"><input class="form-control" name="languages" placeholder="Languages (comma separated)" value="{{ data.languages if data else '' }}"></div>
+      <div class="mb-2"><input class="form-control" name="achievements" placeholder="Key Achievements" value="{{ data.achievements if data else '' }}"></div>
+      <div><input class="form-control" name="hobbies" placeholder="Hobbies / Interests" value="{{ data.hobbies if data else '' }}"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-success w-100 mb-3">💾 Save CV</button>
+</form>
+
+<script>
+const eduData = {{ (data.education if data else []) | tojson }};
+const expData = {{ (data.experience if data else []) | tojson }};
+const projData = {{ (data.projects if data else []) | tojson }};
+const certData = {{ (data.certifications if data else []) | tojson }};
+
+function esc(s){return String(s||'').replace(/"/g,'&quot;');}
+
+function addEdu(d = {}){
+  const el = document.getElementById('eduList');
+  el.insertAdjacentHTML('beforeend', `<div class="row g-2 mb-2 align-items-center"><div class="col-md-3"><input class="form-control" name="edu_degree" placeholder="Degree" value="${esc(d.degree)}"></div><div class="col-md-3"><input class="form-control" name="edu_inst" placeholder="Institution" value="${esc(d.institution)}"></div><div class="col-md-2"><input class="form-control" name="edu_year" placeholder="Year" value="${esc(d.year)}"></div><div class="col-md-2"><input class="form-control" name="edu_grade" placeholder="Grade" value="${esc(d.grade)}"></div><div class="col-md-2"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.row').remove()">✕</button></div></div>`);
+}
+
+function addExp(d = {}){
+  const el = document.getElementById('expList');
+  el.insertAdjacentHTML('beforeend', `<div class="row g-2 mb-2"><div class="col-md-3"><input class="form-control" name="exp_role" placeholder="Role" value="${esc(d.role)}"></div><div class="col-md-3"><input class="form-control" name="exp_company" placeholder="Company" value="${esc(d.company)}"></div><div class="col-md-2"><input class="form-control" name="exp_duration" placeholder="Duration" value="${esc(d.duration)}"></div><div class="col-md-3"><textarea class="form-control" name="exp_desc" rows="2" placeholder="Description">${esc(d.description)}</textarea></div><div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.row').remove()">✕</button></div></div>`);
+}
+
+function addProj(d = {}){
+  const el = document.getElementById('projList');
+  el.insertAdjacentHTML('beforeend', `<div class="row g-2 mb-2"><div class="col-md-4"><input class="form-control" name="proj_name" placeholder="Project Name" value="${esc(d.name)}"></div><div class="col-md-7"><textarea class="form-control" name="proj_desc" rows="2" placeholder="Description">${esc(d.description)}</textarea></div><div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.row').remove()">✕</button></div></div>`);
+}
+
+function addCert(d = {}){
+  const el = document.getElementById('certList');
+  el.insertAdjacentHTML('beforeend', `<div class="row g-2 mb-2"><div class="col-md-5"><input class="form-control" name="cert_name" placeholder="Certificate" value="${esc(d.name)}"></div><div class="col-md-4"><input class="form-control" name="cert_issuer" placeholder="Issuer" value="${esc(d.issuer)}"></div><div class="col-md-2"><input class="form-control" name="cert_year" placeholder="Year" value="${esc(d.year)}"></div><div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.row').remove()">✕</button></div></div>`);
+}
+
+eduData.forEach(addEdu);
+expData.forEach(addExp);
+projData.forEach(addProj);
+certData.forEach(addCert);
+if (!eduData.length) addEdu();
+if (!expData.length) addExp();
+</script>
+{% endblock %}

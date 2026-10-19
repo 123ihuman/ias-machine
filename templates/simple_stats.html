@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 Simple Exam Stats</h2>
+<p class="text-muted">Your accuracy across exams and subjects. Lowest first — focus there.</p>
+<table class="table table-sm">
+  <thead><tr><th>Exam · Subject</th><th>Attempts</th><th>Correct</th><th>Accuracy</th></tr></thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td><strong>{{ r.key }}</strong></td>
+      <td>{{ r.total }}</td>
+      <td>{{ r.correct }}</td>
+      <td><span class="badge bg-{% if r.accuracy >= 60 %}success{% elif r.accuracy >= 40 %}warning text-dark{% else %}danger{% endif %}">{{ r.accuracy }}%</span></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">No attempts yet. Practice on the main page.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="{{ url_for('simple_exam_home') }}" class="btn btn-primary">← Back</a>
+{% endblock %}

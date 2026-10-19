@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔥 PYQ Heatmap — Topic × Year</h2>
+<p class="text-muted">Darker = more questions from that topic that year. Rows ranked by total frequency across all years.</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-8">
+    <select class="form-control" name="subject" onchange="this.form.submit()">
+      <option value="">All Subjects</option>
+      {% for s in subjects %}<option value="{{ s }}" {% if s == subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4">
+    <button class="btn btn-primary w-100">Filter</button>
+  </div>
+</form>
+
+{% if ranked %}
+<div style="overflow-x:auto;">
+<table class="table table-bordered table-sm" style="font-size:.8rem">
+  <thead>
+    <tr>
+      <th style="min-width:180px;">Topic</th>
+      {% for y in all_years %}<th class="text-center" style="min-width:50px;">{{ y }}</th>{% endfor %}
+      <th class="text-center">Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for topic, year_counts in ranked %}
+    <tr>
+      <td><a href="{{ url_for('topic_detail', topic_name=topic) }}">{{ topic }}</a></td>
+      {% for y in all_years %}
+        {% set c = year_counts.get(y, 0) %}
+        {% set intensity = (c / max_count * 255)|int if c else 0 %}
+        <td class="text-center"
+            style="{% if c %}background: rgba(220,53,69, {{ 0.15 + (c/max_count)*0.85 }}); color: white; font-weight: bold;{% endif %}">
+          {{ c if c else '' }}
+        </td>
+      {% endfor %}
+      <td class="text-center"><strong>{{ year_counts.values()|sum }}</strong></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div class="mt-3">
+  <span class="text-muted small">Legend:</span>
+  <span style="display:inline-block;width:20px;height:20px;background:rgba(220,53,69,0.15);border:1px solid #ccc;"></span> Low
+  <span style="display:inline-block;width:20px;height:20px;background:rgba(220,53,69,0.55);border:1px solid #ccc;margin-left:8px;"></span> Medium
+  <span style="display:inline-block;width:20px;height:20px;background:rgba(220,53,69,1);border:1px solid #ccc;margin-left:8px;"></span> High
+</div>
+{% else %}
+<div class="alert alert-info">No PYQ data yet. Upload past papers and run Auto-Extract to populate the heatmap.</div>
+{% endif %}
+{% endblock %}

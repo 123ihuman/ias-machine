@@ -2,7 +2,16 @@
 {% block content %}
 <h2>{{ book.title }}</h2>
 <p><strong>Author:</strong> {{ book.author }} | <strong>Subject:</strong> {{ book.subject }} | <strong>Type:</strong> {{ book.category }}</p>
-<a href="{{ url_for('download_book', book_id=book.id) }}" class="btn btn-success mb-3">Download PDF</a>
+<div class="d-flex gap-2 mb-3 flex-wrap">
+    <button type="button" class="btn btn-info text-white" id="offlineBtnDetail" onclick="saveOfflineDetail({{ book.id }}, {{ book.title|tojson }}, this)">📴 Save Offline</button>
+    <a href="{{ url_for('read_book_page', book_id=book.id, page_num=1) }}" class="btn btn-primary">📖 Read Text</a>
+    <a href="{{ url_for('read_book', book_id=book.id) }}" target="_blank" class="btn btn-warning">📄 PDF View</a>
+    <a href="{{ url_for('book_search', book_id=book.id) }}" class="btn btn-info text-white">🔍 Search</a>
+    <a href="{{ url_for('download_book', book_id=book.id) }}" class="btn btn-success">⬇ Download PDF</a>
+    <form action="{{ url_for('book_run_ocr', book_id=book.id) }}" method="post" class="d-inline" onsubmit="return confirm('This will re-process the entire book with OCR. It may take several minutes. Continue?')">
+        <button class="btn btn-secondary">🔤 Run OCR (fix scanned book)</button>
+    </form>
+</div>
 
 {% if book.category == 'paper' %}
 <hr>
@@ -79,4 +88,21 @@
     </div>
     {% endfor %}
 </div>
+
+<script>
+async function saveOfflineDetail(bookId, title, btn){
+  if (!window.IASOffline){ alert('Offline not loaded. Refresh.'); return; }
+  const orig = btn.innerText;
+  btn.disabled = true; btn.innerText = '⏳ Saving...';
+  try {
+    const r = await IASOffline.saveBookOffline(bookId, title);
+    if (r.ok){
+      const mb = Math.round(r.size / 1024 / 1024 * 10) / 10;
+      btn.innerText = '✅ Saved (' + mb + ' MB)';
+      btn.classList.remove('btn-info'); btn.classList.add('btn-success');
+    } else { alert(r.error); btn.innerText = orig; btn.disabled = false; }
+  } catch(e){ alert(e.message); btn.innerText = orig; btn.disabled = false; }
+}
+</script>
+
 {% endblock %}

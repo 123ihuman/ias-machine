@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🧰 Tools Hub</h2>
+<p class="text-muted">External tools that work alongside IAS Machine. Each opens in a new tab or embeds inside app.</p>
+
+<div class="alert alert-info py-2 small mb-3">
+  ✅ These tools run inside IAS Machine. Works on any device, any network — no separate server needed.
+</div>
+
+<div class="row">
+  {% for t in tools %}
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+          <div style="font-size:2.5rem;line-height:1">{{ t.icon }}</div>
+          <div class="ms-3">
+            <h5 class="mb-0">{{ t.title }}</h5>
+            <div>
+              {% for tag in t.tags %}<span class="badge bg-secondary">{{ tag }}</span> {% endfor %}
+            </div>
+          </div>
+        </div>
+        <p class="small text-muted mb-3">{{ t.desc }}</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ t.full_url }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">↗ Open in New Tab</a>
+          <a href="{{ url_for('tools_embed', tool_id=t.id) }}" class="btn btn-outline-primary btn-sm">⛶ Embed in App</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">💡 How to Use</div>
+  <div class="card-body small">
+    <ul class="mb-0">
+      <li><strong>Open in New Tab</strong> — best for phones. Both tools sit as separate browser tabs.</li>
+      <li><strong>Embed in App</strong> — shows the tool inside an iframe. Works on desktop; some mobile browsers limit iframes.</li>
+      <li>Both tools are hosted inside the app — they load directly from <code>/static/tools/</code>.</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

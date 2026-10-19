@@ -88,6 +88,9 @@ if (copyBtn) {
 </script>
 
 <hr>
+<div class="mb-3"><a href="{{ url_for('think_topper_page', qid=q.id) }}" class="btn btn-warning">🧠 How a Topper Thinks</a>
+    <a href="{{ url_for('answer_compare_page', qid=q.id) }}" class="btn btn-info text-white">⚖️ Compare with Model</a></div>
+
 <h4>🤖 Generate AI Answers (In-App, via Groq)</h4>
 <p class="small text-muted">
     AI writes a UPSC-style answer using the linked book sources above.

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🧠 Adaptive Study Plan</h2>
+<p class="text-muted">Auto-generated from your mocks, PYQ trends, and syllabus pace.</p>
+
+<div class="row mb-3">
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h5 class="mb-1">⏰ {{ days_left }} days to exam</h5>
+      <small class="text-muted">{{ exam_date }}</small>
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h5 class="mb-1">📋 Today's Plan ({{ plan|length }} tasks)</h5>
+      <small class="text-muted">Regenerate daily</small>
+    </div></div>
+  </div>
+</div>
+
+<h4>✅ Today's Action Plan</h4>
+{% for p in plan %}
+<div class="card mb-2 border-{{ p.color }}">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-center gap-2">
+      <div>
+        <span class="badge bg-{{ p.color }}{% if p.color=='warning' %} text-dark{% endif %}">{{ p.priority }}</span>
+        <strong class="ms-2">{{ p.task }}</strong>
+        <p class="small text-muted mb-0 mt-1">{{ p.reason }}</p>
+      </div>
+      <div class="text-end"><span class="badge bg-secondary">{{ p.time }}</span></div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<hr>
+<h4>🎯 Why These Topics?</h4>
+<div class="row">
+  <div class="col-md-6">
+    <h6 class="text-danger">📉 Weak Topics (from mocks)</h6>
+    {% if weak_topics %}
+    <ul class="small">{% for w in weak_topics %}<li><strong>{{ w.topic }}</strong> — {{ w.acc }}%</li>{% endfor %}</ul>
+    {% else %}<p class="text-muted small">No mock data yet.</p>{% endif %}
+
+    <h6 class="text-warning mt-3">⚠️ Overdue Syllabus</h6>
+    {% if overdue %}
+    <ul class="small">{% for o in overdue %}<li><strong>{{ o.name }}</strong> — {{ -o.days }} days late</li>{% endfor %}</ul>
+    {% else %}<p class="text-muted small">Nothing overdue.</p>{% endif %}
+  </div>
+  <div class="col-md-6">
+    <h6 class="text-primary">🔥 High-Probability PYQ Topics</h6>
+    {% if prob_topics %}
+    <ul class="small">{% for p in prob_topics %}<li><strong>{{ p.topic }}</strong> — {{ p.count }} times</li>{% endfor %}</ul>
+    {% else %}<p class="text-muted small">No PYQ data yet.</p>{% endif %}
+
+    <h6 class="text-info mt-3">⏳ Due Soon</h6>
+    {% if due_soon %}
+    <ul class="small">{% for d in due_soon %}<li><strong>{{ d.name }}</strong> — in {{ d.days }} days</li>{% endfor %}</ul>
+    {% else %}<p class="text-muted small">Nothing due within a week.</p>{% endif %}
+  </div>
+</div>
+
+<a href="{{ url_for('adaptive_plan') }}" class="btn btn-primary mt-3">🔄 Regenerate</a>
+{% endblock %}

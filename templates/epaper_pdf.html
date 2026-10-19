@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>The Aspirant's Times — {{ today }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=Oswald:wght@500;700&family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:15mm}
+body{font-family:'Lora',serif;color:#111;background:#fff;padding:12px}
+.print-bar{background:#1a3a6b;color:#fff;padding:10px;text-align:center;margin:-12px -12px 16px;position:sticky;top:0;z-index:99}
+.print-bar button{background:#fff;color:#1a3a6b;border:none;padding:8px 20px;font-family:Oswald,sans-serif;font-weight:700;letter-spacing:1px;cursor:pointer;border-radius:4px;margin-left:8px}
+.masthead{text-align:center;border-top:4px double #111;border-bottom:4px double #111;padding:10px 0;margin-bottom:8px}
+.title{font-family:'Playfair Display',serif;font-weight:900;font-size:2.2rem;letter-spacing:1px;margin:0}
+.sub{font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:4px;text-transform:uppercase;color:#666;margin-top:4px}
+.dateline{display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:.7rem;padding:5px 0;border-bottom:1px solid #111;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.sechead{font-family:'Oswald',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:5px;text-transform:uppercase;text-align:center;padding:6px 0;border-top:2px solid #111;border-bottom:2px solid #111;margin:20px 0 12px;page-break-before:always}
+.sechead:first-of-type{page-break-before:auto}
+.lead{font-family:'Playfair Display',serif;font-weight:900;font-size:1.5rem;line-height:1.15;text-align:center;margin:8px 0}
+.byline{font-family:'Oswald',sans-serif;font-size:.65rem;text-align:center;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:10px}
+.body{font-size:.9rem;line-height:1.5;text-align:justify;column-count:2;column-gap:20px;column-rule:1px solid #ddd}
+.story{margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #ccc;border-left:3px solid #1a3a6b;padding-left:10px;page-break-inside:avoid}
+.headline{font-family:'Libre Baskerville',serif;font-weight:700;font-size:1.05rem;line-height:1.25;margin-bottom:4px;color:#1a3a6b}
+.meta{font-family:'Oswald',sans-serif;font-size:.6rem;text-transform:uppercase;letter-spacing:.6px;color:#666;margin-bottom:6px}
+.summary{font-size:.82rem;line-height:1.5;text-align:justify}
+@media print{.print-bar{display:none}body{padding:0}}
+</style>
+</head>
+<body>
+<div class="print-bar">
+  🖨️ Save as PDF — Press Ctrl+P / tap your browser menu
+  <button onclick="window.print()">PRINT / SAVE PDF</button>
+  <button onclick="window.close()">Close</button>
+</div>
+
+<div class="masthead">
+  <div class="title">THE ASPIRANT'S TIMES</div>
+  <div class="sub">A Free Daily for Civil Services Aspirants</div>
+</div>
+<div class="dateline">
+  <span>Vol. I</span><span>{{ today }}</span><span>FREE</span>
+</div>
+
+{% for sec in sections %}
+<div class="sechead">{{ sec.name }}</div>
+{% if sec.name == 'Front Page' %}
+  {% for a in sec.articles %}
+    <div class="lead">{{ a.title|clean }}</div>
+    <div class="byline">By AI Desk · {{ a.source }} · {{ a.relevance }}/10</div>
+    <div class="body"><p>{{ a.summary|clean }}</p></div>
+  {% endfor %}
+{% else %}
+  {% for a in sec.articles %}
+  <div class="story">
+    <div class="headline">{{ a.title|clean }}</div>
+    <div class="meta">{% if a.gs_paper %}{{ a.gs_paper }} · {% endif %}{{ a.source }} · Relevance {{ a.relevance }}/10</div>
+    <div class="summary">{{ a.summary|clean }}</div>
+  </div>
+  {% endfor %}
+{% endif %}
+{% endfor %}
+</body>
+</html>

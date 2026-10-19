@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="sticky-top bg-dark text-white p-2 mb-3" style="z-index:100">
+  <div class="d-flex justify-content-between align-items-center">
+    <strong>CSAT {{ sess.mode|title }}</strong>
+    <div>
+      <span class="badge bg-danger" id="timer">--:--</span>
+      <span class="badge bg-secondary">{{ questions|length }} Q</span>
+    </div>
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('csat_submit', sid=sess.id) }}" id="csatForm">
+  {% for q in questions %}
+  <div class="card mb-3 csat-q" data-idx="{{ loop.index0 }}" style="{% if not loop.first %}display:none;{% endif %}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="badge bg-primary">Q{{ loop.index }} / {{ questions|length }}</span>
+        <span class="badge bg-info text-dark">{{ q.subject }}</span>
+      </div>
+      <p style="white-space:pre-wrap;font-size:.92rem">{{ q.question }}</p>
+      <div>
+        <label class="d-block mb-1"><input type="radio" name="q_{{ q.id }}" value="A"> <strong>A.</strong> {{ q.option_a }}</label>
+        <label class="d-block mb-1"><input type="radio" name="q_{{ q.id }}" value="B"> <strong>B.</strong> {{ q.option_b }}</label>
+        <label class="d-block mb-1"><input type="radio" name="q_{{ q.id }}" value="C"> <strong>C.</strong> {{ q.option_c }}</label>
+        <label class="d-block mb-1"><input type="radio" name="q_{{ q.id }}" value="D"> <strong>D.</strong> {{ q.option_d }}</label>
+      </div>
+      <div class="alert alert-warning small mt-2 mb-0">💡 {{ tips.get(q.subject, 'Skip if unsure') }}</div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="prevQ()">← Prev</button>
+        <button type="button" class="btn btn-outline-danger btn-sm ms-auto" onclick="skipQ()">Skip →</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="nextQ()">Next →</button>
+      </div>
+      <input type="hidden" name="t_{{ q.id }}" value="0" class="timeField">
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="button" class="btn btn-warning flex-grow-1" onclick="if(confirm('Submit CSAT now?')) document.getElementById('csatForm').submit()">✅ Submit CSAT</button>
+  </div>
+</form>
+
+<script>
+let idx = 0;
+let qStart = Date.now();
+const cards = document.querySelectorAll('.csat-q');
+function saveTime(){
+  const card = cards[idx];
+  if (!card) return;
+  const tf = card.querySelector('.timeField');
+  if (tf) tf.value = Math.round((Date.now() - qStart) / 1000);
+}
+function show(i){
+  saveTime();
+  cards.forEach(c => c.style.display = 'none');
+  if (cards[i]) cards[i].style.display = 'block';
+  idx = i;
+  qStart = Date.now();
+  window.scrollTo({top: 150, behavior: 'smooth'});
+}
+function nextQ(){ if (idx < cards.length - 1) show(idx + 1); else if(confirm('Last question. Submit?')) document.getElementById('csatForm').submit(); }
+function prevQ(){ if (idx > 0) show(idx - 1); }
+function skipQ(){
+  const card = cards[idx];
+  card.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  if (idx < cards.length - 1) show(idx + 1);
+  else if(confirm('Last question. Submit?')) document.getElementById('csatForm').submit();
+}
+
+// Timer — 2 hours for full, 40 min for sprint, no timer for practice
+let secs = {{ (sess.mode == 'full') and 7200 or (sess.mode == 'sprint') and 2400 or 0 }};
+const tEl = document.getElementById('timer');
+if (secs > 0) {
+  setInterval(() => {
+    secs--;
+    if (secs < 0) { document.getElementById('csatForm').submit(); return; }
+    const m = Math.floor(secs / 60), s = secs % 60;
+    tEl.innerText = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    if (secs < 300) tEl.className = 'badge bg-danger';
+    else if (secs < 900) tEl.className = 'badge bg-warning text-dark';
+  }, 1000);
+} else {
+  tEl.innerText = 'practice';
+  tEl.className = 'badge bg-secondary';
+}
+</script>
+{% endblock %}

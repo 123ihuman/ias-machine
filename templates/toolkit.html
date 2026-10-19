@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<title>Study Toolkit — IAS Machine</title>
+<link rel="manifest" href="/static/manifest.json">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;margin:0;padding:0;font-size:15px}
+.top{position:sticky;top:0;background:#161b22;padding:14px 16px;border-bottom:1px solid #30363d;z-index:100;display:flex;align-items:center;gap:12px}
+.top h1{margin:0;font-size:18px;font-weight:700;letter-spacing:0.5px;flex:1}
+.top a{color:#58a6ff;text-decoration:none;font-size:14px}
+.tabs{display:flex;gap:4px;padding:10px 12px;background:#0d1117;overflow-x:auto;position:sticky;top:55px;z-index:99;border-bottom:1px solid #30363d}
+.tabs a{color:#8b949e;text-decoration:none;padding:8px 14px;border-radius:20px;font-size:13px;white-space:nowrap;transition:0.15s}
+.tabs a.on{background:#d4a017;color:#0d1117;font-weight:600}
+.wrap{padding:14px;max-width:680px;margin:0 auto}
+details{background:#161b22;border:1px solid #30363d;border-radius:12px;margin-bottom:10px;overflow:hidden}
+details[open]{border-color:#d4a017}
+summary{padding:16px;cursor:pointer;font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px;user-select:none;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'▼';margin-left:auto;font-size:11px;color:#8b949e;transition:0.2s}
+details[open] summary::after{content:'▲'}
+.body{padding:0 16px 18px 16px;border-top:1px solid #30363d}
+.display{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:18px;font-family:'Courier New',monospace;font-size:32px;text-align:center;margin:14px 0;color:#d4a017;font-weight:700;letter-spacing:2px}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.btns.two{grid-template-columns:1fr 1fr}
+.btns.four{grid-template-columns:repeat(4,1fr)}
+button{padding:12px;background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:0.1s;font-family:inherit}
+button:active{transform:scale(0.96)}
+button.pri{background:#d4a017;color:#0d1117;border-color:#d4a017}
+button.grn{background:#238636;color:#fff;border-color:#238636}
+button.red{background:#da3633;color:#fff;border-color:#da3633}
+input,textarea,select{width:100%;padding:10px 12px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:8px}
+textarea{min-height:120px;resize:vertical}
+.calc{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.calc button{padding:16px;font-size:16px}
+.calc .eq{background:#d4a017;color:#0d1117;font-weight:700}
+.calc .op{background:#21262d;color:#d4a017}
+.calc .clear{background:#da3633;color:#fff}
+.row{display:flex;gap:8px;margin-bottom:8px}
+.row>div{flex:1}
+.lbl{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin:10px 0 4px}
+.tag{display:inline-block;padding:4px 10px;background:#21262d;color:#8b949e;border-radius:12px;font-size:11px;margin-right:6px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:10px}
+.cal div{padding:8px 0;text-align:center;font-size:12px;border-radius:4px}
+.cal .hdr{color:#8b949e;font-weight:600;font-size:10px}
+.cal .day{background:#21262d}
+.cal .today{background:#d4a017;color:#0d1117;font-weight:700}
+.cal .empty{background:transparent}
+.rem{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#0d1117;border-radius:8px;margin-bottom:6px;font-size:13px;border-left:3px solid #d4a017}
+.rem button{padding:4px 10px;font-size:11px;background:#da3633;border-color:#da3633}
+.tally{font-size:64px;font-weight:800;text-align:center;color:#d4a017;font-family:'Courier New',monospace;margin:16px 0;letter-spacing:4px}
+.conv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.conv select,.conv input{margin:0}
+.warn{padding:10px 14px;background:#3d2300;border-left:3px solid #d4a017;border-radius:6px;font-size:12px;color:#f0c674;margin:10px 0}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <a href="/">←</a>
+  <h1>🧰 Study Toolkit</h1>
+  <a href="/toolkit/help">?</a>
+</div>
+
+<div class="tabs">
+  <a href="#time" class="on">⏱ Time</a>
+  <a href="#math">🧮 Math</a>
+  <a href="#notes">📝 Notes</a>
+  <a href="#ref">📖 Reference</a>
+</div>
+
+<div class="wrap">
+
+<!-- ==================== TIME TAB ==================== -->
+<section id="time">
+
+<details>
+  <summary>🕐 Live Clock</summary>
+  <div class="body">
+    <div class="display" id="tkClock">--:--:--</div>
+    <div style="text-align:center;color:#8b949e;font-size:13px;" id="tkDate"></div>
+  </div>
+</details>
+
+<details>
+  <summary>⏱ Stopwatch (Lap)</summary>
+  <div class="body">
+    <div class="display" id="tkSw">00:00.00</div>
+    <div class="btns">
+      <button class="grn" onclick="swStart()">Start</button>
+      <button onclick="swLap()">Lap</button>
+      <button class="red" onclick="swReset()">Reset</button>
+    </div>
+    <div id="swLaps" style="margin-top:12px;font-family:'Courier New',monospace;font-size:13px;"></div>
+  </div>
+</details>
+
+<details>
+  <summary>⏳ Countdown Timer</summary>
+  <div class="body">
+    <div class="row">
+      <div><div class="lbl">Minutes</div><input type="number" id="cdMin" value="25" min="0"></div>
+      <div><div class="lbl">Seconds</div><input type="number" id="cdSec" value="0" min="0" max="59"></div>
+    </div>
+    <div class="display" id="tkCd">00:00</div>
+    <div class="btns">
+      <button class="grn" onclick="cdStart()">Start</button>
+      <button onclick="cdPause()">Pause</button>
+      <button class="red" onclick="cdReset()">Reset</button>
+    </div>
+    <div style="margin-top:8px;">
+      <span class="tag" onclick="cdPreset(5)">5 min</span>
+      <span class="tag" onclick="cdPreset(25)">25 min</span>
+      <span class="tag" onclick="cdPreset(60)">1 hr</span>
+      <span class="tag" onclick="cdPreset(180)">3 hr</span>
+    </div>
+  </div>
+</details>
+
+<details>
+  <summary>⏲ Count-up (Elapsed)</summary>
+  <div class="body">
+    <div class="display" id="tkUp">00:00:00</div>
+    <div class="btns two">
+      <button class="grn" onclick="upStart()">Start</button>
+      <button class="red" onclick="upReset()">Reset</button>
+    </div>
+  </div>
+</details>
+
+<details>
+  <summary>🎯 Tally Counter</summary>
+  <div class="body">
+    <div class="tally" id="tkTally">0</div>
+    <div class="btns">
+      <button class="grn" onclick="tallyAdd(1)">+1</button>
+      <button class="grn" onclick="tallyAdd(5)">+5</button>
+      <button onclick="tallyAdd(-1)">-1</button>
+    </div>
+    <div class="btns two" style="margin-top:8px;">
+      <button onclick="tallySave()">Save</button>
+      <button class="red" onclick="tallyReset()">Reset</button>
+    </div>
+    <div id="tallyLog" style="margin-top:10px;font-size:12px;color:#8b949e;"></div>
+  </div>
+</details>
+
+<details>
+  <summary>🔔 Reminder</summary>
+  <div class="body">
+    <input type="text" id="remText" placeholder="What to remember?">
+    <div class="row">
+      <div><input type="date" id="remDate"></div>
+      <div><input type="time" id="remTime"></div>
+    </div>
+    <button class="pri" style="width:100%;" onclick="remAdd()">+ Add Reminder</button>
+    <div id="remList" style="margin-top:12px;"></div>
+    <div class="warn">Reminders save in your browser. Keep this tab open for alerts.</div>
+  </div>
+</details>
+
+<details>
+  <summary>📅 Calendar</summary>
+  <div class="body">
+    <div class="row">
+      <div><button onclick="calMove(-1)">← Prev</button></div>
+      <div style="text-align:center;padding:12px 0;font-weight:700;" id="calTitle">—</div>
+      <div><button onclick="calMove(1)">Next →</button></div>
+    </div>
+    <div class="cal" id="calGrid"></div>
+    <div class="warn" style="margin-top:12px;">Today's date is highlighted. Tap any date for day count.</div>
+    <div id="calInfo" style="text-align:center;color:#8b949e;font-size:13px;margin-top:8px;"></div>
+  </div>
+</details>
+
+</section>
+
+<!-- ==================== MATH TAB ==================== -->
+<section id="math" style="display:none;">
+
+<details open>
+  <summary>🧮 Calculator</summary>
+  <div class="body">
+    <div class="display" id="tkCalc" style="font-size:28px;overflow-x:auto;">0</div>
+    <div class="calc">
+      <button onclick="cIn('C')" class="clear">C</button>
+      <button onclick="cIn('(')" class="op">(</button>
+      <button onclick="cIn(')')" class="op">)</button>
+      <button onclick="cIn('/')" class="op">÷</button>
+
+      <button onclick="cIn('7')">7</button>
+      <button onclick="cIn('8')">8</button>
+      <button onclick="cIn('9')">9</button>
+      <button onclick="cIn('*')" class="op">×</button>
+
+      <button onclick="cIn('4')">4</button>
+      <button onclick="cIn('5')">5</button>
+      <button onclick="cIn('6')">6</button>
+      <button onclick="cIn('-')" class="op">−</button>
+
+      <button onclick="cIn('1')">1</button>
+      <button onclick="cIn('2')">2</button>
+      <button onclick="cIn('3')">3</button>
+      <button onclick="cIn('+')" class="op">+</button>
+
+      <button onclick="cIn('0')">0</button>
+      <button onclick="cIn('.')">.</button>
+      <button onclick="cIn('^')" class="op">^</button>
+      <button onclick="cEq()" class="eq">=</button>
+    </div>
+    <div class="btns" style="margin-top:10px;">
+      <button onclick="cIn('sqrt(')">√</button>
+      <button onclick="cIn('sin(')">sin</button>
+      <button onclick="cIn('cos(')">cos</button>
+    </div>
+    <div class="btns" style="margin-top:8px;">
+      <button onclick="cIn('tan(')">tan</button>
+      <button onclick="cIn('log(')">log</button>
+      <button onclick="cIn('ln(')">ln</button>
+    </div>
+  </div>
+</details>
+
+<details>
+  <summary>📐 Units Converter</summary>
+  <div class="body">
+    <div class="lbl">Category</div>
+    <select id="convCat" onchange="convUpdate()">
+      <option value="length">Length</option>
+      <option value="mass">Mass</option>
+      <option value="temp">Temperature</option>
+      <option value="area">Area</option>
+      <option value="volume">Volume</option>
+      <option value="speed">Speed</option>
+      <option value="pressure">Pressure</option>
+      <option value="energy">Energy</option>
+      <option value="time">Time</option>
+    </select>
+    <div class="conv">
+      <select id="convFrom"></select>
+      <select id="convTo"></select>
+    </div>
+    <input type="number" id="convVal" placeholder="Enter value" oninput="convCalc()">
+    <div class="display" id="convOut" style="font-size:22px;">—</div>
+  </div>
+</details>
+
+</section>
+
+<!-- ==================== NOTES TAB ==================== -->
+<section id="notes" style="display:none;">
+
+<details open>
+  <summary>📝 Quick Notes</summary>
+  <div class="body">
+    <input type="text" id="ntTitle" placeholder="Note title">
+    <textarea id="ntBody" placeholder="Write anything... Autosaves."></textarea>
+    <div class="btns">
+      <button class="grn" onclick="ntSave()">Save</button>
+      <button onclick="ntNew()">New</button>
+      <button class="red" onclick="ntDel()">Delete</button>
+    </div>
+    <div class="lbl">All Notes</div>
+    <div id="ntList"></div>
+  </div>
+</details>
+
+</section>
+
+<!-- ==================== REFERENCE TAB ==================== -->
+<section id="ref" style="display:none;">
+
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+  <button class="tag on ref-tab" data-sec="constants" onclick="refShow('constants')">🧪 Constants</button>
+  <button class="tag ref-tab" data-sec="formulas" onclick="refShow('formulas')">📐 Formulas</button>
+  <button class="tag ref-tab" data-sec="scientists" onclick="refShow('scientists')">👨‍🔬 Scientists</button>
+  <button class="tag ref-tab" data-sec="theories" onclick="refShow('theories')">📚 Theories</button>
+  <button class="tag ref-tab" data-sec="events" onclick="refShow('events')">📅 Events</button>
+</div>
+
+<input type="text" id="refSearch" placeholder="🔍 Search this section..." oninput="refFilter()" style="margin-bottom:12px;">
+
+<div id="refList" style="display:grid;gap:8px;"></div>
+
+</section>
+
+</div>
+
+<script>
+// ============ TABS ============
+document.querySelectorAll('.tabs a').forEach(a=>{
+  a.onclick=()=>{
+    document.querySelectorAll('.tabs a').forEach(x=>x.classList.remove('on'));
+    a.classList.add('on');
+    ['time','math','notes','ref'].forEach(id=>{
+      document.getElementById(id).style.display='none';
+    });
+    document.getElementById(a.getAttribute('href').substring(1)).style.display='block';
+  };
+});
+
+// ============ CLOCK ============
+function tick(){
+  const d=new Date();
+  const el=document.getElementById('tkClock');
+  if(el) el.textContent=d.toTimeString().slice(0,8);
+  const de=document.getElementById('tkDate');
+  if(de) de.textContent=d.toDateString();
+}
+setInterval(tick,1000); tick();
+
+// ============ STOPWATCH ============
+let swT=0,swR=false,swL=[];
+function swFmt(ms){const m=Math.floor(ms/60000);const s=Math.floor((ms%60000)/1000);const c=Math.floor((ms%1000)/10);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(c).padStart(2,'0');}
+function swTick(){if(swR){swT+=16;document.getElementById('tkSw').textContent=swFmt(swT);}}
+setInterval(swTick,16);
+function swStart(){swR=!swR;}
+function swLap(){if(swT>0){swL.push(swT);document.getElementById('swLaps').innerHTML=swL.map((t,i)=>'Lap '+(i+1)+': '+swFmt(t)).reverse().join('<br>');}}
+function swReset(){swT=0;swR=false;swL=[];document.getElementById('tkSw').textContent='00:00.00';document.getElementById('swLaps').innerHTML='';}
+
+// ============ COUNTDOWN ============
+let cdLeft=0,cdInt=null;
+function cdShow(){const m=Math.floor(cdLeft/60);const s=cdLeft%60;document.getElementById('tkCd').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+function cdPreset(m){document.getElementById('cdMin').value=m;document.getElementById('cdSec').value=0;}
+function cdStart(){if(cdInt)return;cdLeft=(parseInt(document.getElementById('cdMin').value)||0)*60+(parseInt(document.getElementById('cdSec').value)||0);cdShow();cdInt=setInterval(()=>{if(cdLeft<=0){clearInterval(cdInt);cdInt=null;document.getElementById('tkCd').textContent='DONE!';try{new AudioContext().createOscillator().start();}catch(e){}return;}cdLeft--;cdShow();},1000);}
+function cdPause(){if(cdInt){clearInterval(cdInt);cdInt=null;}}
+function cdReset(){cdPause();cdLeft=0;cdShow();}
+
+// ============ COUNT-UP ============
+let upT=0,upInt=null;
+function upFmt(s){const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);const ss=s%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');}
+function upStart(){if(upInt)return;upInt=setInterval(()=>{upT++;document.getElementById('tkUp').textContent=upFmt(upT);},1000);}
+function upReset(){clearInterval(upInt);upInt=null;upT=0;document.getElementById('tkUp').textContent='00:00:00';}
+
+// ============ TALLY ============
+let tallyN=parseInt(localStorage.getItem('tk_tally')||'0');
+function tallyShow(){document.getElementById('tkTally').textContent=tallyN;}
+function tallyAdd(n){tallyN=Math.max(0,tallyN+n);localStorage.setItem('tk_tally',tallyN);tallyShow();}
+function tallyReset(){tallyN=0;localStorage.setItem('tk_tally',0);tallyShow();}
+function tallySave(){const log=JSON.parse(localStorage.getItem('tk_tallylog')||'[]');log.push({n:tallyN,t:new Date().toISOString()});localStorage.setItem('tk_tallylog',JSON.stringify(log.slice(-20)));tallyLogRender();}
+function tallyLogRender(){const log=JSON.parse(localStorage.getItem('tk_tallylog')||'[]');document.getElementById('tallyLog').innerHTML=log.slice(-5).reverse().map(x=>x.t.slice(11,16)+' → '+x.n).join('<br>');}
+tallyShow();tallyLogRender();
+
+// ============ REMINDER ============
+function remRender(){
+  const list=JSON.parse(localStorage.getItem('tk_rem')||'[]');
+  document.getElementById('remList').innerHTML=list.map((r,i)=>'<div class="rem"><span>'+r.t+'</span><button onclick="remDel('+i+')">✕</button></div>').join('');
+}
+function remAdd(){
+  const t=document.getElementById('remText').value;
+  const d=document.getElementById('remDate').value;
+  const tm=document.getElementById('remTime').value;
+  if(!t||!d)return alert('Enter text + date');
+  const list=JSON.parse(localStorage.getItem('tk_rem')||'[]');
+  list.push({text:t,date:d,time:tm||'09:00'});
+  list.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  localStorage.setItem('tk_rem',JSON.stringify(list));
+  document.getElementById('remText').value='';
+  remRender();
+}
+function remDel(i){const l=JSON.parse(localStorage.getItem('tk_rem')||'[]');l.splice(i,1);localStorage.setItem('tk_rem',JSON.stringify(l));remRender();}
+setInterval(()=>{
+  const now=new Date();
+  const list=JSON.parse(localStorage.getItem('tk_rem')||'[]');
+  const yyyy=now.toISOString().slice(0,10);
+  const hhmm=now.toTimeString().slice(0,5);
+  list.forEach(r=>{
+    if(r.date===yyyy && r.time===hhmm && !r._pinged){
+      r._pinged=true;
+      if(Notification.permission==='granted') new Notification('Reminder',{body:r.text});
+      else alert('⏰ Reminder: '+r.text);
+    }
+  });
+  localStorage.setItem('tk_rem',JSON.stringify(list));
+},30000);
+remRender();
+if('Notification' in window && Notification.permission==='default') setTimeout(()=>Notification.requestPermission(),2000);
+
+// ============ CALENDAR ============
+let calD=new Date();
+function calRender(){
+  const y=calD.getFullYear(),m=calD.getMonth();
+  document.getElementById('calTitle').textContent=new Date(y,m).toLocaleString('default',{month:'long',year:'numeric'});
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  const today=new Date();
+  let html='';
+  ['S','M','T','W','T','F','S'].forEach(d=>html+='<div class="hdr">'+d+'</div>');
+  for(let i=0;i<first;i++) html+='<div class="empty"></div>';
+  for(let i=1;i<=days;i++){
+    const isToday=(i===today.getDate()&&m===today.getMonth()&&y===today.getFullYear());
+    html+='<div class="day'+(isToday?' today':'')+'" onclick="calPick('+i+')">'+i+'</div>';
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function calMove(n){calD.setMonth(calD.getMonth()+n);calRender();}
+function calPick(d){
+  const now=new Date();
+  const picked=new Date(calD.getFullYear(),calD.getMonth(),d);
+  const diff=Math.round((picked-now)/86400000);
+  document.getElementById('calInfo').innerHTML='📅 '+picked.toDateString()+' — '+(diff===0?'Today':diff>0?diff+' days from now':Math.abs(diff)+' days ago');
+}
+calRender();
+
+// ============ CALCULATOR ============
+let calcExpr='';
+function cIn(ch){
+  if(ch==='C'){calcExpr='';document.getElementById('tkCalc').textContent='0';return;}
+  calcExpr+=ch;
+  document.getElementById('tkCalc').textContent=calcExpr;
+}
+function cEq(){
+  try{
+    let e=calcExpr.replace(/\^/g,'**').replace(/sqrt/g,'Math.sqrt').replace(/sin/g,'Math.sin').replace(/cos/g,'Math.cos').replace(/tan/g,'Math.tan').replace(/log/g,'Math.log10').replace(/ln/g,'Math.log');
+    const r=Function('"use strict";return ('+e+')')();
+    document.getElementById('tkCalc').textContent=r;
+    calcExpr=String(r);
+  }catch(e){
+    document.getElementById('tkCalc').textContent='Error';
+    calcExpr='';
+  }
+}
+
+// ============ UNITS CONVERTER ============
+const units={
+  length:{m:1,km:1000,cm:0.01,mm:0.001,mi:1609.34,ft:0.3048,in:0.0254,yard:0.9144,nm:1e-9},
+  mass:{kg:1,g:0.001,mg:1e-6,lb:0.453592,oz:0.0283495,tonne:1000},
+  temp:{C:1,F:1,K:1},
+  area:{'m²':1,'km²':1e6,'cm²':1e-4,'ft²':0.0929,'acre':4046.86,'hectare':10000},
+  volume:{L:1,mL:0.001,'m³':1000,gal:3.78541,ft3:28.3168},
+  speed:{'m/s':1,'km/h':0.277778,mph:0.44704,knot:0.514444},
+  pressure:{Pa:1,kPa:1000,bar:100000,atm:101325,psi:6894.76,mmHg:133.322},
+  energy:{J:1,kJ:1000,cal:4.184,kcal:4184,kWh:3.6e6,eV:1.602e-19},
+  time:{s:1,min:60,h:3600,day:86400,week:604800,year:31536000}
+};
+function convUpdate(){
+  const cat=document.getElementById('convCat').value;
+  const list=Object.keys(units[cat]);
+  const from=document.getElementById('convFrom'),to=document.getElementById('convTo');
+  from.innerHTML=list.map(u=>'<option>'+u+'</option>').join('');
+  to.innerHTML=list.map(u=>'<option>'+u+'</option>').join('');
+  if(list.length>1) to.value=list[1];
+  convCalc();
+}
+function convCalc(){
+  const cat=document.getElementById('convCat').value;
+  const f=document.getElementById('convFrom').value;
+  const t=document.getElementById('convTo').value;
+  const v=parseFloat(document.getElementById('convVal').value);
+  if(isNaN(v)){document.getElementById('convOut').textContent='—';return;}
+  let out;
+  if(cat==='temp'){
+    let c;
+    if(f==='C')c=v;else if(f==='F')c=(v-32)*5/9;else c=v-273.15;
+    if(t==='C')out=c;else if(t==='F')out=c*9/5+32;else out=c+273.15;
+  }else{
+    out=v*units[cat][f]/units[cat][t];
+  }
+  document.getElementById('convOut').textContent=out.toFixed(6).replace(/\.?0+$/,'');
+}
+convUpdate();
+
+// ============ NOTES ============
+function ntList(){
+  const notes=JSON.parse(localStorage.getItem('tk_notes')||'[]');
+  document.getElementById('ntList').innerHTML=notes.map((n,i)=>'<div class="rem" style="cursor:pointer;" onclick="ntOpen('+i+')"><span>📝 '+(n.title||'Untitled')+'</span><span style="font-size:11px;color:#8b949e;">'+n.date.slice(0,10)+'</span></div>').join('');
+}
+function ntOpen(i){
+  const notes=JSON.parse(localStorage.getItem('tk_notes')||'[]');
+  document.getElementById('ntTitle').value=notes[i].title||'';
+  document.getElementById('ntBody').value=notes[i].body||'';
+  document.getElementById('ntTitle').dataset.idx=i;
+}
+function ntSave(){
+  const notes=JSON.parse(localStorage.getItem('tk_notes')||'[]');
+  const idx=document.getElementById('ntTitle').dataset.idx;
+  const obj={title:document.getElementById('ntTitle').value,body:document.getElementById('ntBody').value,date:new Date().toISOString()};
+  if(idx!==undefined && notes[idx]) notes[idx]=obj; else notes.unshift(obj);
+  localStorage.setItem('tk_notes',JSON.stringify(notes.slice(0,100)));
+  delete document.getElementById('ntTitle').dataset.idx;
+  ntList();
+  alert('✅ Saved');
+}
+function ntNew(){document.getElementById('ntTitle').value='';document.getElementById('ntBody').value='';delete document.getElementById('ntTitle').dataset.idx;}
+function ntDel(){
+  const idx=document.getElementById('ntTitle').dataset.idx;
+  if(idx===undefined)return alert('Open a note first');
+  const notes=JSON.parse(localStorage.getItem('tk_notes')||'[]');
+  notes.splice(idx,1);
+  localStorage.setItem('tk_notes',JSON.stringify(notes));
+  ntNew();ntList();
+}
+ntList();
+
+// ============ REFERENCE ============
+let refCache = {};
+async function refShow(sec){
+  document.querySelectorAll('.ref-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.ref-tab[data-sec="'+sec+'"]').classList.add('on');
+  if(!refCache[sec]){
+    const r = await fetch('/toolkit/reference/'+sec);
+    refCache[sec] = await r.json();
+  }
+  refRender(sec, refCache[sec]);
+}
+function refRender(sec, data){
+  const q = (document.getElementById('refSearch').value||'').toLowerCase().trim();
+  const filtered = q ? data.filter(x => JSON.stringify(x).toLowerCase().includes(q)) : data;
+  const list = document.getElementById('refList');
+  if(sec === 'constants'){
+    list.innerHTML = filtered.map(x => '<div style="padding:10px 14px;background:#161b22;border-left:3px solid #58a6ff;border-radius:6px;"><div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;">'+x.cat+'</div><div style="font-weight:600;margin:4px 0;font-size:14px;">'+x.name+'</div><div style="font-family:Courier New,monospace;color:#d4a017;font-size:14px;">'+x.val+'</div></div>').join('');
+  }
+  if(sec === 'formulas'){
+    list.innerHTML = filtered.map(x => '<div style="padding:10px 14px;background:#161b22;border-left:3px solid #d4a017;border-radius:6px;"><div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;">'+x.cat+'</div><div style="font-size:13px;color:#8b949e;margin:4px 0;">'+x.name+'</div><div style="font-family:Courier New,monospace;color:#d4a017;font-size:16px;font-weight:700;">'+x.f+'</div></div>').join('');
+  }
+  if(sec === 'scientists'){
+    list.innerHTML = filtered.map(x => '<div style="padding:10px 14px;background:#161b22;border-left:3px solid #27ae60;border-radius:6px;"><div style="font-weight:700;color:#58a6ff;font-size:15px;">'+x.name+'</div><div style="font-size:11px;color:#8b949e;margin:2px 0;">'+x.field+'</div><div style="font-size:13px;color:#e6edf3;">'+x.discover+'</div></div>').join('');
+  }
+  if(sec === 'theories'){
+    list.innerHTML = filtered.map(x => '<div style="padding:10px 14px;background:#161b22;border-left:3px solid #9b59b6;border-radius:6px;"><div style="font-weight:700;color:#d4a017;font-size:15px;">'+x.name+'</div><div style="font-size:11px;color:#8b949e;margin:2px 0;">'+x.field+'</div><div style="font-size:13px;">'+x.gist+'</div></div>').join('');
+  }
+  if(sec === 'events'){
+    const now = new Date();
+    const mmdd = String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    list.innerHTML = filtered.map(x => {
+      const today = x.date === mmdd;
+      return '<div style="padding:10px 14px;background:'+(today?'#2d1f00':'#161b22')+';border-left:3px solid '+(today?'#d4a017':'#e67e22')+';border-radius:6px;"><div style="font-family:Courier New,monospace;color:#d4a017;font-size:14px;font-weight:700;">'+x.date+' · '+x.year+'</div><div style="font-size:13px;margin-top:4px;">'+x.event+'</div>'+(today?'<div style="font-size:11px;color:#d4a017;margin-top:4px;">⭐ Today in history</div>':'')+'</div>';
+    }).join('');
+  }
+  if(!filtered.length) list.innerHTML = '<div style="padding:20px;text-align:center;color:#8b949e;font-size:13px;">No matches</div>';
+}
+function refFilter(){ const on=document.querySelector('.ref-tab.on'); if(on) refShow(on.dataset.sec); }
+// Load constants on first view
+document.querySelector('.tabs a[href="#ref"]').addEventListener('click', ()=>{ if(!document.querySelector('.ref-tab.on')) refShow('constants'); else refShow(document.querySelector('.ref-tab.on').dataset.sec); });
+
+</script>
+
+</body>
+</html>

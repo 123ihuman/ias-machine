@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔑 MCQ Answer Keys</h2>
+<p class="text-muted">
+  Total MCQs: <strong>{{ total_mcq }}</strong> ·
+  Missing key: <strong class="{% if missing_mcq > 0 %}text-danger{% else %}text-success{% endif %}">{{ missing_mcq }}</strong>
+</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-5">
+    <select class="form-control" name="subject">
+      <option value="">All Subjects</option>
+      {% for s in subjects %}<option value="{{ s }}" {% if s == subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4">
+    <div class="form-check mt-2">
+      <input type="checkbox" class="form-check-input" name="only_missing" id="om" {% if only_missing %}checked{% endif %}>
+      <label class="form-check-label" for="om">Only missing keys</label>
+    </div>
+  </div>
+  <div class="col-md-3"><button class="btn btn-primary w-100">Apply</button></div>
+</form>
+
+{% for q in questions %}
+<div class="card mb-2">
+  <div class="card-body">
+    <p class="mb-2"><strong>Q{{ q.id }}.</strong> {{ q.text[:200] }}{% if q.text|length > 200 %}...{% endif %}</p>
+    <p class="small text-muted mb-2">
+      {% if q.topic %}<span class="badge bg-info text-dark">{{ q.topic }}</span>{% endif %}
+      {% if q.year %}<span class="badge bg-secondary">{{ q.year }}</span>{% endif %}
+      {% if q.paper %}<span class="badge bg-light text-dark">{{ q.paper.title[:30] }}</span>{% endif %}
+    </p>
+    <form method="post" action="{{ url_for('set_answer_key', qid=q.id) }}" class="row g-2 align-items-center">
+      <div class="col-auto">
+        <label class="small text-muted">Correct:</label>
+      </div>
+      <div class="col-auto">
+        <select class="form-select form-select-sm" name="correct_answer">
+          <option value="">—</option>
+          {% for opt in ['A','B','C','D'] %}
+          <option value="{{ opt }}" {% if q.correct_answer == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <input class="form-control form-control-sm" name="explanation" placeholder="Optional explanation" value="{{ q.explanation or '' }}">
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-sm btn-success">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">No MCQs found. Add or auto-extract MCQ questions first.</div>
+{% endfor %}
+{% endblock %}

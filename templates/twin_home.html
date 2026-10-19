@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🧬 Topper Twin — Full Text</h2>
+<div class="alert alert-success py-2 small mb-2">
+  ☁️ <strong>Backblaze B2 connected</strong> — 10 GB free cloud backup
+  <form method="post" action="{{ url_for('b2_backup_all') }}" style="display:inline;margin-left:8px" onsubmit="return confirm('Backup all toppers to B2?')">
+    <button class="btn btn-sm btn-success">☁️ Backup All to B2</button>
+  </form>
+</div>
+<div class="d-flex gap-2 mb-2 flex-wrap"><a href="{{ url_for('twin_batch') }}" class="btn btn-sm btn-outline-primary">📦 Batch Add</a><a href="{{ url_for('twin_stats') }}" class="btn btn-sm btn-outline-secondary">📊 Stats</a><form method="post" action="{{ url_for('twin_import') }}" enctype="multipart/form-data" style="display:inline"><input type="file" name="file" accept=".json" style="display:none" onchange="this.form.submit()"><button class="btn btn-sm btn-outline-success" type="button" onclick="this.previousElementSibling.click()">⬆ Import JSON</button></form></div>
+<p class="text-muted">Upload topper copies as full text. AI blends 75-85% verbatim paragraphs + 15-25% new transitions. Human-written, not AI-generated.</p>
+
+<div class="row mb-3">
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2"><small class="text-muted">Toppers</small><h3>{{ toppers|length }}</h3></div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2"><small class="text-muted">Total Words</small><h3>{{ total_words }}</h3></div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2"><small class="text-muted">Paragraphs</small><h3>{{ total_paras }}</h3></div></div></div>
+</div>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">📄 Add Topper Copy</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('twin_upload') }}" enctype="multipart/form-data">
+          <input class="form-control mb-2" name="topper_name" placeholder="Topper name" required>
+          <div class="row g-2 mb-2">
+            <div class="col"><input class="form-control" name="year" placeholder="Year" type="number"></div>
+            <div class="col"><input class="form-control" name="rank" placeholder="Rank"></div>
+          </div>
+          <input class="form-control mb-2" name="optional" placeholder="Optional (PSIR, Sociology)">
+          <select class="form-select mb-2" name="paper">
+            <option>GS1</option><option selected>GS2</option><option>GS3</option><option>GS4</option><option>Essay</option><option>Optional</option>
+          </select>
+          <label class="small text-muted">Option A — Paste text</label>
+          <textarea class="form-control mb-2" name="pasted_text" rows="5" placeholder="Paste full answer text here (1000+ words ideal)..."></textarea>
+          <label class="small text-muted">Option B — Upload PDF</label>
+          <input class="form-control mb-2" type="file" name="file" accept=".pdf">
+          <button class="btn btn-primary w-100">➕ Add Topper</button>
+          <small class="text-muted d-block mt-1">Stores text only. PDF auto-deleted after extraction.</small>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <h5>🧠 Topper Corpus ({{ toppers|length }})</h5>
+    {% for t in toppers %}
+    <div class="card mb-2">
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <strong>{{ t.topper_name }}</strong>
+            {% if t.year %}· {{ t.year }}{% endif %}
+            {% if t.rank %}· AIR {{ t.rank }}{% endif %}
+            <span class="badge bg-secondary ms-1">{{ t.paper }}</span>
+            {% if t.optional %}<span class="badge bg-info text-dark">{{ t.optional }}</span>{% endif %}
+            <div class="small text-muted mt-1">{{ t.word_count }} words · {{ t.paragraph_count }} paragraphs</div>
+          </div>
+          <div class="text-end">
+            <a href="{{ url_for('twin_view', tid=t.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+            <form action="{{ url_for('twin_delete', tid=t.id) }}" method="post" style="display:inline" onsubmit="return confirm('Delete?')">
+              <button class="btn btn-sm btn-outline-danger">✕</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No toppers added. Upload your first copy on the left.</div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if toppers %}
+<hr>
+<div class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">🧬 Generate Twin Answer</div>
+  <div class="card-body">
+    <label class="small fw-bold">Question</label>
+    <textarea id="tQ" class="form-control mb-2" rows="3" placeholder="Paste a new Mains question..."></textarea>
+    <label class="small fw-bold">Select Toppers (2-4 for best blend)</label>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      {% for t in toppers %}
+      <label class="btn btn-outline-secondary btn-sm">
+        <input type="checkbox" class="twin-cb" value="{{ t.id }}"> {{ t.topper_name }}
+      </label>
+      {% endfor %}
+    </div>
+    <button class="btn btn-primary w-100" id="genBtn" onclick="twinGen()">🧬 Generate (75-85% Verbatim)</button>
+  </div>
+</div>
+
+<div id="twinRes" style="display:none">
+  <div class="card border-primary mb-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <span>🧬 Twin Answer</span>
+      <span id="twinMeta"></span>
+    </div>
+    <div class="card-body" id="twinBody" style="white-space:pre-wrap;line-height:1.6"></div>
+  </div>
+  <details class="card">
+    <summary class="card-header" style="cursor:pointer">📚 Source Paragraphs Used</summary>
+    <div class="card-body" id="twinSources"></div>
+  </details>
+</div>
+{% endif %}
+
+<script>
+async function twinGen(){
+  const q = document.getElementById('tQ').value.trim();
+  if (q.length < 10) { alert('Enter a full question'); return; }
+  const cbs = document.querySelectorAll('.twin-cb:checked');
+  if (cbs.length === 0) { alert('Select at least one topper'); return; }
+  const fd = new FormData();
+  fd.append('question', q);
+  cbs.forEach(cb => fd.append('topper_ids', cb.value));
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.innerText = '🧬 Blending...';
+  try {
+    const r = await fetch('/twin/generate', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { alert(d.error); btn.disabled = false; btn.innerText = '🧬 Generate (75-85% Verbatim)'; return; }
+    document.getElementById('twinBody').innerText = d.answer;
+    document.getElementById('twinMeta').innerText = d.word_count + 'w · Match ' + d.similarity + '% · ' + d.paragraphs_used + ' paras';
+    let srcHtml = '';
+    (d.source_paras || []).forEach(p => {
+      srcHtml += '<div class="mb-2 pb-2 border-bottom"><strong class="small">' + p.topper + ' · ' + p.type + '</strong><p class="small mb-0 mt-1">' + p.text + '</p></div>';
+    });
+    document.getElementById('twinSources').innerHTML = srcHtml;
+    document.getElementById('twinRes').style.display = 'block';
+    btn.disabled = false; btn.innerText = '🔄 Generate Again';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerText = '🧬 Generate (75-85% Verbatim)'; }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎓 Weekly Mock Exam</h2>
+<p class="text-muted">Full-length test from your daily paper's MCQs. UPSC + State PSC patterns supported.</p>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header">Start New Mock</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('weekly_mock_create') }}">
+          <label class="form-label small fw-bold">Exam Pattern</label>
+          <select class="form-select mb-3" name="pattern" id="patternSel" onchange="updateHint()">
+            {% for key, p in patterns.items() %}
+            <option value="{{ key }}">{{ p.label }} — {{ p.q }} Q · {{ p.min }} min</option>
+            {% endfor %}
+          </select>
+
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <label class="small text-muted">Custom Q (optional)</label>
+              <input type="number" class="form-control" name="custom_q" placeholder="Override count" min="5" max="300">
+            </div>
+            <div class="col">
+              <label class="small text-muted">Custom Min (optional)</label>
+              <input type="number" class="form-control" name="custom_min" placeholder="Override time" min="5" max="300">
+            </div>
+          </div>
+
+          <div class="alert alert-info small" id="patternHint"></div>
+
+          <button class="btn btn-primary w-100">▶ Generate Mock from Today's MCQs</button>
+          <small class="text-muted d-block mt-2">Pulls questions from your last 30 days of papers. More paper sections loaded = more questions available.</small>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <h5>Past Mocks</h5>
+    {% for m in mocks %}
+    <div class="card mb-2">
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ m.name }}</strong>
+            <div class="small text-muted">{{ m.total_questions }} Q · {{ m.duration_minutes }} min · neg {{ m.negative_marking }}</div>
+          </div>
+          <div class="text-end">
+            {% if m.status == 'submitted' %}
+            <span class="badge bg-success">{{ m.score|round(1) }}/{{ m.max_score|round(1) }}</span>
+            {% else %}
+            <span class="badge bg-warning text-dark">Active</span>
+            {% endif %}
+            <div class="mt-1">
+              <a href="{{ url_for('weekly_mock_take', mid=m.id) }}" class="btn btn-sm btn-outline-primary">{% if m.status=='submitted' %}Review{% else %}Resume{% endif %}</a>
+              <a href="{{ url_for('weekly_mock_result', mid=m.id) }}" class="btn btn-sm btn-outline-secondary">Result</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-muted">No mocks yet. Create one on the left.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+const patterns = {{ patterns|tojson }};
+function updateHint(){
+  const k = document.getElementById('patternSel').value;
+  const p = patterns[k];
+  document.getElementById('patternHint').innerHTML =
+    '<strong>' + p.label + '</strong> — ' + p.q + ' questions · ' + p.min + ' minutes · ' +
+    p.marks_per_q + ' marks/question · negative ' + p.neg;
+}
+updateHint();
+</script>
+{% endblock %}

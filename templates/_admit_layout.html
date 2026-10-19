@@ -1,0 +1,68 @@
+<div style="max-width:210mm;margin:0 auto;background:#fff;padding:14px;border:2px solid #000;font-family:'Lora',serif">
+
+  <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:.7rem">e-Admit Card</div>
+      <div style="font-size:.7rem">{{ card.exam_code }}</div>
+    </div>
+    <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:1.3rem;letter-spacing:1px;margin-top:4px">संघ लोक सेवा आयोग</div>
+    <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:1.4rem;letter-spacing:1px">UNION PUBLIC SERVICE COMMISSION</div>
+    <div style="font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:2px;margin-top:2px;color:#8b0000">e-Admit Card / ई-प्रवेश पत्र</div>
+    <div style="font-size:.7rem;margin-top:4px">{{ card.exam_name }}</div>
+    <div style="font-size:.7rem;margin-top:2px">You are admitted to the {{ card.exam_name }}</div>
+  </div>
+
+  <div style="background:#1a3a6b;color:#fff;padding:4px 8px;font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:1px;display:flex;justify-content:space-between;margin-bottom:10px">
+    <span>Date of Examination: {{ card.exam_date or '—' }}</span>
+    <span>{{ card.exam_time or '' }}</span>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:10px">
+    <tr>
+      <td style="width:75%;vertical-align:top;padding-right:12px">
+        <table style="width:100%;border-collapse:collapse;font-size:.75rem">
+          <tr style="border-bottom:1px solid #ccc"><td style="padding:5px 4px;color:#555">नाम / Name</td><td style="padding:5px 4px;font-weight:700">{{ card.candidate_name }}</td></tr>
+          <tr style="border-bottom:1px solid #ccc"><td style="padding:5px 4px;color:#555">अनुक्रमांक / Roll No.</td><td style="padding:5px 4px">{{ card.roll_number or '—' }}</td></tr>
+          <tr style="border-bottom:1px solid #ccc"><td style="padding:5px 4px;color:#555">प्रवेश पत्र / Photo ID Card</td><td style="padding:5px 4px">AADHAAR CARD NO. {{ card.registration_no or 'XXXX' }}</td></tr>
+          <tr style="border-bottom:1px solid #ccc"><td style="padding:5px 4px;color:#555">पिता का नाम / Father's Name</td><td style="padding:5px 4px">{{ card.father_name or '—' }}</td></tr>
+          <tr style="border-bottom:1px solid #ccc"><td style="padding:5px 4px;color:#555">माता का नाम / Mother's Name</td><td style="padding:5px 4px">{{ card.mother_name or '—' }}</td></tr>
+          <tr style="border-bottom:1px solid #ccc"><td style="padding:5px 4px;color:#555">परीक्षा केंद्र / Examination Centre</td><td style="padding:5px 4px">{{ card.exam_city or '—' }}</td></tr>
+          <tr><td style="padding:5px 4px;color:#555">परीक्षा का स्थान / Venue</td><td style="padding:5px 4px">{{ card.exam_centre or '—' }}</td></tr>
+        </table>
+      </td>
+      <td style="width:25%;text-align:center;vertical-align:top">
+        {% if card.photo_url %}
+        <img src="{{ card.photo_url }}" style="width:110px;height:130px;object-fit:cover;border:1px solid #999" alt="">
+        {% else %}
+        <div style="width:110px;height:130px;border:1px dashed #999;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#999;font-size:.65rem">Photo</div>
+        {% endif %}
+        {% if card.signature_url %}
+        <img src="{{ card.signature_url }}" style="width:100px;height:35px;object-fit:contain;margin-top:4px" alt="">
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <div style="background:#1a3a6b;color:#fff;text-align:center;padding:4px;font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:2px;margin-bottom:6px">समय सारणी / Time Table</div>
+  <table style="width:100%;border-collapse:collapse;font-size:.75rem;margin-bottom:10px">
+    <thead>
+      <tr style="background:#eef"><th style="border:1px solid #999;padding:4px;text-align:left">विषय (शीर्षक सहित) / Subject (Subject Code)</th><th style="border:1px solid #999;padding:4px;text-align:left">समय / Time</th></tr>
+    </thead>
+    <tbody>
+      {% for p in papers %}
+      <tr>
+        <td style="border:1px solid #999;padding:5px">{{ p.paper }}</td>
+        <td style="border:1px solid #999;padding:5px">{{ p.time }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="font-size:.65rem;line-height:1.5;border-top:1px solid #999;padding-top:8px;white-space:pre-wrap">{{ card.instructions }}</div>
+
+  <div style="margin-top:12px;text-align:right;font-size:.7rem">
+    <div style="display:inline-block;text-align:center">
+      <div style="border-top:1px solid #000;padding-top:3px;margin-top:20px">Controller of Examinations</div>
+    </div>
+  </div>
+</div>

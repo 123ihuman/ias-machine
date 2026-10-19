@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>⚖️ Answer Comparison</h3>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <p><strong>Question:</strong></p>
+    <p style="white-space:pre-wrap">{{ q.text }}</p>
+    <p class="small text-muted mb-0">
+      {% if q.topic %}<span class="badge bg-info text-dark">{{ q.topic }}</span>{% endif %}
+      {% if q.marks %}<span class="badge bg-secondary">{{ q.marks }} marks</span>{% endif %}
+      <span class="badge bg-light text-dark">{{ q.sources|length }} sources linked</span>
+    </p>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <label class="form-label"><strong>Your Answer</strong></label>
+    <textarea id="ans" class="form-control mb-2" rows="10" placeholder="Write your answer (Intro – Body – Conclusion)..."></textarea>
+    <button class="btn btn-primary w-100" id="goBtn">⚖️ Compare with Model Answer</button>
+  </div>
+</div>
+
+<div class="alert alert-info" id="status" style="display:none">
+  <strong>Generating model answer + comparing...</strong> ~20 sec
+</div>
+
+<div id="result" style="display:none">
+  <div class="card mb-3 border-primary">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <span>📊 Verdict</span>
+      <span class="badge bg-warning text-dark" id="scoreBadge">-- / 50</span>
+    </div>
+    <div class="card-body">
+      <p class="mb-0"><strong id="verdictText"></strong></p>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <div class="card h-100 border-success">
+        <div class="card-header bg-success text-white">✅ Covered Correctly</div>
+        <div class="card-body">
+          <ul id="matchedList" class="mb-0"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100 border-danger">
+        <div class="card-header bg-danger text-white">❌ Missed Points</div>
+        <div class="card-body">
+          <ul id="missedList" class="mb-0"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header">📝 Your Answer <span class="badge bg-secondary" id="yourWords"></span></div>
+        <div class="card-body" id="yourBox" style="white-space:pre-wrap;font-size:.9rem"></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100 border-info">
+        <div class="card-header bg-info text-white">🌟 Model Answer <span class="badge bg-dark" id="modelWords"></span></div>
+        <div class="card-body" id="modelBox" style="white-space:pre-wrap;font-size:.9rem"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">🔍 Structure Analysis</div>
+    <div class="card-body">
+      <p class="mb-2"><strong>Your answer:</strong> <span id="strStudent"></span></p>
+      <p class="mb-0"><strong>Model answer:</strong> <span id="strModel"></span></p>
+    </div>
+  </div>
+
+  <button class="btn btn-outline-primary" id="againBtn">Try Again</button>
+</div>
+
+<script>
+document.getElementById('goBtn').onclick = async () => {
+  const ans = document.getElementById('ans').value.trim();
+  if (ans.split(/\s+/).length < 30) { alert('Write at least 30 words.'); return; }
+  document.getElementById('goBtn').disabled = true;
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+
+  const fd = new FormData();
+  fd.append('student_answer', ans);
+
+  try {
+    const r = await fetch('/question/{{ q.id }}/compare/run', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.error) {
+      alert(data.error);
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('goBtn').disabled = false;
+      return;
+    }
+    document.getElementById('scoreBadge').innerText = (data.score || 0) + ' / ' + (data.score_max || 50);
+    document.getElementById('verdictText').innerText = data.verdict || '';
+    document.getElementById('matchedList').innerHTML = (data.coverage?.matched || []).map(m => '<li>' + m + '</li>').join('') || '<li class="text-muted">Nothing significant matched.</li>';
+    document.getElementById('missedList').innerHTML = (data.coverage?.missed || []).map(m => '<li>' + m + '</li>').join('') || '<li class="text-muted">No major gaps.</li>';
+    document.getElementById('yourBox').innerText = data.student_answer || '';
+    document.getElementById('modelBox').innerText = data.model_answer || '';
+    document.getElementById('yourWords').innerText = (data.student_word_count || 0) + ' words';
+    document.getElementById('modelWords').innerText = (data.model_word_count || 0) + ' words';
+    document.getElementById('strStudent').innerText = data.structure_student || '';
+    document.getElementById('strModel').innerText = data.structure_model || '';
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('goBtn').disabled = false;
+  } catch(e) {
+    alert('Error: ' + e.message);
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('goBtn').disabled = false;
+  }
+};
+
+document.getElementById('againBtn').onclick = () => {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('ans').value = '';
+  document.getElementById('ans').focus();
+};
+</script>
+{% endblock %}

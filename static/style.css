@@ -4,3 +4,17 @@ body {
 .card {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+/* Offline indicator */
+body.is-offline::before {
+  content: "📴 Offline mode — showing cached pages";
+  display: block;
+  background: #dc3545;
+  color: white;
+  text-align: center;
+  padding: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+}

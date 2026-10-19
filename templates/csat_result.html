@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 CSAT Result</h2>
+{% if sess.passed %}
+<div class="alert alert-success text-center"><h3 class="mb-1">✅ PASSED</h3><p class="mb-0">{{ sess.score }}/200 · Threshold 66.67</p></div>
+{% else %}
+<div class="alert alert-danger text-center"><h3 class="mb-1">❌ NOT PASSED</h3><p class="mb-0">{{ sess.score }}/200</p></div>
+{% endif %}
+
+<div class="row mb-3">
+  <div class="col-3"><div class="card text-center"><div class="card-body py-2"><small>Score</small><h4>{{ sess.score }}</h4></div></div></div>
+  <div class="col-3"><div class="card text-center"><div class="card-body py-2"><small>Correct</small><h4 class="text-success">{{ sess.total_correct }}</h4></div></div></div>
+  <div class="col-3"><div class="card text-center"><div class="card-body py-2"><small>Skipped</small><h4 class="text-muted">{{ sess.total_skipped }}</h4></div></div></div>
+  <div class="col-3"><div class="card text-center"><div class="card-body py-2"><small>Accuracy</small><h4>{% if sess.total_attempted %}{{ (100 * sess.total_correct / sess.total_attempted)|round }}%{% else %}—{% endif %}</h4></div></div></div>
+</div>
+
+{% if sec_list %}
+<h5>📊 Section-wise Accuracy</h5>
+<table class="table table-sm">
+  <thead><tr><th>Section</th><th>Attempted</th><th>Correct</th><th>Accuracy</th></tr></thead>
+  <tbody>
+    {% for s in sec_list %}
+    <tr><td>{{ s.subj }}</td><td>{{ s.total }}</td><td>{{ s.correct }}</td>
+    <td><span class="badge bg-{% if s.acc >= 70 %}success{% elif s.acc >= 50 %}warning text-dark{% else %}danger{% endif %}">{{ s.acc }}%</span></td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<a href="{{ url_for('csat_home') }}" class="btn btn-primary mb-3">← Back to CSAT</a>
+
+<h5>Question Review</h5>
+{% for q in questions %}
+<div class="card mb-2 border-{% if q.is_correct %}success{% elif q.skipped %}secondary{% else %}danger{% endif %}">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between mb-1">
+      <strong>Q{{ loop.index }} · {{ q.subject }}</strong>
+      {% if q.is_correct %}<span class="badge bg-success">✅</span>
+      {% elif q.skipped %}<span class="badge bg-secondary">Skipped</span>
+      {% else %}<span class="badge bg-danger">Wrong</span>{% endif %}
+    </div>
+    <p class="small mb-2" style="white-space:pre-wrap">{{ q.question[:400] }}</p>
+    <div class="small"><strong>Correct:</strong> {{ q.correct }} · <strong>You:</strong> {{ q.user_answer or '—' }}</div>
+    {% if q.explanation %}<div class="alert alert-info small mt-2 mb-0">{{ q.explanation }}</div>{% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

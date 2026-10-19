@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>🔍 Search in "{{ book.title }}"</h4>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-9"><input class="form-control" name="q" value="{{ q }}" placeholder="Search within this book..." required></div>
+  <div class="col-md-3"><button class="btn btn-primary w-100">Search</button></div>
+</form>
+
+{% if q %}
+<p class="text-muted">{{ results|length }} results</p>
+{% for r in results %}
+<div class="card mb-2">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between">
+      <strong>Page {{ r.page }}</strong>
+      <a href="{{ url_for('read_book_page', book_id=book.id, page_num=r.page) }}" class="btn btn-sm btn-outline-primary">Open</a>
+    </div>
+    <p class="small mb-0 mt-1">{{ r.snippet }}</p>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">No matches found in this book.</div>
+{% endfor %}
+{% endif %}
+
+<a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-outline-secondary mt-2">← Back to Book</a>
+{% endblock %}

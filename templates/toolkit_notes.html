@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-2 flex-wrap gap-2">
+  <h3 class="mb-0">📝 Notepad & Flashcards</h3>
+  <a href="{{ url_for('toolkit_home') }}" class="btn btn-sm btn-secondary">← Toolkit</a>
+</div>
+
+<div class="d-flex gap-2 mb-2">
+  <button class="btn btn-primary btn-sm" onclick="showView('notes')">📝 Notes</button>
+  <button class="btn btn-outline-primary btn-sm" onclick="showView('cards')">🎴 Flashcards</button>
+</div>
+
+<!-- NOTES VIEW -->
+<div id="notesView">
+  <div class="card mb-2">
+    <div class="card-body">
+      <input class="form-control mb-2" id="noteTitle" placeholder="Title (optional)">
+      <textarea class="form-control mb-2" id="noteBody" rows="8" placeholder="Write your note here..." oninput="autoSaveNote()"></textarea>
+      <div class="d-flex gap-2">
+        <button class="btn btn-success flex-grow-1" onclick="saveNote()">💾 Save</button>
+        <button class="btn btn-outline-secondary" onclick="clearNote()">🗑 Clear</button>
+      </div>
+      <small class="text-muted d-block mt-2" id="noteStatus">Auto-saves as you type</small>
+    </div>
+  </div>
+
+  <h6>Saved Notes (<span id="notesCount">0</span>)</h6>
+  <div id="notesList"></div>
+</div>
+
+<!-- CARDS VIEW -->
+<div id="cardsView" style="display:none">
+  <div class="card mb-2">
+    <div class="card-body">
+      <input class="form-control mb-2" id="cardQ" placeholder="Question / Term">
+      <input class="form-control mb-2" id="cardA" placeholder="Answer / Meaning">
+      <button class="btn btn-primary w-100" onclick="addCard()">+ Add Flashcard</button>
+    </div>
+  </div>
+
+  <div class="card mb-2">
+    <div class="card-body">
+      <div class="d-flex justify-content-between mb-2">
+        <small>Card <span id="cardIdx">1</span> of <span id="cardTotal">0</span></small>
+        <small class="text-muted">Tap card to flip</small>
+      </div>
+      <div id="cardShow" onclick="flipCard()" style="min-height:180px;background:#f0f4ff;border-radius:10px;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:1.1rem;cursor:pointer;user-select:none">
+        No cards yet
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-outline-secondary flex-grow-1" onclick="prevCard()">← Prev</button>
+        <button class="btn btn-primary flex-grow-1" onclick="nextCard()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <h6>All Cards (<span id="cardCount">0</span>)</h6>
+  <div id="cardList"></div>
+</div>
+
+<script>
+let notes = JSON.parse(localStorage.getItem('tk_notes') || '[]');
+let cards = JSON.parse(localStorage.getItem('tk_cards') || '[]');
+let cardIdx = 0;
+let showingAnswer = false;
+
+function showView(v){
+  document.getElementById('notesView').style.display = v === 'notes' ? 'block' : 'none';
+  document.getElementById('cardsView').style.display = v === 'cards' ? 'block' : 'none';
+  if (v === 'cards') renderCard();
+}
+
+// ---- NOTES ----
+function autoSaveNote(){
+  const t = document.getElementById('noteTitle').value;
+  const b = document.getElementById('noteBody').value;
+  localStorage.setItem('tk_draft', JSON.stringify({title:t, body:b}));
+  document.getElementById('noteStatus').innerText = 'Draft autosaved at ' + new Date().toLocaleTimeString();
+}
+
+function saveNote(){
+  const t = document.getElementById('noteTitle').value.trim();
+  const b = document.getElementById('noteBody').value.trim();
+  if (!b){ alert('Write something first'); return; }
+  notes.unshift({id: Date.now(), title: t || 'Untitled', body: b, at: Date.now()});
+  localStorage.setItem('tk_notes', JSON.stringify(notes));
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteBody').value = '';
+  localStorage.removeItem('tk_draft');
+  document.getElementById('noteStatus').innerText = 'Saved!';
+  renderNotes();
+}
+
+function clearNote(){
+  if (!confirm('Clear the current note?')) return;
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteBody').value = '';
+  localStorage.removeItem('tk_draft');
+}
+
+function deleteNote(id){
+  if (!confirm('Delete this note?')) return;
+  notes = notes.filter(n => n.id !== id);
+  localStorage.setItem('tk_notes', JSON.stringify(notes));
+  renderNotes();
+}
+
+function renderNotes(){
+  document.getElementById('notesCount').innerText = notes.length;
+  const el = document.getElementById('notesList');
+  if (!notes.length){ el.innerHTML = '<div class="text-muted small">No notes saved yet.</div>'; return; }
+  el.innerHTML = notes.map(n => `
+    <div class="card mb-2">
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between">
+          <strong>${esc(n.title)}</strong>
+          <small class="text-muted">${new Date(n.at).toLocaleDateString()}</small>
+        </div>
+        <div class="small mt-1" style="white-space:pre-wrap">${esc(n.body)}</div>
+        <div class="mt-1">
+          <button class="btn btn-sm btn-outline-primary" onclick="loadNote(${n.id})">Edit</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${n.id})">Del</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function loadNote(id){
+  const n = notes.find(x => x.id === id);
+  if (!n) return;
+  document.getElementById('noteTitle').value = n.title;
+  document.getElementById('noteBody').value = n.body;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ---- CARDS ----
+function addCard(){
+  const q = document.getElementById('cardQ').value.trim();
+  const a = document.getElementById('cardA').value.trim();
+  if (!q || !a){ alert('Fill both question and answer'); return; }
+  cards.push({id: Date.now(), q: q, a: a});
+  localStorage.setItem('tk_cards', JSON.stringify(cards));
+  document.getElementById('cardQ').value = '';
+  document.getElementById('cardA').value = '';
+  renderCard();
+  renderCardList();
+}
+
+function renderCard(){
+  document.getElementById('cardTotal').innerText = cards.length;
+  document.getElementById('cardCount').innerText = cards.length;
+  const el = document.getElementById('cardShow');
+  if (!cards.length){ el.innerText = 'No cards yet'; el.style.background = '#f0f4ff'; return; }
+  if (cardIdx >= cards.length) cardIdx = 0;
+  const c = cards[cardIdx];
+  document.getElementById('cardIdx').innerText = cardIdx + 1;
+  el.innerText = showingAnswer ? c.a : c.q;
+  el.style.background = showingAnswer ? '#d4f5dd' : '#f0f4ff';
+  el.style.fontWeight = showingAnswer ? '400' : '600';
+  el.style.color = showingAnswer ? '#0a3622' : '#111';
+}
+
+function flipCard(){ showingAnswer = !showingAnswer; renderCard(); }
+function nextCard(){ if (!cards.length) return; cardIdx = (cardIdx + 1) % cards.length; showingAnswer = false; renderCard(); }
+function prevCard(){ if (!cards.length) return; cardIdx = (cardIdx - 1 + cards.length) % cards.length; showingAnswer = false; renderCard(); }
+
+function renderCardList(){
+  const el = document.getElementById('cardList');
+  if (!cards.length){ el.innerHTML = '<div class="text-muted small">No cards yet.</div>'; return; }
+  el.innerHTML = cards.map(c => `
+    <div class="card mb-1">
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between">
+          <div style="min-width:0;flex:1">
+            <div style="font-weight:600">${esc(c.q)}</div>
+            <div class="small text-muted">${esc(c.a)}</div>
+          </div>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteCard(${c.id})">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function deleteCard(id){
+  if (!confirm('Delete this card?')) return;
+  cards = cards.filter(c => c.id !== id);
+  localStorage.setItem('tk_cards', JSON.stringify(cards));
+  renderCard();
+  renderCardList();
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Load draft on open
+try {
+  const d = JSON.parse(localStorage.getItem('tk_draft') || 'null');
+  if (d){ document.getElementById('noteTitle').value = d.title || ''; document.getElementById('noteBody').value = d.body || ''; }
+} catch(e){}
+renderNotes();
+renderCardList();
+</script>
+{% endblock %}

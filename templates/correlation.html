@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔬 Streak vs Performance Correlation</h2>
+<p class="text-muted">See how your consistency connects to your scores.</p>
+
+{% if insufficient %}
+<div class="alert alert-info">
+  Need at least 4 days of data. You have {{ total }}. Keep using the app daily — correlations appear automatically.
+</div>
+{% else %}
+
+<div class="alert alert-{{ color }}">
+  <strong>{{ verdict }}</strong>
+</div>
+
+<div class="row mb-3">
+  <div class="col-md-4 mb-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <small class="text-muted">Correlation Coefficient</small>
+        <h2 class="{% if correlation >= 0.5 %}text-success{% elif correlation >= 0.2 %}text-info{% elif correlation <= -0.2 %}text-warning{% else %}text-muted{% endif %}">
+          {{ correlation }}
+        </h2>
+        <small class="text-muted">-1 to +1</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <small class="text-muted">Accuracy on 7+ day streaks</small>
+        <h2 class="text-success">{{ high_avg }}%</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <small class="text-muted">Accuracy on <7 day streaks</small>
+        <h2 class="text-warning">{{ low_avg }}%</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if uplift %}
+<div class="alert alert-success">
+  <h5 class="mb-0">📈 Consistent streaks give you <strong>+{{ uplift }}%</strong> higher accuracy.</h5>
+  <small>Based on {{ data_points }} paired observations from your data.</small>
+</div>
+{% endif %}
+
+<div class="card mb-3">
+  <div class="card-header">📊 Average Mock Accuracy by Streak Length</div>
+  <div class="card-body">
+    <canvas id="c1" height="150"></canvas>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">📚 Data Summary</div>
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Streak Band</th><th>Avg Accuracy</th><th>Days in this band</th></tr></thead>
+      <tbody>
+        {% for b in band_data %}
+        <tr>
+          <td><strong>{{ b.band }}</strong></td>
+          <td>{{ b.avg_acc }}%</td>
+          <td>{{ b.count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="alert alert-secondary small">
+  <strong>How to read:</strong> Correlation near +1 means longer streaks strongly associate with higher scores. Near 0 means no clear link (yet). Negative means over-consistent days may correlate with worse performance — could signal burnout.
+</div>
+
+{% endif %}
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const bands = {{ band_data|tojson if not insufficient else '[]' }};
+if (bands.length) {
+  new Chart(document.getElementById('c1'), {
+    type: 'bar',
+    data: {
+      labels: bands.map(b => b.band),
+      datasets: [{
+        label: 'Avg Accuracy %',
+        data: bands.map(b => b.avg_acc),
+        backgroundColor: '#0d6efd'
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, max: 100 } }
+    }
+  });
+}
+</script>

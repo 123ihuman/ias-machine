@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<title>Offline Manager — IAS Machine</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Georgia,serif;background:#f7f5ee;color:#222;margin:0;padding:0;font-size:14px}
+.top{position:sticky;top:0;background:#5b6bd4;color:#fff;padding:14px 16px;
+     display:flex;align-items:center;gap:12px;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.top a{color:#fff;text-decoration:none;font-size:20px}
+.top h1{margin:0;font-size:17px;font-weight:700;letter-spacing:0.5px;flex:1}
+.stats{background:#fff;margin:14px;padding:16px;border-radius:12px;
+       box-shadow:0 2px 10px rgba(0,0,0,0.06)}
+.stats .row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.stats .k{color:#666}
+.stats .v{font-weight:600}
+.bar{height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;margin-top:8px}
+.bar>div{height:100%;background:linear-gradient(90deg,#5b6bd4,#d4a017);width:0%}
+.section{margin:14px;background:#fff;padding:14px;border-radius:12px;
+         box-shadow:0 2px 10px rgba(0,0,0,0.06)}
+.section h2{margin:0 0 10px;font-size:15px;letter-spacing:0.5px;
+            display:flex;align-items:center;gap:8px}
+.section h2 .count{font-size:11px;color:#888;font-weight:400;margin-left:auto}
+.item{display:flex;align-items:center;gap:10px;padding:10px 8px;
+      border-bottom:1px solid #f0f0f0;font-size:13px}
+.item:last-child{border-bottom:none}
+.item .info{flex:1;min-width:0}
+.item .title{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .meta{font-size:11px;color:#888;margin-top:2px}
+.item button{padding:6px 12px;font-size:12px;border:none;border-radius:8px;
+             font-weight:600;cursor:pointer;font-family:inherit}
+.btn-save{background:#5b6bd4;color:#fff}
+.btn-save.done{background:#27ae60;color:#fff}
+.btn-del{background:#da3633;color:#fff}
+.btn-read{background:#e0e0e0;color:#333;text-decoration:none;padding:6px 12px;
+          border-radius:8px;font-size:12px;font-weight:600}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn-big{padding:12px 20px;background:#d4a017;color:#0d1117;border:none;
+         border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;
+         font-family:inherit;flex:1;min-width:140px}
+.btn-danger-big{padding:12px 20px;background:#da3633;color:#fff;border:none;
+                border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;
+                font-family:inherit;flex:1;min-width:140px}
+.tag{display:inline-block;padding:2px 8px;background:#f0f0f0;color:#666;
+     border-radius:10px;font-size:10px;margin-left:6px}
+.empty{text-align:center;color:#999;padding:20px;font-size:13px}
+</style>
+</head>
+<body>
+<script>
+const EMBEDDED_BOOKS = {{ book_index|tojson }};
+const EMBEDDED_PAGES = {{ pages_index|tojson }};
+console.log('[offline] embedded books:', EMBEDDED_BOOKS.length, 'pages:', EMBEDDED_PAGES.length);
+</script>
+
+
+<div class="top">
+  <a href="/">←</a>
+  <h1>📦 Offline Manager</h1>
+  <a href="/offline/cache" onclick="location.reload();return false;">⟳</a>
+</div>
+
+<div class="stats" id="statsCard">
+  <div class="row"><span class="k">Storage used</span><span class="v" id="stUsed">—</span></div>
+  <div class="row"><span class="k">Available</span><span class="v" id="stQuota">—</span></div>
+  <div class="row"><span class="k">Persistent</span><span class="v" id="stPersist">—</span></div>
+  <div class="bar"><div id="stBar"></div></div>
+</div>
+
+<div class="section">
+  <h2>📄 Saved Pages <span class="count" id="pgCount"></span></h2>
+  <div id="pageList"><div class="empty">Loading…</div></div>
+  <div class="actions">
+    <button class="btn-big" onclick="saveAllPages()">📥 Save all pages</button>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📚 Saved Books <span class="count" id="bkCount"></span></h2>
+  <div id="bookList"><div class="empty">Loading…</div></div>
+</div>
+
+<div class="section">
+  <h2>🧰 Saved Tools & Data</h2>
+  <div id="toolList"></div>
+</div>
+
+<div class="section">
+  <h2 style="color:#da3633;">⚠️ Danger zone</h2>
+  <div class="actions">
+    <button class="btn-danger-big" onclick="clearBooks()">🗑 Delete all books</button>
+    <button class="btn-danger-big" onclick="clearPages()">🗑 Delete all pages</button>
+    <button class="btn-danger-big" onclick="clearEverything()">🗑 Clear everything</button>
+  </div>
+</div>
+
+<script>
+const PAGES_CACHE = 'ias-pages-ias-v6';
+const BOOKS_CACHE = 'ias-books-v4';
+const STATIC_CACHE = 'ias-static-ias-v6';
+
+let BOOKS_INDEX = [];
+
+// ============ STORAGE STATS ============
+async function updateStats(){
+  if (!navigator.storage || !navigator.storage.estimate) return;
+  const e = await navigator.storage.estimate();
+  const used = (e.usage/1024/1024).toFixed(1);
+  const quota = (e.quota/1024/1024/1024).toFixed(2);
+  const pct = Math.min(100, (e.usage / e.quota) * 100).toFixed(1);
+  document.getElementById('stUsed').textContent = used + ' MB';
+  document.getElementById('stQuota').textContent = quota + ' GB';
+  document.getElementById('stBar').style.width = pct + '%';
+  if (navigator.storage.persisted) {
+    const p = await navigator.storage.persisted();
+    document.getElementById('stPersist').textContent = p ? '✅ Yes' : '⚠️ No';
+  }
+}
+
+// ============ PAGES ============
+async function loadPages(){
+  const cache = await caches.open(PAGES_CACHE);
+  const keys = await cache.keys();
+  const savedUrls = new Set(keys.map(k => new URL(k.url).pathname));
+  const list = document.getElementById('pageList');
+  const pages = EMBEDDED_PAGES || [];
+  document.getElementById('pgCount').textContent = savedUrls.size + ' / ' + pages.length;
+  if (!pages.length) { list.innerHTML = '<div class="empty">No pages</div>'; return; }
+  list.innerHTML = pages.map(p => {
+    const isSaved = savedUrls.has(p.url);
+    return `<div class="item">
+      <div class="info">
+        <div class="title">${p.label}</div>
+        <div class="meta">${p.url}</div>
+      </div>
+      ${isSaved ? '<span class="tag">Saved</span>' : ''}
+      <button class="btn-save ${isSaved?'done':''}" onclick="togglePage('${p.url}', this)">
+        ${isSaved ? '✅ Saved' : '📥 Save'}
+      </button>
+      ${isSaved ? `<button class="btn-del" onclick="delPage('${p.url}', this)">🗑</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function togglePage(url, btn){
+  const cache = await caches.open(PAGES_CACHE);
+  const req = new Request(url, {credentials: 'same-origin'});
+  const hit = await cache.match(req);
+  if (hit) {
+    await cache.delete(req);
+    btn.textContent = '📥 Save';
+    btn.classList.remove('done');
+    alert('Removed from offline');
+  } else {
+    btn.textContent = '...';
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        await cache.put(req, res.clone());
+        btn.textContent = '✅ Saved';
+        btn.classList.add('done');
+      }
+    } catch(e){ alert('Save failed: ' + e.message); btn.textContent = '📥 Save'; }
+  }
+  loadPages(); updateStats();
+}
+
+async function delPage(url, btn){
+  const cache = await caches.open(PAGES_CACHE);
+  await cache.delete(new Request(url, {credentials:'same-origin'}));
+  loadPages(); updateStats();
+}
+
+async function saveAllPages(){
+  const cache = await caches.open(PAGES_CACHE);
+  let done = 0;
+  for (const p of (EMBEDDED_PAGES || [])) {
+    try {
+      const res = await fetch(p.url);
+      if (res.ok) await cache.put(new Request(p.url, {credentials:'same-origin'}), res.clone());
+    } catch(e){}
+    done++;
+  }
+  alert(`Saved ${done} pages`);
+  loadPages(); updateStats();
+}
+
+async function clearPages(){
+  if (!confirm('Delete all offline pages?')) return;
+  await caches.delete(PAGES_CACHE);
+  loadPages(); updateStats();
+}
+
+// ============ BOOKS ============
+async function loadBooks(){
+  BOOKS_INDEX = EMBEDDED_BOOKS || [];
+  const cache = await caches.open(BOOKS_CACHE);
+  const keys = await cache.keys();
+  const savedMap = new Map();
+  for (const k of keys) {
+    const path = new URL(k.url).pathname;
+    const m = path.match(/\/book\/(\d+)\/stream/);
+    if (m) savedMap.set(parseInt(m[1]), k);
+  }
+  document.getElementById('bkCount').textContent = savedMap.size + ' / ' + BOOKS_INDEX.length;
+  const list = document.getElementById('bookList');
+  if (!BOOKS_INDEX.length) { list.innerHTML = '<div class="empty">No books in library</div>'; return; }
+  list.innerHTML = BOOKS_INDEX.map(b => {
+    const isSaved = savedMap.has(b.id);
+    return `<div class="item">
+      <div class="info">
+        <div class="title">${b.title}</div>
+        <div class="meta">${b.author || '—'} <span class="tag">${b.collection}</span></div>
+      </div>
+      ${isSaved ? `<a class="btn-read" href="/reader/${b.id}">📖 Read</a>` : ''}
+      <button class="btn-save ${isSaved?'done':''}" onclick="toggleBook(${b.id}, '${b.url}', this)">
+        ${isSaved ? '✅' : '📥'}
+      </button>
+      ${isSaved ? `<button class="btn-del" onclick="delBook(${b.id}, this)">🗑</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function toggleBook(id, url, btn){
+  const cache = await caches.open(BOOKS_CACHE);
+  const req = new Request(url, {credentials:'same-origin'});
+  const hit = await cache.match(req);
+  if (hit) {
+    await cache.delete(req);
+    alert('Deleted from offline');
+    loadBooks(); updateStats();
+    return;
+  }
+  btn.textContent = '...';
+  try {
+    // 1. Cache the PDF bytes
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    await cache.put(req, new Response(blob, {
+      headers: {'Content-Type': 'application/pdf', 'Content-Length': String(blob.size)}
+    }));
+
+    // 2. Cache the reader HTML page (so /reader/<id> works offline)
+    try {
+      const readerUrl = '/reader/' + id;
+      const rres = await fetch(readerUrl, {credentials:'same-origin'});
+      if (rres.ok) {
+        const pc = await caches.open('ias-pages-ias-v6');
+        await pc.put(new Request(readerUrl, {credentials:'same-origin'}), rres.clone());
+      }
+    } catch(e2){ console.warn('reader cache failed', e2); }
+
+    alert('✅ Saved ' + (blob.size/1024/1024).toFixed(1) + ' MB — read offline now');
+    loadBooks(); updateStats();
+  } catch(e){ alert('Save failed: ' + e.message); btn.textContent = '📥'; }
+}
+
+async function delBook(id, btn){
+  if (!confirm('Delete this book from offline?')) return;
+  const cache = await caches.open(BOOKS_CACHE);
+  await cache.delete(new Request('/book/'+id+'/stream', {credentials:'same-origin'}));
+  const pc = await caches.open('ias-pages-ias-v6');
+  await pc.delete(new Request('/reader/'+id, {credentials:'same-origin'}));
+  loadBooks(); updateStats();
+}
+
+async function clearBooks(){
+  if (!confirm('Delete ALL saved books?')) return;
+  await caches.delete(BOOKS_CACHE);
+  loadBooks(); updateStats();
+}
+
+// ============ TOOLS & DATA ============
+function loadTools(){
+  const items = [
+    {name: '📖 Reference (constants, formulas, scientists)', key: 'ref_cached', save:'/toolkit/reference'},
+    {name: '📝 Notes (saved locally)', key: 'tk_notes'},
+    {name: '🔔 Reminders', key: 'tk_rem'},
+    {name: '🎯 Tally counter', key: 'tk_tally'},
+  ];
+  document.getElementById('toolList').innerHTML = items.map(t => {
+    const has = localStorage.getItem(t.key);
+    return `<div class="item">
+      <div class="info"><div class="title">${t.name}</div></div>
+      ${has ? '<span class="tag">Saved</span>' : '<span class="tag">Empty</span>'}
+      ${has ? `<button class="btn-del" onclick="delTool('${t.key}', this)">🗑</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function delTool(key, btn){
+  if (!confirm('Delete this data?')) return;
+  localStorage.removeItem(key);
+  loadTools();
+}
+
+// ============ GLOBAL ============
+async function clearEverything(){
+  if (!confirm('Clear ALL offline data, caches, and saved items?')) return;
+  await caches.delete(PAGES_CACHE);
+  await caches.delete(BOOKS_CACHE);
+  await caches.delete(STATIC_CACHE);
+  alert('All caches cleared. Local notes/reminders kept.');
+  loadPages(); loadBooks(); updateStats();
+}
+
+// Init with error handling
+(async () => {
+  try { await updateStats(); } catch(e){ console.warn('stats', e); }
+  try { await loadPages(); } catch(e){
+    document.getElementById('pageList').innerHTML =
+      '<div class="empty">⚠️ Could not load pages: ' + e.message + '</div>';
+  }
+  try { await loadBooks(); } catch(e){
+    document.getElementById('bookList').innerHTML =
+      '<div class="empty">⚠️ Could not load books: ' + e.message + '</div>';
+  }
+  try { loadTools(); } catch(e){ console.warn('tools', e); }
+  setInterval(updateStats, 5000);
+})();
+</script>
+
+</body>
+</html>

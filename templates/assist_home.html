@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>♟️ Strategic Assist</h2>
+<p class="text-muted">Chess-style hints while practicing. <strong>Practice only</strong> — real exam has no AI. Train the muscle now.</p>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-3 border-primary">
+      <div class="card-header bg-primary text-white">🎯 Prelims — Elimination Coach</div>
+      <div class="card-body">
+        <label class="small">Paste MCQ stem</label>
+        <textarea id="pQ" class="form-control mb-2" rows="3" placeholder="Consider the following statements..."></textarea>
+        <input class="form-control mb-1" id="pA" placeholder="Option A">
+        <input class="form-control mb-1" id="pB" placeholder="Option B">
+        <input class="form-control mb-1" id="pC" placeholder="Option C">
+        <input class="form-control mb-2" id="pD" placeholder="Option D">
+        <button class="btn btn-primary w-100" onclick="runPrelims()">🧠 Show Elimination Strategy</button>
+      </div>
+    </div>
+    <div id="pRes" style="display:none"></div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card mb-3 border-success">
+      <div class="card-header bg-success text-white">✍️ Mains — Next-Line Coach</div>
+      <div class="card-body">
+        <label class="small">Paste question</label>
+        <textarea id="mQ" class="form-control mb-2" rows="2" placeholder="Discuss the significance of..."></textarea>
+        <label class="small">Your draft so far (even 1 line)</label>
+        <textarea id="mD" class="form-control mb-2" rows="6" placeholder="Write what you have so far..."></textarea>
+        <button class="btn btn-success w-100" onclick="runMains()">♟️ Suggest Next Move</button>
+      </div>
+    </div>
+    <div id="mRes" style="display:none"></div>
+  </div>
+</div>
+
+<div class="alert alert-info small mt-3">
+  <strong>How to use:</strong> In practice, when stuck — hit Assist. See the reasoning. Then in the real exam, YOUR brain runs the same elimination/hint logic. This is how toppers train.
+</div>
+
+<script>
+async function runPrelims(){
+  const q = document.getElementById('pQ').value.trim();
+  const a = document.getElementById('pA').value.trim();
+  const b = document.getElementById('pB').value.trim();
+  const c = document.getElementById('pC').value.trim();
+  const d = document.getElementById('pD').value.trim();
+  if (!q || !a || !b) { alert('Enter question + at least 2 options'); return; }
+  const btn = event.target; btn.disabled = true; btn.innerText = '⏳ Analyzing...';
+  const fd = new FormData();
+  fd.append('question', q);
+  fd.append('option_a', a); fd.append('option_b', b);
+  fd.append('option_c', c); fd.append('option_d', d);
+  try {
+    const r = await fetch('/sa/prelims-hint', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.error) { alert(data.error); btn.disabled = false; btn.innerText = '🧠 Show Elimination Strategy'; return; }
+    const colors = {Safe: 'success', Suspect: 'warning text-dark', Eliminate: 'danger'};
+    let html = '<div class="card"><div class="card-body">';
+    (data.analysis || []).forEach(a => {
+      const cls = colors[a.verdict] || 'secondary';
+      html += '<div class="mb-2"><span class="badge bg-' + cls + '">' + a.option + ' · ' + a.verdict + '</span> <span class="small">' + (a.reason || '') + '</span></div>';
+    });
+    html += '<div class="alert alert-info mt-2 mb-0"><strong>🎯 Tip:</strong> ' + (data.final_tip || '') + '</div>';
+    html += '</div></div>';
+    document.getElementById('pRes').innerHTML = html;
+    document.getElementById('pRes').style.display = 'block';
+    btn.disabled = false; btn.innerText = '🔄 Re-analyze';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerText = '🧠 Show Elimination Strategy'; }
+}
+
+async function runMains(){
+  const q = document.getElementById('mQ').value.trim();
+  const d = document.getElementById('mD').value.trim();
+  if (!q) { alert('Enter question'); return; }
+  const btn = event.target; btn.disabled = true; btn.innerText = '⏳ Thinking...';
+  const fd = new FormData();
+  fd.append('question', q);
+  fd.append('draft', d);
+  try {
+    const r = await fetch('/sa/mains-hint', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.error) { alert(data.error); btn.disabled = false; btn.innerText = '♟️ Suggest Next Move'; return; }
+    let html = '<div class="card border-success"><div class="card-body">';
+    html += '<div class="mb-2"><span class="badge bg-primary">Stage: ' + (data.stage || '—') + '</span> <span class="badge bg-secondary">' + (data.word_budget_left || '') + '</span></div>';
+    html += '<div class="alert alert-success"><strong>✍️ Write this next:</strong><br>' + (data.next_line || '') + '</div>';
+    html += '<div class="mb-2"><strong>Then cover these 3 angles:</strong><ul class="small mb-0">' + (data.next_points || []).map(p => '<li>' + p + '</li>').join('') + '</ul></div>';
+    html += '<div class="alert alert-danger small mb-0"><strong>⚠️ Avoid:</strong> ' + (data.danger || '') + '</div>';
+    html += '</div></div>';
+    document.getElementById('mRes').innerHTML = html;
+    document.getElementById('mRes').style.display = 'block';
+    btn.disabled = false; btn.innerText = '🔄 Re-suggest';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerText = '♟️ Suggest Next Move'; }
+}
+</script>
+{% endblock %}

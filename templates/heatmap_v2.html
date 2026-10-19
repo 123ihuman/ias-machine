@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔥 Heatmap v2 — Exam Probability</h2>
+<p class="text-muted">Each topic's likelihood of appearing in the next exam, computed from your PYQ data. Higher % = more likely.</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-8">
+    <select class="form-control" name="subject" onchange="this.form.submit()">
+      <option value="">All Subjects</option>
+      {% for s in subjects %}<option value="{{ s }}" {% if s==subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+
+{% if scored %}
+<h5>🎯 Top 40 High-Probability Topics</h5>
+<div class="table-responsive">
+<table class="table table-sm table-hover" style="font-size:.82rem">
+  <thead>
+    <tr>
+      <th>Topic</th>
+      <th style="width:70px">Prob %</th>
+      <th style="width:90px">Trend</th>
+      <th>Last Seen</th>
+      <th>Years</th>
+      <th style="width:120px">Bar</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in scored %}
+    <tr>
+      <td><a href="{{ url_for('topic_detail', topic_name=s.topic) }}"><strong>{{ s.topic }}</strong></a></td>
+      <td>
+        <span class="badge bg-{% if s.probability >= 70 %}danger{% elif s.probability >= 40 %}warning text-dark{% else %}secondary{% endif %}">
+          {{ s.probability }}%
+        </span>
+      </td>
+      <td>
+        {% if 'Rising' in s.trend %}<span class="text-success">{{ s.trend }}</span>
+        {% elif 'Falling' in s.trend %}<span class="text-danger">{{ s.trend }}</span>
+        {% else %}<span class="text-muted">{{ s.trend }}</span>{% endif %}
+      </td>
+      <td>{{ s.last_seen }}</td>
+      <td><span class="badge bg-info text-dark">{{ s.spread }}</span></td>
+      <td>
+        <div class="progress" style="height:14px">
+          <div class="progress-bar bg-{% if s.probability >= 70 %}danger{% elif s.probability >= 40 %}warning{% else %}secondary{% endif %}"
+               style="width:{{ s.probability }}%"></div>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div class="alert alert-info small">
+  <strong>How probability is calculated:</strong> Weighted recent years ×3, mid years ×2, older ×1, plus a "due for return" bonus for topics not seen in 3+ years. Normalized to 10–95%.
+  <br><strong>Trend ↑ Rising:</strong> more appearances in recent years. <strong>↓ Falling:</strong> fewer.
+</div>
+{% else %}
+<div class="alert alert-warning">No PYQ data found. Upload past papers and run Auto-Extract first.</div>
+{% endif %}
+{% endblock %}

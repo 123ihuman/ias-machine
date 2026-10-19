@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔮 PYQ Trend Predictor</h2>
+<p class="text-muted">Time-series analysis of your PYQ data → confidence % for each topic in the next exam.</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-8">
+    <select class="form-control" name="subject" onchange="this.form.submit()">
+      <option value="">All Subjects</option>
+      {% for s in subjects %}<option value="{{ s }}" {% if s==subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+
+{% if predictions %}
+<div class="d-flex gap-2 mb-3">
+  <button class="btn btn-primary" onclick="runAIPredict()">🤖 AI Predict Next Exam</button>
+</div>
+
+<div id="aiResult" style="display:none">
+  <div class="card mb-3 border-primary">
+    <div class="card-header bg-primary text-white">🤖 AI Predictions for Next Exam</div>
+    <div class="card-body" id="aiBox"></div>
+  </div>
+</div>
+
+<h5>📊 Statistical Predictions ({{ predictions|length }})</h5>
+<div class="table-responsive">
+<table class="table table-sm" style="font-size:.82rem">
+  <thead>
+    <tr>
+      <th>Topic</th>
+      <th style="width:70px">Conf %</th>
+      <th style="width:80px">Trend</th>
+      <th>Series ({{ years[0] }}–{{ years[-1] }})</th>
+      <th>Last</th>
+      <th>Cycle</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in predictions %}
+    <tr>
+      <td><a href="{{ url_for('topic_detail', topic_name=p.topic) }}"><strong>{{ p.topic }}</strong></a></td>
+      <td>
+        <span class="badge bg-{% if p.confidence >= 70 %}danger{% elif p.confidence >= 45 %}warning text-dark{% else %}secondary{% endif %}">
+          {{ p.confidence }}%
+        </span>
+      </td>
+      <td>{% if 'Rising' in p.trend %}<span class="text-success">{{ p.trend }}</span>
+          {% elif 'Falling' in p.trend %}<span class="text-danger">{{ p.trend }}</span>
+          {% else %}<span class="text-muted">{{ p.trend }}</span>{% endif %}
+      </td>
+      <td><code style="font-size:.72rem">{{ p.series|join('-') }}</code></td>
+      <td>{% if p.years_since == 0 %}now{% else %}{{ p.years_since }}y ago{% endif %}</td>
+      <td>{% if p.cycle %}<span class="badge bg-warning text-dark">⏰ Due</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div class="alert alert-info small">
+  <strong>Formula:</strong> confidence = (recent×3 + freq×2 + trend_slope×2 + cycle_bonus + due_boost) normalized to 10-95%.
+  <br><strong>Cycle "Due":</strong> topic appears every N years and is now overdue.
+  <br><strong>Trend:</strong> linear regression slope over all years.
+</div>
+{% else %}
+<div class="alert alert-warning">No PYQ data found. Upload past papers and run Auto-Extract first.</div>
+{% endif %}
+
+<script>
+async function runAIPredict() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerText = '🧠 AI reasoning...';
+  try {
+    const fd = new FormData();
+    fd.append('subject', '{{ subject }}');
+    const r = await fetch('/trend-predictor/ai', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.error) { alert(data.error); btn.disabled = false; btn.innerText = '🤖 AI Predict Next Exam'; return; }
+    const box = document.getElementById('aiBox');
+    box.innerHTML = (data.predictions || []).map(p =>
+      '<div class="card mb-2"><div class="card-body py-2">' +
+      '<div class="d-flex justify-content-between"><strong>' + p.topic + '</strong>' +
+      '<span class="badge bg-' + (p.confidence >= 70 ? 'danger' : p.confidence >= 45 ? 'warning text-dark' : 'secondary') + '">' + p.confidence + '%</span></div>' +
+      '<p class="small mb-1 mt-1">' + (p.reason || '') + '</p>' +
+      (p.prelims_q ? '<p class="small mb-0"><em>Sample Q:</em> ' + p.prelims_q + '</p>' : '') +
+      (p.answer ? '<p class="small text-muted mb-0">Answer concept: ' + p.answer + '</p>' : '') +
+      '</div></div>'
+    ).join('');
+    document.getElementById('aiResult').style.display = 'block';
+    btn.disabled = false;
+    btn.innerText = '🔄 Regenerate';
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
+    btn.innerText = '🤖 AI Predict Next Exam';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a href="/bookzone" style="display:block;margin:20px auto 8px;max-width:680px;padding:26px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;text-decoration:none;border-radius:18px;text-align:center;font-family:Georgia,serif;box-shadow:0 6px 18px rgba(0,0,0,0.18);">
+  <div style="font-size:26px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">📂 BOOK ZONE</div>
+  <div style="font-size:14px;opacity:0.9;">UPSC · SSC · Banking · Railway · Teaching · +8 more</div>
+  <div style="margin-top:12px;font-size:13px;opacity:0.75;">Organize by exam →</div>
+</a>
+
+<a href="/library" style="display:block;margin:8px auto;max-width:680px;padding:26px;background:linear-gradient(135deg,#d4a017,#b8860b);color:#1a1a1a;text-decoration:none;border-radius:18px;text-align:center;font-family:Georgia,serif;box-shadow:0 6px 18px rgba(0,0,0,0.18);">
+  <div style="font-size:26px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">📚 OPEN LIBRARY</div>
+  <div style="font-size:14px;opacity:0.88;">All PDFs · Upload · Search · Read</div>
+  <div style="margin-top:12px;font-size:13px;opacity:0.75;">Tap to browse →</div>
+</a>
+
+<a href="/epaper/lazy" style="display:block;margin:8px auto;max-width:680px;padding:22px;background:linear-gradient(135deg,#3f4fb0,#5b6bd4);color:#fff;text-decoration:none;border-radius:18px;text-align:center;font-family:Georgia,serif;box-shadow:0 6px 18px rgba(0,0,0,0.18);">
+  <div style="font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">📰 TODAY'S NEWSPAPER</div>
+  <div style="font-size:14px;opacity:0.88;">The Aspirant's Times · 19 sections</div>
+  <div style="margin-top:12px;font-size:13px;opacity:0.75;">Tap to read →</div>
+</a>
+
+
+{# ===== Offline tile ===== #}
+<a href="/offline/cache" style="display:block;margin:8px auto;max-width:680px;padding:20px;background:linear-gradient(135deg,#8e44ad,#6a2c8e);color:#fff;text-decoration:none;border-radius:18px;text-align:center;font-family:Georgia,serif;box-shadow:0 6px 18px rgba(0,0,0,0.18);">
+  <div style="font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">📡 OFFLINE SAVED</div>
+  <div style="font-size:13px;opacity:0.9;">Pages · Books · Notes · Toolkit</div>
+  <div style="margin-top:10px;font-size:12px;opacity:0.75;">Save now, read anywhere →</div>
+</a>
+
+{# ===== Renewal tile ===== #}
+{% if renewal %}
+  {% set dl = renewal.days_left %}
+  {% set bg = '#27ae60' if (dl is not none and dl > 7) else ('#e67e22' if (dl is not none and dl > 2) else '#c0392b') %}
+  {% set icon = '🟢' if (dl is not none and dl > 7) else ('🟡' if (dl is not none and dl > 2) else '🔴') %}
+  <a href="/renewal" style="display:block;margin:8px auto 24px;max-width:680px;padding:16px 20px;background:#fff;border-left:6px solid {{ bg }};color:#222;text-decoration:none;border-radius:12px;font-family:Georgia,serif;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div>
+      <div style="font-size:14px;font-weight:600;">{{ icon }} App renewal</div>
+      <div style="font-size:12px;color:#666;margin-top:2px;">
+        {% if dl is none %}
+          Tap to set up renewal reminder
+        {% elif dl > 0 %}
+          {{ dl }} days left — tap to renew (1 tap keeps app live)
+        {% else %}
+          Overdue — tap now to keep app live
+        {% endif %}
+      </div>
+    </div>
+    <div style="font-size:20px;color:{{ bg }};">›</div>
+  </a>
+{% endif %}
+
+
+<script>
+// ============ OFFLINE PWA REGISTRATION ============
+(function(){
+  // Register SW from ROOT (scope '/')
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(reg => {
+        console.log('[offline] SW registered, scope:', reg.scope);
+        // Auto-update check
+        reg.update();
+      })
+      .catch(err => console.warn('[offline] SW failed:', err));
+  }
+
+  // Request persistent storage (so 1-2 GB won't be evicted)
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then(granted => {
+      console.log('[offline] persistent storage:', granted ? 'GRANTED' : 'denied');
+      const el = document.getElementById('offlineStorageState');
+      if (el) el.textContent = granted ? '✅ Persistent' : '⚠️ May be cleared';
+    });
+  }
+
+  // Show cache size
+  function updateSize(){
+    if (!navigator.storage || !navigator.storage.estimate) return;
+    navigator.storage.estimate().then(e => {
+      const used = (e.usage/1024/1024).toFixed(1);
+      const quota = (e.quota/1024/1024/1024).toFixed(2);
+      const el = document.getElementById('offlineStorageInfo');
+      if (el) el.textContent = `📦 ${used} MB used · ${quota} GB available`;
+    });
+  }
+  updateSize();
+
+  // Offline indicator
+  function updateNet(){
+    const el = document.getElementById('offlineNetState');
+    if (!el) return;
+    el.textContent = navigator.onLine ? '🟢 Online' : '🔴 Offline — cached pages work';
+    el.style.color = navigator.onLine ? '#27ae60' : '#c0392b';
+  }
+  window.addEventListener('online', updateNet);
+  window.addEventListener('offline', updateNet);
+  updateNet();
+
+  // Save-for-offline button
+  window.saveForOffline = async function(){
+    const btn = document.getElementById('saveOfflineBtn');
+    const status = document.getElementById('saveOfflineStatus');
+    if (!btn || !status) return;
+    btn.disabled = true;
+    btn.textContent = '📥 Saving...';
+    status.textContent = 'Fetching page list...';
+
+    try {
+      const r = await fetch('/offline/manifest-urls');
+      const data = await r.json();
+      const urls = data.urls || [];
+      const cache = await caches.open('ias-pages-ias-v6');
+
+      let done = 0;
+      status.textContent = `Saving 0/${urls.length}...`;
+      for (const u of urls) {
+        try {
+          const res = await fetch(u, {credentials:'same-origin'});
+          if (res.ok) await cache.put(u, res.clone());
+        } catch(e){}
+        done++;
+        status.textContent = `Saving ${done}/${urls.length}...`;
+      }
+
+      status.textContent = `✅ Saved ${done} pages. Now works offline!`;
+      btn.textContent = '✅ Saved';
+      setTimeout(updateSize, 500);
+    } catch(e){
+      status.textContent = '⚠️ Save failed: ' + e.message;
+      btn.disabled = false;
+      btn.textContent = '📥 Save for Offline';
+    }
+  };
+})();
+</script>
+
+
+
+<a href="/backup/drive" style="display:block;margin:8px auto;max-width:680px;padding:20px;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;text-decoration:none;border-radius:18px;text-align:center;font-family:Georgia,serif;box-shadow:0 6px 18px rgba(0,0,0,0.18);">
+  <div style="font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">💾 GOOGLE DRIVE BACKUP</div>
+  <div style="font-size:13px;opacity:0.9;">Save all data to Drive · 15 GB free</div>
+  <div style="margin-top:10px;font-size:12px;opacity:0.75;">Backup now →</div>
+</a>
+
+{% endblock %}

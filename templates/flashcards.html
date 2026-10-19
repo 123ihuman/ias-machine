@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🃏 Flashcards</h2>
+{% if due_count > 0 %}
+<div class="alert alert-warning">
+  <strong>{{ due_count }} cards due today.</strong>
+  <a href="{{ url_for('flashcards_review') }}{% if subject %}?subject={{ subject }}{% endif %}" class="btn btn-warning btn-sm ms-2">▶ Start Review</a>
+</div>
+{% else %}
+<div class="alert alert-success">✅ All caught up. Come back tomorrow.</div>
+{% endif %}
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header">Add New Card</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('flashcards_add') }}">
+          <textarea class="form-control mb-2" name="question" rows="3" placeholder="Question / Term" required></textarea>
+          <textarea class="form-control mb-2" name="answer" rows="3" placeholder="Answer / Definition" required></textarea>
+          <input class="form-control mb-2" name="subject" placeholder="Subject (e.g., Polity)">
+          <input class="form-control mb-2" name="topic" placeholder="Topic (optional)">
+          <button class="btn btn-primary w-100">Add Card</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <form method="get" class="mb-2">
+      <select class="form-control" name="subject" onchange="this.form.submit()">
+        <option value="">All Subjects</option>
+        {% for s in subjects %}<option value="{{ s }}" {% if s==subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </form>
+    <h5>All Cards ({{ cards|length }})</h5>
+    {% for c in cards %}
+    <div class="card mb-2">
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between gap-2">
+          <div>
+            <strong>{{ c.question[:120] }}</strong>
+            <p class="small mb-0 text-muted">{{ c.answer[:160] }}</p>
+            <small class="text-muted">
+              {% if c.subject %}<span class="badge bg-info text-dark">{{ c.subject }}</span>{% endif %}
+              Due: {{ c.due_date or 'now' }} · Interval: {{ c.interval_days }}d · Reps: {{ c.reps }} · Ease: {{ '%.2f'|format(c.ease or 2.5) }}
+            </small>
+          </div>
+          <form method="post" action="{{ url_for('flashcards_delete', cid=c.id) }}" onsubmit="return confirm('Delete card?')">
+            <button class="btn btn-sm btn-outline-danger">✕</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-muted">No cards yet. Add one on the left.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

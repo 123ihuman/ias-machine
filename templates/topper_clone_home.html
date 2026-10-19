@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🧬 Topper Clone</h2>
+<p class="text-muted">Upload a topper's answer copy → AI extracts style DNA → clone their writing. 70-80% their words, 20-30% new. PDFs deleted after extraction — only 10 KB stored per topper.</p>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">📄 Upload Topper Copy</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('topper_clone_upload') }}" enctype="multipart/form-data">
+          <input class="form-control mb-2" name="topper_name" placeholder="Topper name" required>
+          <div class="row g-2 mb-2">
+            <div class="col"><input class="form-control" name="year" placeholder="Year" type="number"></div>
+            <div class="col"><input class="form-control" name="rank" placeholder="Rank"></div>
+          </div>
+          <input class="form-control mb-2" name="optional" placeholder="Optional (e.g., PSIR)">
+          <select class="form-select mb-2" name="paper">
+            <option>GS1</option><option>GS2</option><option selected>GS2</option><option>GS3</option><option>GS4</option><option>Essay</option>
+          </select>
+          <input class="form-control mb-2" type="file" name="file" accept=".pdf" required>
+          <button class="btn btn-primary w-100">🧬 Extract Style DNA</button>
+          <small class="text-muted d-block mt-1">Takes ~30 sec per copy. PDF auto-deleted after.</small>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <h5>🧠 Topper DNA Bank ({{ dnas|length }})</h5>
+    {% for d in dnas %}
+    <div class="card mb-2">
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <strong>{{ d.topper_name }}</strong>
+            {% if d.year %}· {{ d.year }}{% endif %}
+            {% if d.rank %}· AIR {{ d.rank }}{% endif %}
+            <span class="badge bg-secondary ms-1">{{ d.paper }}</span>
+            {% if d.optional %}<span class="badge bg-info text-dark">{{ d.optional }}</span>{% endif %}
+            <div class="small text-muted mt-1">Tone: <strong>{{ d.tone }}</strong> · {{ d.word_count_avg }} words avg</div>
+          </div>
+          <form action="{{ url_for('topper_clone_delete', did=d.id) }}" method="post" onsubmit="return confirm('Delete DNA?')">
+            <button class="btn btn-sm btn-outline-danger">✕</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No topper DNA yet. Upload a copy to start.</div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if dnas %}
+<hr>
+<div class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">🧬 Clone an Answer</div>
+  <div class="card-body">
+    <label class="small fw-bold">Question</label>
+    <textarea id="cQ" class="form-control mb-2" rows="3" placeholder="Paste a new question or past PYQ..."></textarea>
+
+    <label class="small fw-bold">Select Toppers to Clone (mix 2-3 for best results)</label>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      {% for d in dnas %}
+      <label class="btn btn-outline-secondary btn-sm">
+        <input type="checkbox" class="topper-cb" value="{{ d.id }}"> {{ d.topper_name }}
+      </label>
+      {% endfor %}
+    </div>
+
+    <button class="btn btn-primary w-100" onclick="cloneAnswer()">🧬 Generate Cloned Answer</button>
+    <small class="text-muted d-block mt-1">Uses selected toppers' phrases, structure, quotes. 70-80% reuse.</small>
+  </div>
+</div>
+
+<div id="cloneResult" style="display:none">
+  <div class="card border-primary">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <span>🧬 Cloned Answer</span>
+      <span id="cloneMeta"></span>
+    </div>
+    <div class="card-body">
+      <div id="cloneBody" style="white-space:pre-wrap;line-height:1.6"></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if answers %}
+<h5 class="mt-4">📜 Recent Clones</h5>
+{% for a in answers %}
+<div class="card mb-2">
+  <div class="card-body py-2">
+    <div class="small text-muted mb-1">{{ a.created_at.strftime('%d %b %H:%M') }} · {{ a.word_count }} words · Match {{ a.similarity_score }}%</div>
+    <strong>{{ a.question[:100] }}...</strong>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<script>
+async function cloneAnswer(){
+  const q = document.getElementById('cQ').value.trim();
+  if (q.length < 10) { alert('Enter a full question'); return; }
+  const cbs = document.querySelectorAll('.topper-cb:checked');
+  if (cbs.length === 0) { alert('Select at least one topper'); return; }
+  const fd = new FormData();
+  fd.append('question', q);
+  cbs.forEach(cb => fd.append('topper_ids', cb.value));
+  const btn = event.target; btn.disabled = true; btn.innerText = '🧬 Cloning...';
+  try {
+    const r = await fetch('/topper-clone/generate', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { alert(d.error); btn.disabled = false; btn.innerText = '🧬 Generate Cloned Answer'; return; }
+    document.getElementById('cloneBody').innerText = d.answer;
+    document.getElementById('cloneMeta').innerText = d.word_count + ' words · Match ' + d.similarity + '%';
+    document.getElementById('cloneResult').style.display = 'block';
+    btn.disabled = false; btn.innerText = '🔄 Clone Again';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerText = '🧬 Generate Cloned Answer'; }
+}
+</script>
+{% endblock %}

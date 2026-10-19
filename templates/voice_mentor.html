@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎤 Voice Mentor</h2>
+<p class="text-muted">Ask any UPSC doubt by voice. Get an instant answer.</p>
+
+<div class="mb-3">
+  <button id="recBtn" class="btn btn-danger btn-lg w-100">🎤 Tap to Record</button>
+</div>
+<div class="alert alert-info" id="status" style="display:none">
+  <strong id="statusText">Recording...</strong> <span id="timer">0s</span>
+</div>
+
+<div id="result" style="display:none">
+  <div class="card mb-3">
+    <div class="card-header">📝 You asked</div>
+    <div class="card-body" id="transcriptBox"></div>
+  </div>
+  <div class="card mb-3 border-primary">
+    <div class="card-header bg-primary text-white">🤖 Mentor's Answer</div>
+    <div class="card-body" id="answerBox" style="white-space:pre-wrap"></div>
+  </div>
+  <button class="btn btn-outline-secondary" id="speakBtn">🔊 Read Aloud</button>
+  <button class="btn btn-outline-primary" id="againBtn">🎤 Ask Another</button>
+</div>
+
+<script>
+let mr, chunks = [], startT, timerInt;
+
+document.getElementById('recBtn').onclick = async () => {
+  if (mr && mr.state === 'recording') { mr.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    mr = new MediaRecorder(stream);
+    chunks = [];
+    mr.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
+    mr.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      clearInterval(timerInt);
+      document.getElementById('recBtn').innerText = '🎤 Tap to Record';
+      await sendVoice();
+    };
+    mr.start();
+    startT = Date.now();
+    document.getElementById('status').style.display = 'block';
+    document.getElementById('statusText').innerText = 'Recording...';
+    document.getElementById('timer').innerText = '0s';
+    document.getElementById('recBtn').innerText = '⏹ Stop & Send';
+    document.getElementById('result').style.display = 'none';
+    timerInt = setInterval(() => {
+      document.getElementById('timer').innerText = Math.floor((Date.now()-startT)/1000) + 's';
+    }, 200);
+  } catch(e) {
+    alert('Mic access needed: ' + e.message);
+  }
+};
+
+async function sendVoice() {
+  const blob = new Blob(chunks, {type:'audio/webm'});
+  const fd = new FormData();
+  fd.append('audio', blob, 'voice.webm');
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('statusText').innerText = 'Thinking...';
+  document.getElementById('timer').innerText = '';
+  try {
+    const r = await fetch('/voice-mentor/ask', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.error) {
+      alert(data.error);
+      document.getElementById('status').style.display='none';
+      return;
+    }
+    document.getElementById('transcriptBox').innerText = data.transcript;
+    document.getElementById('answerBox').innerText = data.answer;
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('status').style.display = 'none';
+  } catch(e) {
+    alert('Error: ' + e.message);
+    document.getElementById('status').style.display = 'none';
+  }
+}
+
+document.getElementById('speakBtn').onclick = () => {
+  const txt = document.getElementById('answerBox').innerText;
+  if (!txt) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(txt);
+  u.rate = 0.95;
+  speechSynthesis.speak(u);
+};
+
+document.getElementById('againBtn').onclick = () => {
+  document.getElementById('result').style.display = 'none';
+};
+</script>
+{% endblock %}

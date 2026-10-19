@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 UPSC Selection Statistics</h2>
+<p class="text-muted">How many candidates reach each stage — year by year. Enter the official numbers once, and the funnel builds itself.</p>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">Add / Update Entry</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('selection_add') }}">
+          <input class="form-control mb-2" type="number" name="year" placeholder="Year (e.g., 2024)" required>
+          <select class="form-control mb-2" name="stage" required>
+            <option value="">Select Stage</option>
+            <option>Applied</option>
+            <option>Appeared Prelims</option>
+            <option>Qualified Prelims</option>
+            <option>Appeared Mains</option>
+            <option>Qualified Mains</option>
+            <option>Appeared Interview</option>
+            <option>Final Selected</option>
+          </select>
+          <input class="form-control mb-2" type="number" name="count" placeholder="Number of candidates" required>
+          <input class="form-control mb-2" name="note" placeholder="Optional note">
+          <button class="btn btn-primary w-100">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    {% if years %}
+      {% for y in years %}
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between">
+          <strong>{{ y }}</strong>
+          <span class="badge bg-secondary">{{ by_year[y]|length }} stages</span>
+        </div>
+        <div class="card-body">
+          <canvas id="chart{{ y }}" height="120"></canvas>
+          <table class="table table-sm mt-3 mb-0">
+            <thead><tr><th>Stage</th><th>Count</th><th>Note</th></tr></thead>
+            <tbody>
+              {% for s in by_year[y] %}
+              <tr>
+                <td>{{ s.stage }}</td>
+                <td>{{ "{:,}".format(s.count) }}</td>
+                <td class="text-muted small">{{ s.note or '' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-info">No data yet. Add an entry on the left to start building the funnel.</div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% for y in years %}
+(function(){
+  const data = {{ by_year[y]|tojson }};
+  const labels = data.map(d => d.stage);
+  const values = data.map(d => d.count);
+  const colors = ['#0d6efd','#6610f2','#d63384','#fd7e14','#ffc107','#198754','#dc3545'];
+  new Chart(document.getElementById('chart{{ y }}'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Candidates',
+        data: values,
+        backgroundColor: colors.slice(0, labels.length)
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.parsed.x.toLocaleString('en-IN') } }
+      },
+      scales: {
+        x: {
+          ticks: { callback: v => v >= 100000 ? (v/100000)+'L' : v >= 1000 ? (v/1000)+'K' : v }
+        }
+      }
+    }
+  });
+})();
+{% endfor %}
+</script>
+{% endblock %}

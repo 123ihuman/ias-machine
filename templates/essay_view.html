@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('essay_hub') }}" class="btn btn-sm btn-outline-secondary mb-2">← All Essays</a>
+
+<div class="card mb-3 border-primary">
+  <div class="card-body text-center">
+    <h3 class="mb-2">{{ topic.title }}</h3>
+    <div>
+      {% if topic.pyq_year %}<span class="badge bg-info text-dark">UPSC {{ topic.pyq_year }}</span>{% endif %}
+      <span class="badge bg-secondary">{{ topic.category }}</span>
+      <span class="badge bg-warning text-dark">{{ topic.difficulty }}</span>
+      <span class="badge bg-danger">125 Marks</span>
+    </div>
+  </div>
+</div>
+
+{% if not topic.dimensions %}
+<div class="alert alert-warning">
+  Framework not generated yet.
+  <form method="post" action="{{ url_for('essay_expand', tid=topic.id) }}" style="display:inline">
+    <button class="btn btn-sm btn-primary ms-2">✨ Generate Full Framework</button>
+  </form>
+</div>
+{% else %}
+
+<div class="card mb-3">
+  <div class="card-header bg-primary text-white">🎯 Opening Thought</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ topic.overview }}</div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">📐 Dimensions to Explore</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ topic.dimensions }}</div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-3">
+      <div class="card-header bg-info text-dark">💬 Relevant Quotes</div>
+      <div class="card-body" style="white-space:pre-wrap">{{ topic.quotes }}</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card mb-3">
+      <div class="card-header bg-warning text-dark">📊 Data Points</div>
+      <div class="card-body" style="white-space:pre-wrap">{{ topic.data_points }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3 border-success">
+  <div class="card-header bg-success text-white">🎬 Conclusion Direction</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ topic.conclusion }}</div>
+</div>
+
+<div class="alert alert-info small">
+  <strong>How to use:</strong> Write the essay on paper, 1000-1200 words in 90 minutes. Then compare your structure with the framework above.
+</div>
+
+{% endif %}
+
+<form action="{{ url_for('essay_delete', tid=topic.id) }}" method="post" class="mt-3">
+  <button class="btn btn-sm btn-outline-danger">Delete</button>
+</form>
+{% endblock %}

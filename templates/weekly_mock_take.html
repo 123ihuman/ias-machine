@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="sticky-top bg-dark text-white p-2 mb-3" style="z-index:100">
+  <div class="d-flex justify-content-between align-items-center">
+    <strong>{{ mock.name }}</strong>
+    <div>
+      <span class="badge bg-danger" id="timer">--:--</span>
+      <span class="badge bg-secondary">{{ mock.questions|length }}Q</span>
+    </div>
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('weekly_mock_submit', mid=mock.id) }}" id="mockForm">
+  {% for q in mock.questions %}
+  <div class="card mb-3 mock-q" data-idx="{{ loop.index0 }}" style="{% if not loop.first %}display:none;{% endif %}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="badge bg-primary">Q{{ loop.index }} / {{ mock.questions|length }}</span>
+        <span class="badge bg-secondary">{{ q.mcq.difficulty or 'Moderate' }}</span>
+      </div>
+      <p style="white-space:pre-wrap;font-size:.95rem">{{ q.mcq.question|clean }}</p>
+      <div>
+        <label class="d-block mb-2"><input type="radio" name="q_{{ q.id }}" value="A"> <strong>A.</strong> {{ q.mcq.option_a|clean }}</label>
+        <label class="d-block mb-2"><input type="radio" name="q_{{ q.id }}" value="B"> <strong>B.</strong> {{ q.mcq.option_b|clean }}</label>
+        <label class="d-block mb-2"><input type="radio" name="q_{{ q.id }}" value="C"> <strong>C.</strong> {{ q.mcq.option_c|clean }}</label>
+        <label class="d-block mb-2"><input type="radio" name="q_{{ q.id }}" value="D"> <strong>D.</strong> {{ q.mcq.option_d|clean }}</label>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="prevQ()" id="prevBtn">← Prev</button>
+        <button type="button" class="btn btn-primary btn-sm ms-auto" onclick="nextQ()" id="nextBtn">Next →</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="button" class="btn btn-warning flex-grow-1" onclick="submitMock()">✅ Submit Mock</button>
+  </div>
+</form>
+
+<script>
+let idx = 0;
+const cards = document.querySelectorAll('.mock-q');
+function show(i){
+  cards.forEach(c => c.style.display = 'none');
+  if (cards[i]) cards[i].style.display = 'block';
+  idx = i;
+  document.getElementById('prevBtn').disabled = (i === 0);
+  document.getElementById('nextBtn').innerText = (i === cards.length - 1) ? 'Last' : 'Next →';
+  window.scrollTo({top: 200, behavior: 'smooth'});
+}
+function nextQ(){ if (idx < cards.length - 1) show(idx + 1); }
+function prevQ(){ if (idx > 0) show(idx - 1); }
+function submitMock(){
+  if (confirm('Submit mock now? You cannot change answers after.')){
+    document.getElementById('mockForm').submit();
+  }
+}
+
+// Timer
+let secs = {{ mock.duration_minutes }} * 60;
+const tEl = document.getElementById('timer');
+setInterval(() => {
+  secs--;
+  if (secs < 0) { document.getElementById('mockForm').submit(); return; }
+  const m = Math.floor(secs / 60), s = secs % 60;
+  tEl.innerText = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  if (secs < 300) tEl.className = 'badge bg-danger';
+  else if (secs < 900) tEl.className = 'badge bg-warning text-dark';
+}, 1000);
+</script>
+{% endblock %}

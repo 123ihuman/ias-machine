@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⏰ Pace Alert</h2>
+<p class="text-muted">Topics sorted by urgency based on your target dates. Today: <strong>{{ today }}</strong></p>
+
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="card border-danger">
+      <div class="card-body text-center">
+        <h6 class="text-danger">🔥 Overdue</h6>
+        <h2 class="text-danger">{{ overdue|length }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-warning">
+      <div class="card-body text-center">
+        <h6 class="text-warning">⚡ Due This Week</h6>
+        <h2 class="text-warning">{{ due_soon|length }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-success">
+      <div class="card-body text-center">
+        <h6 class="text-success">✅ On Track</h6>
+        <h2 class="text-success">{{ on_track|length }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if overdue %}
+<h4 class="text-danger">🔥 Overdue Topics</h4>
+<div class="table-responsive mb-4">
+<table class="table table-sm">
+  <thead><tr><th>Topic</th><th>Subject</th><th>Target</th><th>Days Late</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for e in overdue %}
+    <tr>
+      <td><a href="{{ url_for('syllabus_subject', sid=e.topic.parent_id) }}">{{ e.topic.name }}</a></td>
+      <td>{{ e.topic.parent.name if e.topic.parent else '—' }}</td>
+      <td>{{ e.target }}</td>
+      <td><span class="badge bg-danger">{{ -e.days }} days</span></td>
+      <td>{{ e.topic.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+
+{% if due_soon %}
+<h4 class="text-warning">⚡ Due This Week</h4>
+<div class="table-responsive mb-4">
+<table class="table table-sm">
+  <thead><tr><th>Topic</th><th>Subject</th><th>Target</th><th>Days Left</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for e in due_soon %}
+    <tr>
+      <td><a href="{{ url_for('syllabus_subject', sid=e.topic.parent_id) }}">{{ e.topic.name }}</a></td>
+      <td>{{ e.topic.parent.name if e.topic.parent else '—' }}</td>
+      <td>{{ e.target }}</td>
+      <td><span class="badge bg-warning text-dark">{{ e.days }} days</span></td>
+      <td>{{ e.topic.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+
+{% if on_track %}
+<h4 class="text-success">✅ On Track ({{ on_track|length }})</h4>
+<details class="mb-3">
+  <summary class="text-muted">Show on-track topics</summary>
+  <div class="table-responsive mt-2">
+  <table class="table table-sm">
+    <thead><tr><th>Topic</th><th>Subject</th><th>Target</th><th>Days Left</th></tr></thead>
+    <tbody>
+      {% for e in on_track %}
+      <tr>
+        <td><a href="{{ url_for('syllabus_subject', sid=e.topic.parent_id) }}">{{ e.topic.name }}</a></td>
+        <td>{{ e.topic.parent.name if e.topic.parent else '—' }}</td>
+        <td>{{ e.target }}</td>
+        <td>{{ e.days }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</details>
+{% endif %}
+
+{% if no_date %}
+<div class="alert alert-info">
+  <strong>{{ no_date|length }} topics have no target date.</strong>
+  Set target dates in each subject page to track pace.
+</div>
+{% endif %}
+
+{% if not overdue and not due_soon and not on_track %}
+<div class="alert alert-secondary">
+  No topics have target dates yet. Open any subject from the <a href="{{ url_for('syllabus_tracker') }}">Syllabus Tracker</a> and set target dates per topic.
+</div>
+{% endif %}
+{% endblock %}

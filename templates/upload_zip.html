@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📦 Batch Upload — ZIP</h2>
+<p class="text-muted">Upload a ZIP containing multiple PDFs. All PDFs will be extracted and added to the library automatically.</p>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label class="form-label"><strong>ZIP File</strong></label>
+            <input class="form-control" type="file" name="zipfile" accept=".zip" required>
+            <small class="text-muted">Max 300 MB. Only PDFs inside will be processed.</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Subject (applied to all)</label>
+            <input class="form-control" name="subject" placeholder="e.g., NCERT, Polity, History">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Author (optional)</label>
+            <input class="form-control" name="author" placeholder="e.g., NCERT">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category">
+              <option value="book">Book</option>
+              <option value="paper">Past Paper</option>
+              <option value="notes">Notes</option>
+            </select>
+          </div>
+
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="use_ocr" name="use_ocr">
+            <label class="form-check-label" for="use_ocr">
+              <strong>Use OCR</strong> (only for scanned PDFs — much slower)
+            </label>
+            <small class="d-block text-muted">Leave unchecked for text-based PDFs (NCERTs usually). OCR adds 2-5 sec per page.</small>
+          </div>
+
+          <button class="btn btn-primary w-100">Upload & Process</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">💡 Tips</div>
+      <div class="card-body">
+        <p><strong>Title auto-generated from filename.</strong> Rename PDFs before zipping for best results.</p>
+        <ul>
+          <li>✅ <code>Class 11 Political Theory.pdf</code> → title: "Class 11 Political Theory"</li>
+          <li>❌ <code>01-229-328-29.pdf</code> → title: "01 229 328 29"</li>
+        </ul>
+
+        <hr>
+        <p><strong>Duplicates are skipped</strong> — same title + category won't be added twice.</p>
+
+        <hr>
+        <p><strong>Time estimates:</strong></p>
+        <ul>
+          <li>Text PDFs (no OCR): 5-15 sec per 100-page book</li>
+          <li>Scanned PDFs (with OCR): 3-8 min per 100-page book</li>
+        </ul>
+
+        <div class="alert alert-warning mt-3 mb-0">
+          <strong>PythonAnywhere limit:</strong> free tier has 100 CPU seconds/day. For large batches (with OCR), do them on laptop instead, then sync via Supabase.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="{{ url_for('index') }}" class="btn btn-outline-secondary mt-3">← Back to Library</a>
+{% endblock %}

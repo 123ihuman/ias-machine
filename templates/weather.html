@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🌦️ Weather & Monsoon — UPSC Prediction</h2>
+<p class="text-muted">Weather events → UPSC question predictions. 25 monsoon questions in 12 years — high-yield.</p>
+
+<div class="alert alert-info">
+  <h5 class="mb-2">📊 IMD Monsoon 2026 Forecast</h5>
+  <p class="mb-1"><strong>{{ monsoon_2026.forecast }}</strong></p>
+  <p class="mb-1 small">{{ monsoon_2026.implication }}</p>
+  <p class="mb-0 small"><em>Source: {{ monsoon_2026.source }}</em></p>
+</div>
+
+<div class="alert alert-warning">
+  <strong>🎯 Exam Impact:</strong> {{ monsoon_2026.exam_impact }}
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">🌧️ Predict Questions from Weather Event</div>
+  <div class="card-body">
+    <textarea id="eventInput" class="form-control mb-2" rows="3" placeholder="e.g., IMD predicts below-normal monsoon 2026. El Niño conditions developing in Pacific."></textarea>
+    <button class="btn btn-primary w-100" onclick="runWP()">🔮 Predict UPSC Questions</button>
+  </div>
+</div>
+
+<div id="wRes" style="display:none">
+  <div class="card mb-3 border-primary">
+    <div class="card-header bg-primary text-white">🤖 Predicted Questions</div>
+    <div class="card-body" id="wBox"></div>
+  </div>
+</div>
+
+<h5>🔥 High-Probability Weather Topics</h5>
+<table class="table table-sm">
+  <thead><tr><th>Topic</th><th>Weight</th><th>Keywords</th></tr></thead>
+  <tbody>
+    {% for t in topics %}
+    <tr>
+      <td><strong>{{ t.name }}</strong></td>
+      <td><span class="badge bg-{% if t.weight >= 4 %}danger{% else %}warning text-dark{% endif %}">{{ t.weight }}/5</span></td>
+      <td><small>{{ t.keywords|join(', ') }}</small></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+async function runWP() {
+  const ev = document.getElementById('eventInput').value.trim();
+  if (!ev) { alert('Describe weather event'); return; }
+  const btn = event.target;
+  btn.disabled = true; btn.innerText = '🧠 AI Reasoning...';
+  const fd = new FormData(); fd.append('event', ev);
+  try {
+    const r = await fetch('/weather/predict', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { alert(d.error); btn.disabled = false; btn.innerText = '🔮 Predict UPSC Questions'; return; }
+    document.getElementById('wBox').innerHTML = (d.predictions || []).map(p =>
+      '<div class="card mb-2"><div class="card-body py-2">' +
+      '<div class="d-flex justify-content-between"><strong>' + p.topic + '</strong>' +
+      '<span class="badge bg-' + (p.confidence >= 70 ? 'danger' : p.confidence >= 45 ? 'warning text-dark' : 'secondary') + '">' + p.confidence + '%</span></div>' +
+      '<p class="small mb-1 mt-1">' + (p.question || '') + '</p>' +
+      '<p class="small text-muted mb-0"><em>Answer:</em> ' + (p.answer || '') + '</p></div></div>'
+    ).join('');
+    document.getElementById('wRes').style.display = 'block';
+    btn.disabled = false; btn.innerText = '🔄 Regenerate';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerText = '🔮 Predict UPSC Questions'; }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+  <div>
+    <h5 class="mb-0">{{ book.title }}</h5>
+    <small class="text-muted">{{ book.author or '' }} · Page {{ page_num }} of {{ total_pages }}</small>
+  </div>
+  <div class="d-flex gap-1">
+    <a href="{{ url_for('read_book', book_id=book.id) }}" target="_blank" class="btn btn-sm btn-outline-success">📄 PDF View</a>
+    <a href="{{ url_for('book_search', book_id=book.id) }}" class="btn btn-sm btn-outline-primary">🔍 Search</a>
+    <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline-secondary">Info</a>
+  </div>
+</div>
+
+<div class="card mb-2">
+  <div class="card-body py-2">
+    <form method="get" action="" class="row g-2 align-items-center">
+      <div class="col-auto"><label class="small mb-0">Jump to page:</label></div>
+      <div class="col-3 col-md-2">
+        <input type="number" class="form-control form-control-sm" name="page_num_input" id="jumpInput" min="1" max="{{ total_pages }}" value="{{ page_num }}">
+      </div>
+      <div class="col-auto">
+        <button type="button" class="btn btn-sm btn-primary" onclick="jump()">Go</button>
+      </div>
+      <div class="col-auto ms-auto">
+        <span class="small text-muted">{{ page_num }} / {{ total_pages }}</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body" style="white-space:pre-wrap;font-size:1rem;line-height:1.6;min-height:60vh">{{ page.text if page else '[Page not found]' }}</div>
+</div>
+
+<div class="d-flex justify-content-between mb-3">
+  {% if page_num > 1 %}
+  <a href="{{ url_for('read_book_page', book_id=book.id, page_num=page_num - 1) }}" class="btn btn-primary">← Prev</a>
+  {% else %}<span></span>{% endif %}
+  {% if page_num < total_pages %}
+  <a href="{{ url_for('read_book_page', book_id=book.id, page_num=page_num + 1) }}" class="btn btn-primary">Next →</a>
+  {% endif %}
+</div>
+
+<script>
+function jump() {
+  const n = parseInt(document.getElementById('jumpInput').value);
+  if (n >= 1 && n <= {{ total_pages }}) {
+    window.location = '/read/{{ book.id }}/page/' + n;
+  }
+}
+document.getElementById('jumpInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') { e.preventDefault(); jump(); }
+});
+// Swipe left/right for prev/next
+let tx = 0, ty = 0;
+document.body.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; });
+document.body.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 80 && Math.abs(dy) < 60) {
+    {% if page_num < total_pages %}
+    if (dx < 0) window.location = '/read/{{ book.id }}/page/{{ page_num + 1 }}';
+    {% endif %}
+    {% if page_num > 1 %}
+    if (dx > 0) window.location = '/read/{{ book.id }}/page/{{ page_num - 1 }}';
+    {% endif %}
+  }
+});
+</script>
+{% endblock %}

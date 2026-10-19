@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 Mock Result — {{ mock.name }}</h2>
+<div class="row mb-3">
+  <div class="col-6 col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2">
+        <small>Score</small>
+        <h3 class="{% if mock.score > 0 %}text-success{% else %}text-danger{% endif %}">{{ mock.score|round(1) }}<small class="text-muted">/{{ mock.max_score|round(0)|int }}</small></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2"><small>Correct</small><h3 class="text-success">{{ correct }}</h3></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2"><small>Wrong</small><h3 class="text-danger">{{ wrong }}</h3></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2"><small>Skipped</small><h3 class="text-muted">{{ blank }}</h3></div>
+    </div>
+  </div>
+</div>
+
+<a href="{{ url_for('weekly_mock_home') }}" class="btn btn-primary mb-3">← Back to Mocks</a>
+
+<h5>Question-by-Question</h5>
+{% for q in mock.questions %}
+<div class="card mb-2 border-{% if q.is_correct %}success{% elif q.user_answer %}danger{% else %}secondary{% endif %}">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between mb-1">
+      <strong>Q{{ loop.index }}</strong>
+      {% if q.is_correct %}<span class="badge bg-success">✅ Correct</span>
+      {% elif q.user_answer %}<span class="badge bg-danger">❌ Wrong</span>
+      {% else %}<span class="badge bg-secondary">— Skipped</span>{% endif %}
+    </div>
+    <p class="small mb-2" style="white-space:pre-wrap">{{ q.mcq.question|clean }}</p>
+    <div class="small">
+      <strong>Correct:</strong> {{ q.mcq.correct }} ·
+      <strong>You:</strong> {{ q.user_answer or '—' }}
+    </div>
+    <details class="mt-2"><summary class="small">Show explanation</summary>
+      <p class="small mb-0 mt-1">{{ q.mcq.explanation|clean }}</p>
+    </details>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

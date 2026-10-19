@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📉 Weak Topics Analytics</h2>
+<p class="text-muted">Based on all your mock tests and exam sims. Focus study time where you score lowest.</p>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <h6>Overall Accuracy</h6>
+        <h2 class="{% if overall_acc >= 60 %}text-success{% elif overall_acc >= 40 %}text-warning{% else %}text-danger{% endif %}">
+          {{ overall_acc }}%
+        </h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <h6>Total Attempts</h6>
+        <h2>{{ total_attempts }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <h6>Correct</h6>
+        <h2 class="text-success">{{ total_correct }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if weakest %}
+<h4 class="text-danger">🔥 Weakest Topics — Focus Here</h4>
+<div class="table-responsive mb-4">
+<table class="table table-sm">
+  <thead><tr><th>Topic</th><th>Attempts</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Bar</th></tr></thead>
+  <tbody>
+    {% for r in weakest %}
+    <tr>
+      <td><a href="{{ url_for('topic_detail', topic_name=r.topic) }}">{{ r.topic }}</a></td>
+      <td>{{ r.total }}</td>
+      <td class="text-success">{{ r.correct }}</td>
+      <td class="text-danger">{{ r.wrong }}</td>
+      <td>
+        <span class="badge bg-{% if r.accuracy >= 60 %}success{% elif r.accuracy >= 40 %}warning text-dark{% else %}danger{% endif %}">
+          {{ r.accuracy }}%
+        </span>
+      </td>
+      <td style="min-width:120px;">
+        <div class="progress" style="height:12px;">
+          <div class="progress-bar bg-{% if r.accuracy >= 60 %}success{% elif r.accuracy >= 40 %}warning{% else %}danger{% endif %}"
+               style="width:{{ r.accuracy }}%"></div>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<div class="alert alert-info">Not enough attempts yet. Take a few mock tests to see analytics. (Minimum 2 attempts per topic to appear.)</div>
+{% endif %}
+
+{% if strongest %}
+<h4 class="text-success">✅ Strongest Topics — Keep Sharp</h4>
+<details>
+  <summary class="text-muted">Show strongest topics</summary>
+  <div class="table-responsive mt-2">
+  <table class="table table-sm">
+    <thead><tr><th>Topic</th><th>Attempts</th><th>Accuracy</th></tr></thead>
+    <tbody>
+      {% for r in strongest %}
+      <tr>
+        <td><a href="{{ url_for('topic_detail', topic_name=r.topic) }}">{{ r.topic }}</a></td>
+        <td>{{ r.total }}</td>
+        <td><span class="badge bg-success">{{ r.accuracy }}%</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</details>
+{% endif %}
+
+<div class="alert alert-secondary mt-3">
+  <strong>How to improve weak topics:</strong>
+  <ol class="mb-0 mt-2">
+    <li>Open the topic page → read linked book sources</li>
+    <li>Retake a mock → see if you improve</li>
+    <li>Note down the pattern of mistakes (confusing facts vs. guessing)</li>
+  </ol>
+</div>
+{% endblock %}

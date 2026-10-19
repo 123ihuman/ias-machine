@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 Advanced Answer Evaluator</h2>
+<p class="text-muted">7-dimension examiner model. Comprehension + Analytical depth weighted 2x — exactly how real examiners score.</p>
+
+<div class="row mb-3">
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2">
+    <small class="text-muted">Total Evaluated</small>
+    <h3>{{ evals|length }}</h3>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2">
+    <small class="text-muted">Average Score</small>
+    <h3 class="{% if avg >= 60 %}text-success{% elif avg >= 40 %}text-warning{% else %}text-danger{% endif %}">{{ avg }}%</h3>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2">
+    <small class="text-muted">Model</small>
+    <h6 class="mb-0">7-Dimension UPSC</h6>
+  </div></div></div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">Submit New Answer</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('adv_eval_submit') }}">
+      <label class="small fw-bold">Question</label>
+      <textarea class="form-control mb-2" name="question" rows="3" placeholder="Paste the Mains question here..." required></textarea>
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-6">
+          <label class="small fw-bold">Paper</label>
+          <select class="form-select" name="paper_type">
+            <option value="GS1">GS1 — History, Geography, Society</option>
+            <option value="GS2" selected>GS2 — Polity, Governance, IR</option>
+            <option value="GS3">GS3 — Economy, S&amp;T, Security</option>
+            <option value="GS4">GS4 — Ethics</option>
+            <option value="Essay">Essay</option>
+            <option value="Optional">Optional</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="small fw-bold">Marks</label>
+          <select class="form-select" name="marks">
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="small fw-bold">Your Answer</label>
+      <textarea class="form-control mb-2" name="answer" rows="12" placeholder="Write your answer here (Intro-Body-Conclusion)..." required></textarea>
+
+      <button class="btn btn-primary w-100">🎯 Evaluate (7-Dimension Model)</button>
+    </form>
+  </div>
+</div>
+
+<h5>Past Evaluations</h5>
+{% for e in evals %}
+<div class="card mb-2">
+  <div class="card-body py-2 d-flex justify-content-between align-items-center">
+    <div class="flex-grow-1">
+      <a href="{{ url_for('adv_eval_view', eid=e.id) }}"><strong>{{ e.question[:90] }}...</strong></a>
+      <div class="small text-muted">{{ e.paper_type }} · {{ e.marks }} marks · {{ e.word_count }} words</div>
+    </div>
+    <div class="text-end">
+      <span class="badge bg-{% if e.overall/e.marks >= 0.6 %}success{% elif e.overall/e.marks >= 0.4 %}warning text-dark{% else %}danger{% endif %}">
+        {{ e.overall }}/{{ e.marks }}
+      </span>
+    </div>
+  </div>
+</div>
+{% else %}
+<p class="text-muted">No evaluations yet. Submit one above.</p>
+{% endfor %}
+{% endblock %}

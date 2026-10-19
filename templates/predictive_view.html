@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>{{ paper.name }}</h3>
+  <a href="{{ url_for('predictive_paper_print', pid=paper.id) }}" target="_blank" class="btn btn-success">📄 PDF</a>
+</div>
+
+<div class="alert alert-info">
+  <strong>{{ paper.total_questions }} Questions</strong> · {{ paper.total_marks }} Marks · {{ paper.duration_minutes }} min · Negative {{ paper.negative_marking }}
+</div>
+
+{% for q in questions %}
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between mb-2">
+      <span class="badge bg-primary">Q{{ q.q_number }}</span>
+      <span>
+        <span class="badge bg-secondary">{{ q.subject }}</span>
+        {% if q.source_type == 'PYQ' %}<span class="badge bg-info text-dark">PYQ{% if q.source_year %} {{ q.source_year }}{% endif %}</span>
+        {% else %}<span class="badge bg-warning text-dark">AI New</span>{% endif %}
+      </span>
+    </div>
+    <p style="white-space:pre-wrap">{{ q.question }}</p>
+    {% if q.option_a %}
+    <div class="mt-2">
+      <div><strong>(a)</strong> {{ q.option_a }}</div>
+      <div><strong>(b)</strong> {{ q.option_b }}</div>
+      <div><strong>(c)</strong> {{ q.option_c }}</div>
+      <div><strong>(d)</strong> {{ q.option_d }}</div>
+    </div>
+    <details class="mt-2"><summary class="small">Show answer</summary>
+      <div class="alert alert-success mt-2 mb-0"><strong>Answer: {{ q.correct }}</strong><br>{{ q.explanation }}</div>
+    </details>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

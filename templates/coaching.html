@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎓 Coaching Resource Hub</h2>
+<p class="text-muted">All top UPSC coaching websites, YouTube channels, topper notes, and free resources — in one place.</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <select class="form-select" name="cat" onchange="this.form.submit()">
+      <option value="">All Categories</option>
+      {% for c in cats %}<option value="{{ c }}" {% if c==cat %}selected{% endif %}>{{ c }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-6"><input class="form-control" name="q" value="{{ search }}" placeholder="Search coaching, resources..."></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+
+<div class="row">
+  {% for i in items %}
+  <div class="col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <span class="badge bg-{% if i.cat == 'Coaching' %}primary{% elif i.cat == 'Government' %}success{% elif i.cat == 'Topper' %}warning text-dark{% else %}info text-dark{% endif %} mb-2">{{ i.cat }}</span>
+        <h6>{{ i.name }}</h6>
+        <p class="small text-muted mb-2">{{ i.desc }}</p>
+        <div class="mb-2">
+          {% for t in i.tags %}<span class="badge bg-light text-dark small me-1">{{ t }}</span>{% endfor %}
+        </div>
+        <div class="d-grid gap-1">
+          {% if i.url %}<a href="{{ i.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">🌐 Website</a>{% endif %}
+          {% if i.yt %}<a href="{{ i.yt }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-danger">▶ YouTube</a>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="alert alert-info small">
+  <strong>💡 How to use:</strong> Every website is linked. Click "Website" to open in a new tab. Coaching PDFs are usually in "Free Resources" or "Downloads" section. Topper answer copies are on UnlockIAS. Mock interviews are on Drishti IAS English YouTube.
+</div>
+
+<a href="{{ url_for('index') }}" class="btn btn-outline-secondary mt-3">← Back to Library</a>
+{% endblock %}

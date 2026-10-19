@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding:16px 14px;max-width:720px;margin:0 auto;font-family:Georgia,serif;">
+  <a href="/bookzone" style="color:#5b6bd4;text-decoration:none;font-size:13px;">← Book Zone</a>
+  <h2 style="margin:8px 0 6px;">{{ cat_info.icon }} {{ cat_info.label }}</h2>
+  <p style="color:#666;margin:0 0 16px;font-size:13px;">{{ books|length }} book{{ 's' if books|length!=1 }}</p>
+  <a href="/bookzone/pick/{{ cat }}" style="display:inline-block;padding:10px 18px;background:{{ cat_info.color }};color:#fff;text-decoration:none;border-radius:20px;font-size:14px;font-weight:600;margin-bottom:16px;">➕ Add Books Here</a>
+
+  {% if books %}
+    {% for b in books %}
+    <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="font-weight:600;margin-bottom:4px;">{{ b.title or 'Untitled' }}</div>
+      <div style="font-size:12px;color:#888;margin-bottom:8px;">{{ b.author or '—' }}{% if b.year %} · {{ b.year }}{% endif %}{% if b.subject %} · {{ b.subject }}{% endif %}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="/read/{{ b.id }}" style="padding:6px 12px;background:#3498db;color:#fff;text-decoration:none;border-radius:6px;font-size:12px;">Read</a>
+        <a href="/book/{{ b.id }}" style="padding:6px 12px;background:#f0f0f0;color:#333;text-decoration:none;border-radius:6px;font-size:12px;">Info</a>
+        <form method="post" action="/bookzone/unassign/{{ b.id }}" style="display:inline;margin:0;">
+          <button type="submit" onclick="return confirm('Remove from Book Zone?')" style="padding:6px 12px;background:#e74c3c;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Remove</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div style="padding:40px;text-align:center;background:#fff;border-radius:12px;">
+      <p style="color:#888;">No books here yet.</p>
+      <a href="/bookzone/pick/{{ cat }}" style="color:{{ cat_info.color }};">Add from library →</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

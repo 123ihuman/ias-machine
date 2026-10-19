@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📚 Syllabus Tracker</h2>
+<div class="mb-2"><a href="{{ url_for('syllabus_pace') }}" class="btn btn-warning btn-sm">⏰ Pace Alert</a></div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="small text-muted">Stage</label>
+        <select class="form-control" name="stage">
+          {% for s in stages %}<option value="{{ s }}" {% if s == stage %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="small text-muted">Exam Date</label>
+        <input type="date" class="form-control" name="exam_date" value="{{ exam_date }}">
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-primary w-100">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5>{{ stage }} Progress</h5>
+        <h3 class="text-primary">{{ overall_pct }}%</h3>
+        <div class="progress" style="height:20px;">
+          <div class="progress-bar bg-primary" style="width:{{ overall_pct }}%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5>Days to Exam</h5>
+        <h3 class="{% if days_left < 60 %}text-danger{% elif days_left < 180 %}text-warning{% else %}text-success{% endif %}">
+          {{ days_left }} days
+        </h3>
+        <small class="text-muted">{{ exam_date }}</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h5>Subjects</h5>
+{% for row in subject_data %}
+<div class="card mb-2">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <a href="{{ url_for('syllabus_subject', sid=row.node.id) }}" class="text-decoration-none">
+        <strong>{{ row.node.name }}</strong>
+      </a>
+      <span class="badge bg-secondary">{{ row.total_topics }} topics</span>
+    </div>
+    <div class="progress" style="height:14px;">
+      <div class="progress-bar bg-{% if row.avg > 70 %}success{% elif row.avg > 40 %}warning{% else %}danger{% endif %}"
+           style="width:{{ row.avg }}%">{{ row.avg }}%</div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<div class="card mt-3">
+  <div class="card-header">Add Subject</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('syllabus_add') }}" class="row g-2">
+      <input type="hidden" name="stage" value="{{ stage }}">
+      <div class="col-md-9"><input class="form-control" name="name" placeholder="New subject name" required></div>
+      <div class="col-md-3"><button class="btn btn-primary w-100">Add</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

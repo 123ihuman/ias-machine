@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('adv_eval_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← All Evaluations</a>
+
+<div class="card mb-3 border-primary">
+  <div class="card-body text-center">
+    <h3 class="mb-1">{{ ev.overall }}<small class="text-muted">/{{ ev.marks }}</small></h3>
+    <p class="text-muted mb-0">{{ ev.paper_type }} · {{ ev.word_count }} words · Weighted 7-Dimension Score</p>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">Question</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ ev.question }}</div>
+</div>
+
+<h5>📊 Dimension Breakdown</h5>
+<table class="table table-sm">
+  <thead><tr><th>Dimension</th><th>Score</th><th>Weight</th><th>Contribution</th><th></th></tr></thead>
+  <tbody>
+    {% for k, w in weighted.items() %}
+    <tr>
+      <td><strong>{{ w.name }}</strong></td>
+      <td>{{ w.score }}/10</td>
+      <td>{{ w.weight }}x</td>
+      <td>{{ w.contribution }}</td>
+      <td style="width:130px">
+        <div class="progress" style="height:12px">
+          <div class="progress-bar bg-{% if w.score >= 7 %}success{% elif w.score >= 4 %}warning{% else %}danger{% endif %}"
+               style="width:{{ w.score * 10 }}%"></div>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="row mb-3">
+  <div class="col-md-6">
+    <div class="card border-success h-100">
+      <div class="card-header bg-success text-white">✅ Strengths</div>
+      <div class="card-body" style="white-space:pre-wrap">{{ ev.strengths }}</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-danger h-100">
+      <div class="card-header bg-danger text-white">❌ Weaknesses</div>
+      <div class="card-body" style="white-space:pre-wrap">{{ ev.weaknesses }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3 border-warning">
+  <div class="card-header bg-warning text-dark">📉 Missing Points</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ ev.missing_points }}</div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">🧭 Model Skeleton (Ideal Answer Structure)</div>
+  <div class="card-body" style="white-space:pre-wrap">{{ ev.model_skeleton }}</div>
+</div>
+
+<details class="mb-3">
+  <summary><strong>Show Your Answer</strong></summary>
+  <div class="card mt-2"><div class="card-body" style="white-space:pre-wrap">{{ ev.answer }}</div></div>
+</details>
+
+<form action="{{ url_for('adv_eval_delete', eid=ev.id) }}" method="post">
+  <button class="btn btn-sm btn-outline-danger">Delete Evaluation</button>
+</form>
+{% endblock %}

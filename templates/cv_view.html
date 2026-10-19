@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+  <h3>{{ cv.name }}</h3>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('cv_print', cid=cv.id) }}" target="_blank" class="btn btn-sm btn-success">📄 Print / PDF</a>
+    <a href="{{ url_for('cv_edit', cid=cv.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+    <a href="{{ url_for('cv_home') }}" class="btn btn-sm btn-secondary">← Back</a>
+  </div>
+</div>
+<div style="background:#e8e0d0;padding:14px;border-radius:8px">
+{% include '_cv_layout.html' %}
+</div>
+{% endblock %}

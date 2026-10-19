@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>💎 Topper Word Bank</h2>
+<p class="text-muted">High-value phrases from topper copies — the vocabulary that gets 7/10 answers. Seed starters + upload real copies to expand.</p>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">🚀 Setup</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('word_bank_seed') }}" class="mb-2">
+          <button class="btn btn-primary w-100">📥 Seed 50 Starter Phrases</button>
+          <small class="text-muted d-block mt-1">Constitutional morality, Last mile delivery, Strategic autonomy, etc.</small>
+        </form>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">📄 Upload Topper Copy</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('word_bank_extract') }}" enctype="multipart/form-data">
+          <input class="form-control mb-2" name="topper_name" placeholder="Topper name" required>
+          <div class="row g-2 mb-2">
+            <div class="col"><input class="form-control" name="year" placeholder="Year" type="number"></div>
+            <div class="col"><input class="form-control" name="rank" placeholder="Rank"></div>
+          </div>
+          <select class="form-select mb-2" name="subject">
+            <option value="">Auto-detect subject</option>
+            <option>Polity</option><option>Economy</option><option>Governance</option>
+            <option>Ethics</option><option>Environment</option><option>IR</option>
+            <option>Society</option><option>History</option><option>Geography</option>
+          </select>
+          <input class="form-control mb-2" type="file" name="file" accept=".pdf" required>
+          <button class="btn btn-success w-100">🧠 Extract Power Phrases</button>
+          <small class="text-muted d-block mt-1">AI reads PDF → finds 15-25 high-value phrases → adds to dictionary.</small>
+        </form>
+      </div>
+    </div>
+
+    {% if copies %}
+    <h6>Uploaded Copies ({{ copies|length }})</h6>
+    {% for c in copies %}
+    <div class="small mb-1">
+      <strong>{{ c.topper_name }}</strong>{% if c.year %} ({{ c.year }}{% if c.rank %}, AIR {{ c.rank }}{% endif %}){% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+  </div>
+
+  <div class="col-md-8">
+    <form method="get" class="row g-2 mb-3">
+      <div class="col-md-8">
+        <select class="form-select" name="subject" onchange="this.form.submit()">
+          <option value="">All Subjects</option>
+          {% for s in subjects %}<option {% if s==subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4"><button class="btn btn-primary w-100">Filter</button></div>
+    </form>
+
+    <h5>Phrases ({{ phrases|length }})</h5>
+    <table class="table table-sm">
+      <thead><tr><th>Phrase</th><th>Subject</th><th>Category</th><th>Power</th><th></th></tr></thead>
+      <tbody>
+        {% for p in phrases %}
+        <tr>
+          <td><strong>{{ p.phrase }}</strong></td>
+          <td><span class="badge bg-secondary">{{ p.subject }}</span></td>
+          <td><small>{{ p.category or '—' }}</small></td>
+          <td>
+            <span class="badge bg-{% if p.power_level >= 8 %}danger{% elif p.power_level >= 6 %}warning text-dark{% else %}secondary{% endif %}">
+              {{ p.power_level }}/10
+            </span>
+            {% if p.usage_count and p.usage_count > 1 %}<small class="text-muted">×{{ p.usage_count }}</small>{% endif %}
+          </td>
+          <td>
+            <form action="{{ url_for('word_bank_delete', pid=p.id) }}" method="post" style="display:inline">
+              <button class="btn btn-sm btn-outline-danger">✕</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted">No phrases yet. Click <strong>Seed 50 Starter Phrases</strong> on the left.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⚠️ Common Mistakes in UPSC Preparation</h2>
+<p class="text-muted">Curated pitfalls from toppers, coaches, and UPSC reports — with fixes. Learn from others' failures so you don't repeat them.</p>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">Add a Mistake</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('mistake_add') }}">
+          <select class="form-control mb-2" name="stage" required>
+            <option value="">Select Stage</option>
+            <option>Preparation</option>
+            <option>Prelims</option>
+            <option>Mains Answer Writing</option>
+            <option>Essay</option>
+            <option>Optional</option>
+            <option>Interview</option>
+            <option>Revision</option>
+            <option>Strategy</option>
+          </select>
+          <input class="form-control mb-2" name="title" placeholder="Short title" required>
+          <textarea class="form-control mb-2" name="description" rows="3" placeholder="What is the mistake?" required></textarea>
+          <textarea class="form-control mb-2" name="fix" rows="3" placeholder="How to fix it"></textarea>
+          <input class="form-control mb-2" name="source" placeholder="Source (topper/blog/etc.)">
+          <button class="btn btn-primary w-100">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <form method="get" class="mb-3">
+      <select class="form-control" name="stage" onchange="this.form.submit()">
+        <option value="">All Stages</option>
+        {% for s in stages %}<option value="{{ s }}" {% if s == stage %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </form>
+
+    {% for m in mistakes %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <span class="badge bg-info text-dark">{{ m.stage }}</span>
+        <h5 class="mt-2 mb-1">{{ m.title }}</h5>
+        <p class="mb-2">{{ m.description }}</p>
+        {% if m.fix %}<div class="alert alert-success py-2 mb-1"><strong>Fix:</strong> {{ m.fix }}</div>{% endif %}
+        {% if m.source %}<small class="text-muted">— {{ m.source }}</small>{% endif %}
+        <form action="{{ url_for('mistake_delete', mid=m.id) }}" method="post" class="mt-2">
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No mistakes yet. Add one on the left.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

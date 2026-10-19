@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+  <h4 class="mb-0">📝 UPSC Practice Notebook</h4>
+  <div class="d-flex gap-2">
+    <a href="https://123ihuman.github.io/icopy/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">↗ Open Full Tab</a>
+    <button class="btn btn-sm btn-warning" onclick="toggleFS()">⛶ Fullscreen</button>
+    <button class="btn btn-sm btn-info" onclick="reloadFrame()">🔄 Reload</button>
+  </div>
+</div>
+
+<div class="alert alert-info py-2 small mb-2">
+  💡 <strong>How to use:</strong> Write your answer here → press <strong>T</strong> for typing tool → press <strong>F</strong> for fullscreen notebook → take a screenshot → upload to <a href="{{ url_for('mains_photo') }}">📷 Photo Mains</a> for AI evaluation.
+</div>
+
+<div id="frameWrap" style="width:100%; height:calc(100vh - 200px); border-radius:10px; overflow:hidden; border:2px solid #30363d; background:#fff; position:relative">
+  <iframe id="icopyFrame" src="https://123ihuman.github.io/icopy/" style="width:100%; height:100%; border:none; display:block" allow="clipboard-write; fullscreen" loading="lazy"></iframe>
+  <div id="loadFallback" style="display:none; padding:30px; text-align:center">
+    <h5>⚠️ Iframe could not load</h5>
+    <p class="text-muted small">The GitHub Pages site may block embedding. Use the button below instead.</p>
+    <a href="https://123ihuman.github.io/icopy/" target="_blank" rel="noopener" class="btn btn-primary">Open Notebook in New Tab</a>
+  </div>
+</div>
+
+<script>
+function toggleFS(){
+  const wrap = document.getElementById('frameWrap');
+  if (!document.fullscreenElement){
+    if (wrap.requestFullscreen) wrap.requestFullscreen().catch(()=>{});
+    else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+function reloadFrame(){
+  document.getElementById('icopyFrame').src = document.getElementById('icopyFrame').src;
+}
+// Fallback if iframe blocked
+setTimeout(() => {
+  const iframe = document.getElementById('icopyFrame');
+  try {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    if (!doc || doc.body.innerHTML.trim() === '') {
+      document.getElementById('icopyFrame').style.display = 'none';
+      document.getElementById('loadFallback').style.display = 'block';
+    }
+  } catch(e) {
+    // Cross-origin blocked silently — most likely loaded fine; do nothing
+  }
+}, 4000);
+
+document.addEventListener('fullscreenchange', () => {
+  const wrap = document.getElementById('frameWrap');
+  if (document.fullscreenElement) {
+    wrap.style.height = '100vh';
+    wrap.style.borderRadius = '0';
+  } else {
+    wrap.style.height = 'calc(100vh - 200px)';
+    wrap.style.borderRadius = '10px';
+  }
+});
+</script>
+{% endblock %}

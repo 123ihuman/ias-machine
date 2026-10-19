@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<title>{{ book.title or 'Reader' }} — IAS Machine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#1a1a1a;font-family:system-ui,-apple-system,sans-serif;color:#e6edf3}
+
+.top{position:fixed;top:0;left:0;right:0;height:50px;background:#0d1117;
+     display:flex;align-items:center;padding:0 8px;gap:6px;z-index:100;
+     border-bottom:1px solid #30363d;}
+.top a{color:#d4a017;text-decoration:none;font-size:22px;padding:4px 8px;line-height:1}
+.top .ttl{flex:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+.top .badge{font-size:10px;padding:3px 8px;border-radius:10px;background:#21262d;color:#8b949e;white-space:nowrap}
+.top .badge.on{color:#27ae60}
+.top .badge.off{color:#c0392b}
+
+.viewer{position:absolute;top:50px;left:0;right:0;bottom:60px;overflow-y:auto;
+        overflow-x:hidden;background:#333;padding:8px 0;-webkit-overflow-scrolling:touch;
+        text-align:center;}
+.viewer .page{margin:0 auto 8px auto;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.4);
+             max-width:100%;display:block;}
+
+.bottom{position:fixed;bottom:0;left:0;right:0;height:60px;background:#0d1117;
+        display:flex;align-items:center;justify-content:center;gap:10px;z-index:100;
+        border-top:1px solid #30363d;padding:0 12px;}
+.bottom button{background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:10px;
+               padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
+               min-width:44px;}
+.bottom button:active{transform:scale(0.95)}
+.bottom button:disabled{opacity:0.35}
+.bottom .pg{font-size:13px;color:#8b949e;min-width:70px;text-align:center;font-variant-numeric:tabular-nums}
+.bottom .zoom{background:#d4a017;color:#0d1117;border-color:#d4a017;font-weight:700}
+
+.loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+        color:#8b949e;font-size:14px;text-align:center;z-index:50}
+.loading .spin{width:36px;height:36px;border:3px solid #30363d;border-top-color:#d4a017;
+              border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 12px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.error{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      color:#f0c674;font-size:14px;text-align:center;max-width:80%;padding:20px;
+      background:#3d2300;border-radius:12px;border-left:4px solid #d4a017}
+
+.overlay{position:absolute;top:60px;left:12px;right:12px;padding:8px 14px;border-radius:8px;
+        font-size:12px;text-align:center;z-index:200;opacity:0;transition:opacity 0.3s;
+        pointer-events:none}
+.overlay.show{opacity:1}
+.overlay.ok{background:#1e4d2b;color:#7fd18f}
+.overlay.warn{background:#3d2300;color:#f0c674}
+
+.goto{position:absolute;top:60px;right:12px;z-index:150;display:none}
+.goto input{width:60px;padding:8px;border-radius:8px;background:#21262d;color:#fff;
+           border:1px solid #30363d;font-size:14px;text-align:center}
+.goto.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <a href="javascript:void(0)" onclick="smartBack()" title="Back">←</a>
+  <div class="ttl">{{ book.title or 'Untitled' }}</div>
+  <span class="badge" id="netBadge">…</span>
+</div>
+
+<div class="viewer" id="viewer">
+  <div class="loading" id="loading">
+    <div class="spin"></div>
+    Loading PDF…
+  </div>
+</div>
+
+<div class="overlay" id="ovl"></div>
+
+<div class="bottom">
+  <button id="btnPrev" onclick="gotoPage(cur-1)" disabled>◀</button>
+  <div class="pg" id="pgLabel" onclick="toggleGoto()">— / —</div>
+  <button id="btnNext" onclick="gotoPage(cur+1)" disabled>▶</button>
+  <button class="zoom" id="btnZoom" onclick="cycleZoom()">100%</button>
+</div>
+
+<div class="goto" id="gotoBox">
+  <input type="number" id="gotoInput" min="1" placeholder="pg" onkeydown="if(event.key==='Enter')gotoPage(parseInt(this.value))">
+</div>
+
+<script src="/static/pdfjs/pdf.min.js"></script>
+<script>
+function smartBack(){
+  if (document.referrer && document.referrer.indexOf(location.host) !== -1) {
+    history.back();
+  } else if (history.length > 1) {
+    history.back();
+  } else {
+    location.href = '/offline/cache';
+  }
+}
+</script>
+<script>
+const BOOK_ID = {{ book.id }};
+const PDF_URL = '/book/' + BOOK_ID + '/stream';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/static/pdfjs/pdf.worker.min.js';
+
+let pdfDoc = null;
+let cur = 1;
+let totalPages = 0;
+let scale = 1.0;
+const scaleSteps = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+let scaleIdx = 2;
+const rendered = new Set();
+const viewer = document.getElementById('viewer');
+let pageCanvases = [];
+
+function showOvl(t,k){
+  const el = document.getElementById('ovl');
+  el.className = 'overlay show ' + (k||'ok');
+  el.textContent = t;
+  setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+function updateNet(){
+  const b = document.getElementById('netBadge');
+  const on = navigator.onLine;
+  b.textContent = on ? '🟢 Online' : '🔴 Offline';
+  b.className = 'badge ' + (on ? 'on' : 'off');
+}
+window.addEventListener('online', updateNet);
+window.addEventListener('offline', updateNet);
+updateNet();
+
+pdfjsLib.getDocument(PDF_URL).promise.then(pdf => {
+  pdfDoc = pdf;
+  totalPages = pdf.numPages;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('pgLabel').textContent = '1 / ' + totalPages;
+  document.getElementById('btnNext').disabled = totalPages <= 1;
+
+  // Pre-create all page containers so scrolling works nicely
+  for (let i = 1; i <= totalPages; i++) {
+    const c = document.createElement('canvas');
+    c.className = 'page';
+    c.dataset.pageNum = i;
+    viewer.appendChild(c);
+    pageCanvases.push(c);
+  }
+
+  // Render first 3 pages eagerly
+  for (let i = 1; i <= Math.min(3, totalPages); i++) renderPage(i);
+
+  // Lazy render remaining via IntersectionObserver
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        const n = parseInt(en.target.dataset.pageNum);
+        renderPage(n);
+      }
+    });
+  }, { root: viewer, rootMargin: '200px 0px' });
+  pageCanvases.forEach(c => io.observe(c));
+
+  // Track current page as user scrolls
+  viewer.addEventListener('scroll', () => {
+    const mid = viewer.scrollTop + viewer.clientHeight / 2;
+    for (const c of pageCanvases) {
+      const top = c.offsetTop;
+      if (mid >= top && mid < top + c.offsetHeight) {
+        const n = parseInt(c.dataset.pageNum);
+        if (n !== cur) {
+          cur = n;
+          document.getElementById('pgLabel').textContent = cur + ' / ' + totalPages;
+          document.getElementById('btnPrev').disabled = cur <= 1;
+          document.getElementById('btnNext').disabled = cur >= totalPages;
+        }
+        break;
+      }
+    }
+  });
+
+}).catch(err => {
+  document.getElementById('loading').innerHTML =
+    '<div class="error">⚠️ Could not load PDF.<br><br>' + err.message +
+    '<br><br>Tap ← to go back and try saving this book again.</div>';
+  console.error(err);
+});
+
+async function renderPage(n) {
+  if (rendered.has(n)) return;
+  rendered.add(n);
+  try {
+    const page = await pdfDoc.getPage(n);
+    const canvas = pageCanvases[n-1];
+    const dpr = window.devicePixelRatio || 1;
+    const viewport = page.getViewport({ scale: scale * 1.5 });
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    canvas.style.width = Math.floor(viewport.width / 1.5) + 'px';
+    canvas.style.height = Math.floor(viewport.height / 1.5) + 'px';
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+  } catch(e) {
+    rendered.delete(n);
+    console.warn('render page ' + n, e);
+  }
+}
+
+function reRenderAll() {
+  rendered.clear();
+  pageCanvases.forEach((c, i) => {
+    c.width = 0; c.height = 0;
+  });
+  for (let i = Math.max(1, cur-1); i <= Math.min(totalPages, cur+2); i++) renderPage(i);
+}
+
+function gotoPage(n) {
+  if (n < 1 || n > totalPages) return;
+  cur = n;
+  const c = pageCanvases[n-1];
+  viewer.scrollTo({ top: c.offsetTop - 8, behavior: 'smooth' });
+  document.getElementById('pgLabel').textContent = cur + ' / ' + totalPages;
+  document.getElementById('btnPrev').disabled = cur <= 1;
+  document.getElementById('btnNext').disabled = cur >= totalPages;
+}
+
+function cycleZoom() {
+  scaleIdx = (scaleIdx + 1) % scaleSteps.length;
+  scale = scaleSteps[scaleIdx];
+  document.getElementById('btnZoom').textContent = Math.round(scale*100) + '%';
+  reRenderAll();
+}
+
+function toggleGoto() {
+  document.getElementById('gotoBox').classList.toggle('show');
+  if (document.getElementById('gotoBox').classList.contains('show')) {
+    document.getElementById('gotoInput').focus();
+  }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') gotoPage(cur - 1);
+  if (e.key === 'ArrowRight') gotoPage(cur + 1);
+});
+
+// Swipe on viewer
+let tx = 0, ty = 0;
+viewer.addEventListener('touchstart', e => {
+  tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+}, {passive:true});
+viewer.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 60 && Math.abs(dy) < 60) {
+    if (dx > 0) gotoPage(cur - 1); else gotoPage(cur + 1);
+  }
+}, {passive:true});
+</script>
+
+</body>
+</html>

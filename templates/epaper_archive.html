@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📅 E-Paper Archive</h2>
+{% for p in papers %}
+<div class="card mb-2">
+  <div class="card-body py-2 d-flex justify-content-between">
+    <strong>{{ p.date }}</strong>
+    <a href="{{ url_for('epaper_home') }}?date={{ p.date }}" class="btn btn-sm btn-outline-primary">Open</a>
+  </div>
+</div>
+{% else %}
+<p class="text-muted">No papers generated yet.</p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d1117">
+<title>IAS PDF Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f5f5f5;color:#1a1a1a;padding-bottom:70px}
+body.dark{background:#0d1117;color:#e6edf3}
+header{position:sticky;top:0;background:#0d1117;color:#fff;padding:10px 14px;z-index:10}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+h1{font-size:1.1rem}
+button{cursor:pointer;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#fff;padding:6px 12px;font-size:.85rem}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #d0d7de;background:#fff;font-size:.95rem;margin-bottom:8px}
+body.dark input,body.dark select{background:#21262d;color:#fff;border-color:#30363d}
+.search{background:#21262d;color:#fff;border:none}
+.search::placeholder{color:#8b949e}
+.websearch{display:block;text-align:center;padding:10px;background:#fff;color:#0969da;text-decoration:none;font-size:.9rem;border-bottom:1px solid #e0e0e0}
+body.dark .websearch{background:#161b22;border-color:#30363d;color:#79c0ff}
+.cats{display:flex;overflow-x:auto;gap:6px;padding:10px 14px;background:#fff;border-bottom:1px solid #e0e0e0;scrollbar-width:none}
+body.dark .cats{background:#161b22;border-color:#30363d}
+.cats::-webkit-scrollbar{display:none}
+.pill{white-space:nowrap;padding:6px 12px;border-radius:20px;background:#eef2f6;border:1px solid #d0d7de;font-size:.8rem;cursor:pointer}
+body.dark .pill{background:#21262d;color:#e6edf3;border-color:#30363d}
+.pill.on{background:#0969da;color:#fff;border-color:#0969da}
+.grid{padding:12px;display:grid;gap:10px;max-width:900px;margin:0 auto}
+@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px;position:relative}
+body.dark .card{background:#161b22;border-color:#30363d}
+.card.done{opacity:.55}
+.card h3{font-size:.95rem;padding-right:60px;margin-bottom:6px}
+.card p{font-size:.82rem;color:#57606a;line-height:1.4;margin-bottom:8px}
+body.dark .card p{color:#8b949e}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:.7rem;padding:2px 8px;border-radius:10px;background:#ddf4ff;color:#0969da}
+body.dark .tag{background:#1f6feb33;color:#79c0ff}
+.card a.open{display:block;text-align:center;padding:8px;background:#0969da;color:#fff;border-radius:6px;text-decoration:none;font-size:.85rem}
+.fav,.chk{position:absolute;top:8px;background:transparent;border:none;font-size:1.2rem;padding:2px 6px}
+.fav{right:8px;color:#d0d7de}
+.fav.on{color:#f0b400}
+.chk{right:38px;color:#d0d7de}
+.chk.on{color:#2da44e}
+footer{position:fixed;bottom:0;left:0;right:0;background:#0d1117;padding:8px;display:flex;gap:6px;justify-content:center;border-top:1px solid #30363d;flex-wrap:wrap}
+footer button{padding:8px 10px;font-size:.78rem}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:14px;overflow-y:auto}
+.modal.on{display:flex}
+.box{background:#fff;padding:16px;border-radius:10px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+body.dark .box{background:#161b22;color:#e6edf3}
+.box h2{font-size:1rem;margin-bottom:10px}
+.row2{display:flex;gap:8px;margin-top:8px}
+.row2 button{flex:1;padding:10px}
+.primary{background:#0969da}
+.study-card{border:1px solid #d0d7de;border-radius:8px;padding:10px;margin-bottom:10px}
+body.dark .study-card{border-color:#30363d}
+.empty{padding:40px;text-align:center;color:#8b949e}
+</style>
+</head>
+<body>
+<header>
+<div class="row">
+<h1>📚 IAS PDF Hub</h1>
+<button id="darkBtn" onclick="dark()">🌙</button>
+</div>
+<input class="search" id="q" placeholder="Search or type keyword + tap web search" oninput="render()">
+<a class="websearch" id="webLink" href="#" target="_blank" rel="noopener" style="display:none">🔍 Search web for "<span id="webQ"></span>"</a>
+</header>
+<div class="cats" id="cats"></div>
+<div class="grid" id="grid"></div>
+<footer>
+<button onclick="studyToday()">📖 Today</button>
+<button onclick="openAdd()">➕ Add</button>
+<button onclick="exportAll()">⬇️ Export</button>
+<button onclick="importAll()">⬆️ Import</button>
+</footer>
+
+<div class="modal" id="modal">
+<div class="box">
+<h2>Add Source</h2>
+<input id="t" placeholder="Title">
+<input id="u" placeholder="URL https://...">
+<input id="d" placeholder="Description">
+<select id="c">
+<option>NCERT</option><option>Past Papers</option><option>Reports</option>
+<option>Magazines</option><option>Free Books</option><option>Topper Notes</option>
+<option>Standard Books</option><option>Current Affairs</option><option>Other</option>
+</select>
+<div class="row2">
+<button onclick="closeAdd()">Cancel</button>
+<button class="primary" onclick="save()">Save</button>
+</div>
+</div>
+</div>
+
+<div class="modal" id="studyModal">
+<div class="box">
+<h2>📖 Study Today</h2>
+<p style="font-size:.85rem;color:#8b949e;margin-bottom:10px">3 random unread sources. Read one, mark ✅ to hide it.</p>
+<div id="studyList"></div>
+<button class="primary" style="width:100%;padding:10px;margin-top:8px" onclick="closeStudy()">Close</button>
+</div>
+</div>
+
+<script>
+const DEF = [
+{c:"NCERT",t:"NCERT All Textbooks",u:"https://ncert.nic.in/textbook.php",d:"Free official NCERT PDFs Class 1-12",g:["free","official"]},
+{c:"NCERT",t:"NCERT Hindi Medium",u:"https://ncert.nic.in/textbook.php?l=hi",d:"हिंदी में सभी NCERT पुस्तकें",g:["hindi"]},
+{c:"Reports",t:"Economic Survey",u:"https://www.indiabudget.gov.in/economicsurvey/",d:"Annual economic survey PDFs",g:["GS3"]},
+{c:"Reports",t:"NITI Aayog",u:"https://niti.gov.in/publications",d:"Strategy papers and reports",g:["policy"]},
+{c:"Reports",t:"PRS India",u:"https://prsindia.org/",d:"Bill summaries and parliamentary analysis",g:["GS2"]},
+{c:"Reports",t:"India Year Book",u:"https://www.publicationsdivision.nic.in/",d:"Official reference book",g:["ref"]},
+{c:"Past Papers",t:"UPSC Official Papers",u:"https://upsc.gov.in/examinations/previous-question-papers",d:"Official prelims + mains papers",g:["must"]},
+{c:"Past Papers",t:"Drishti PYQ",u:"https://www.drishtiias.com/upsc-prelims-previous-year-papers",d:"Topic-wise past papers with solutions",g:["solved"]},
+{c:"Free Books",t:"Internet Archive",u:"https://archive.org/",d:"Millions of public-domain books",g:["legal"]},
+{c:"Free Books",t:"Project Gutenberg",u:"https://www.gutenberg.org/",d:"Free classics for Essay/Ethics quotes",g:["legal"]},
+{c:"Topper Notes",t:"Anudeep Durishetty",u:"https://www.anudeepdurishetty.in/",d:"AIR 1 (2017) blog and notes",g:["AIR1"]},
+{c:"Standard Books",t:"Laxmikanth — Polity",u:"https://www.mheducation.co.in/",d:"Standard polity book",g:["polity"]},
+{c:"Standard Books",t:"Bipin Chandra — History",u:"https://www.penguinrandomhouseindia.com/",d:"Freedom struggle reference",g:["history"]},
+{c:"Standard Books",t:"Majid Husain — Geography",u:"https://www.mheducation.co.in/",d:"Indian geography",g:["geo"]},
+{c:"Standard Books",t:"Ramesh Singh — Economy",u:"https://www.mheducation.co.in/",d:"Economy reference",g:["eco"]},
+{c:"Magazines",t:"Yojana",u:"https://yojana.gov.in/",d:"Free monthly govt magazine",g:["free"]},
+{c:"Magazines",t:"Kurukshetra",u:"https://publicationsdivision.nic.in/",d:"Rural development magazine",g:["rural"]},
+{c:"Current Affairs",t:"PIB",u:"https://pib.gov.in/",d:"Official government press releases",g:["daily"]},
+{c:"Current Affairs",t:"The Hindu Editorials",u:"https://www.thehindu.com/opinion/editorial/",d:"Best editorial source",g:["daily"]},
+{c:"Current Affairs",t:"Indian Express Explained",u:"https://indianexpress.com/section/explained/",d:"Deep analysis",g:["analysis"]},
+{c:"Current Affairs",t:"Sansad TV",u:"https://sansadtv.nic.in/",d:"Parliament debates",g:["debate"]},
+{c:"Other",t:"MEA Briefs",u:"https://www.mea.gov.in/",d:"Foreign policy documents",g:["IR"]},
+{c:"Other",t:"RBI Reports",u:"https://www.rbi.org.in/",d:"Monetary policy and annual reports",g:["economy"]},
+{c:"Other",t:"Supreme Court Judgments",u:"https://main.sci.gov.in/judgments",d:"Landmark judgments",g:["law"]},
+{c:"Other",t:"Election Commission",u:"https://eci.gov.in/",d:"Election data and reforms",g:["polity"]}
+];
+
+let user = JSON.parse(localStorage.getItem("ias_user")||"[]");
+let favs = JSON.parse(localStorage.getItem("ias_favs")||"[]");
+let done = JSON.parse(localStorage.getItem("ias_done")||"[]");
+let cat = "All";
+
+function all(){return [...DEF, ...user];}
+
+function init(){
+if(localStorage.getItem("ias_dark")==="1"){document.body.classList.add("dark");document.getElementById("darkBtn").textContent="☀️";}
+renderCats();render();
+}
+
+function renderCats(){
+const cs = ["All", ...new Set(all().map(s=>s.c))];
+document.getElementById("cats").innerHTML = cs.map(x=>
+`<div class="pill ${x===cat?"on":""}" onclick="setCat('${x}')">${x}</div>`).join("");
+}
+
+function setCat(c){cat=c;renderCats();render();}
+
+function render(){
+const q = document.getElementById("q").value.toLowerCase().trim();
+const wl = document.getElementById("webLink");
+const wq = document.getElementById("webQ");
+if(q.length > 2){
+wl.style.display = "block";
+wq.textContent = document.getElementById("q").value;
+wl.href = "https://www.google.com/search?q=" + encodeURIComponent(document.getElementById("q").value + " UPSC PDF");
+}else{
+wl.style.display = "none";
+}
+let list = all().filter(s=>{
+const okC = cat==="All"||s.c===cat;
+const okQ = !q || s.t.toLowerCase().includes(q) || (s.d||"").toLowerCase().includes(q) || (s.g||[]).join(" ").toLowerCase().includes(q);
+return okC && okQ;
+});
+list.sort((a,b)=>(favs.includes(b.u)?1:0)-(favs.includes(a.u)?1:0));
+const g = document.getElementById("grid");
+if(!list.length){g.innerHTML='<div class="empty">No sources found. Use the 🔍 web search above to find on Google.</div>';return;}
+g.innerHTML = list.map(s=>{
+const f = favs.includes(s.u)?"on":"";
+const d = done.includes(s.u)?"on":"";
+const dc = done.includes(s.u)?"done":"";
+return `<div class="card ${dc}">
+<button class="fav ${f}" onclick="fav('${esc(s.u)}')">${f?"★":"☆"}</button>
+<button class="chk ${d}" onclick="toggleDone('${esc(s.u)}')">${d?"✅":"☐"}</button>
+<h3>${esc(s.t)}</h3>
+<p>${esc(s.d||"")}</p>
+<div class="tags">${(s.g||[]).map(x=>`<span class="tag">${esc(x)}</span>`).join("")}</div>
+<a class="open" href="${esc(s.u)}" target="_blank" rel="noopener">Open →</a>
+</div>`;}).join("");
+}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function fav(u){const i=favs.indexOf(u);i===-1?favs.push(u):favs.splice(i,1);localStorage.setItem("ias_favs",JSON.stringify(favs));render();}
+
+function toggleDone(u){const i=done.indexOf(u);i===-1?done.push(u):done.splice(i,1);localStorage.setItem("ias_done",JSON.stringify(done));render();}
+
+function dark(){document.body.classList.toggle("dark");const d=document.body.classList.contains("dark");localStorage.setItem("ias_dark",d?"1":"0");document.getElementById("darkBtn").textContent=d?"☀️":"🌙";}
+
+function studyToday(){
+const pool = all().filter(s=>!done.includes(s.u));
+const shuffled = [...pool].sort(()=>Math.random()-0.5).slice(0,3);
+const c = document.getElementById("studyList");
+if(!shuffled.length){c.innerHTML='<p>All sources done! 🎉</p>';}
+else{
+c.innerHTML = shuffled.map(s=>`
+<div class="study-card">
+<h3 style="font-size:.9rem;margin-bottom:4px">${esc(s.t)}</h3>
+<p style="font-size:.8rem;color:#8b949e;margin-bottom:8px">${esc(s.d||"")}</p>
+<a class="open" href="${esc(s.u)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:8px;background:#0969da;color:#fff;border-radius:6px;text-decoration:none;font-size:.85rem;margin-bottom:6px">Open →</a>
+<button style="width:100%;padding:8px" onclick="toggleDone('${esc(s.u)}');studyToday()">✅ Mark Done</button>
+</div>`).join("");
+}
+document.getElementById("studyModal").classList.add("on");
+}
+function closeStudy(){document.getElementById("studyModal").classList.remove("on");}
+
+function openAdd(){document.getElementById("modal").classList.add("on");}
+function closeAdd(){document.getElementById("modal").classList.remove("on");}
+function save(){
+const t=document.getElementById("t").value.trim();
+const u=document.getElementById("u").value.trim();
+const d=document.getElementById("d").value.trim();
+const c=document.getElementById("c").value;
+if(!t||!u){alert("Title and URL required");return;}
+user.push({c,t,u,d,g:[]});
+localStorage.setItem("ias_user",JSON.stringify(user));
+renderCats();render();closeAdd();
+document.getElementById("t").value="";document.getElementById("u").value="";document.getElementById("d").value="";
+}
+
+function exportAll(){
+const data = JSON.stringify({user,favs,done},null,2);
+const b = new Blob([data],{type:"application/json"});
+const a = document.createElement("a");
+a.href = URL.createObjectURL(b);
+a.download = "ias_hub_backup.json";
+a.click();
+}
+
+function importAll(){
+const i = document.createElement("input");
+i.type = "file"; i.accept = ".json";
+i.onchange = e => {
+const f = e.target.files[0]; if(!f)return;
+const r = new FileReader();
+r.onload = ev => {
+try{
+const d = JSON.parse(ev.target.result);
+if(d.user) user = d.user;
+if(d.favs) favs = d.favs;
+if(d.done) done = d.done;
+localStorage.setItem("ias_user",JSON.stringify(user));
+localStorage.setItem("ias_favs",JSON.stringify(favs));
+localStorage.setItem("ias_done",JSON.stringify(done));
+renderCats();render();alert("Imported");
+}catch(x){alert("Invalid file");}
+};
+r.readAsText(f);
+};
+i.click();
+}
+
+init();
+</script>
+</body>
+</html>

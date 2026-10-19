@@ -1,0 +1,600 @@
+[   4.6s] Tell me what is the problem with our bureaucracy?
+[   7.6s] You don't know about your own social, local self-government, how will you know about the Rungi IP address?
+[  11.6s] In relation with the freedom of speech, my should government control media offices.
+[  16.8s] Why don't policies work in our country?
+[  19.8s] And you too privileged to become a civil servant.
+[  30.9s] Hey, I'm Mincear.
+[  31.9s] Yes, Kavit.
+[  32.9s] Thank you, sir.
+[  34.8s] Good morning, sir.
+[  35.8s] Good morning.
+[  36.8s] Good morning, sir.
+[  37.8s] Good morning, sir.
+[  38.8s] Good morning, sir.
+[  39.8s] Thank you, sir.
+[  43.1s] It is a brief introduction about yourself.
+[  45.1s] So my name is Anero Dhyadav.
+[  46.1s] I was born in Chandigar in 1996.
+[  49.1s] I've completed my schooling from Delhi.
+[  51.1s] And subsequently I went to do my engineering in biochemical engineering and biotechnology from my IT Delhi.
+[  57.2s] So currently I'm serving in the Indian Information Service as an officer training.
+[  60.2s] And so my hobbies include starting the prevention and causes of aging.
+[  65.2s] And as a playing football in Skoshza.
+[  68.2s] Under the Wenduradiayoi, Indian Pharmaceutical Service.
+[  71.2s] So my training started in January this year.
+[  73.2s] Gen by this year.
+[  74.2s] Or you're finding your 20?
+[  76.2s] So it's very interesting.
+[  77.2s] So getting to learn a lot about the ministry, about the different aspects of communication.
+[  84.2s] How do you collaborate with other industries?
+[  86.2s] So there is mostly the primary source of collaboration.
+[  90.2s] It's through the PIB.
+[  91.2s] There is an individual who's posted in Vim Ministry who is responsible for the release of the press releases.
+[  98.2s] And organizing press conferences etc.
+[ 100.2s] That's the primary source of interactions.
+[ 103.2s] Okay. You're undergoing training.
+[ 105.2s] Tell me what new technologies are taught to the professionals in that training module.
+[ 113.2s] So with respect to technologies, so currently we have a session very recently on how artificial intelligence is being used to track fake news.
+[ 121.2s] So additionally we're also.
+[ 123.2s] So there was a session on charge GPT.
+[ 125.2s] How we can use it to make press releases.
+[ 127.2s] And how we can detect different things that are made by AI using AI itself.
+[ 132.2s] So AI is something that is there in the communication.
+[ 135.2s] Which changes you gave the presentation on charge GPT and AI technologies?
+[ 139.2s] So the faculty of the IAMC, the Indian Institute of Mask Communication, a faculty from there itself.
+[ 146.2s] Okay.
+[ 147.2s] And did you get training in the crisis to deal with crisis communication also?
+[ 153.8s] As we had an individual who spoke about his anecdotal experiences.
+[ 157.8s] But so he spoke about the topic of crisis communication.
+[ 161.8s] But he tried to give the message through anecdotes.
+[ 164.8s] Okay.
+[ 165.8s] Your second generation bureaucrat isn't it?
+[ 168.8s] Your father was also a part of the bureaucracy.
+[ 170.8s] Tell me what is the problem with our bureaucracy?
+[ 173.8s] So I feel so very recently the Prime Minister in his address in the civil services.
+[ 189.4s] The civil services they also pointed out.
+[ 191.4s] At the first one of the primary problems is that the bureaucrats are often.
+[ 196.4s] They're not cognizant of what is going on on the fields.
+[ 200.4s] Because they're caught up in the rigmerola of work or for any other reason.
+[ 203.4s] So second is an issue of attitude.
+[ 205.4s] So oftentimes it is seen that a lot of bureaucrats are ostensibly seen to be arrogant.
+[ 210.4s] Perhaps because they're busy or because they can't take out time.
+[ 214.4s] So the solution to this would be to have people's entry approach meet everyone who's coming etc.
+[ 219.4s] And so the third is the main of corruption.
+[ 222.4s] Because corruption is something that has pervaded many parts of bureaucracy and has been seen in the past.
+[ 227.4s] What are the issues like in-discision risk ever since the part of the bureaucrats?
+[ 233.9s] Absolutely sir.
+[ 234.9s] So I agree that there is so because of the system of bureaucracy or so it can also be due to legacy challenges.
+[ 241.9s] There is a lot of risk-aversion and decision making.
+[ 243.9s] Why it all policies work in our country?
+[ 246.9s] So I believe that India is such a big country and there are many nuances in a country like India.
+[ 251.9s] So policy formulation itself requires large data sets of what is happening on the field.
+[ 256.9s] So I believe at the state of formulation there are issues with respect to data-led policy making.
+[ 261.9s] On the scale of implementations, often we have seen that the second they are also noted that there is a one size fits all.
+[ 268.9s] So India is a land of tremendous diversity right from geographical cultural, social etc.
+[ 273.9s] And so I believe that there needs to be little nuance, there needs to be a little wiggle room for the ISIPS and other officers on the field.
+[ 280.9s] To ensure that implementation is it can be catered to the specific audience.
+[ 286.9s] So thirdly I believe the regulation is a third friend that regulatory bodies for seeing how the policy is being implemented.
+[ 294.9s] And additionally having a feedback mechanism to improve policy as these are the three challenges.
+[ 299.9s] Okay. The emphasis of the government is to switch over from rule-based decision making to rule-based decision making.
+[ 309.5s] With the little experience which you have had in the bureaucracy and the long experience where your father had in the bureaucracy,
+[ 316.5s] Do you think it is an implementable and do-able proposition?
+[ 321.5s] I feel that the fact that the bureaucracy is currently called rule-based is because there is a plethora of rules that constraint bureaucrats from taking decisions.
+[ 330.5s] So to move to the objectives or I believe is something to move to a rule-based is something that is currently utopienza because rules are what not only restrict bureaucrats,
+[ 340.5s] but also ensure that there is less corruption, there is more accountability etc.
+[ 344.5s] So as an example, there are rules as to how much money can be spent on a official dinner or on a official lunch.
+[ 350.5s] So this requires a lot of paperwork to be filled out. So the TADA forms for instance at one field they are very long and take a lot of time.
+[ 357.5s] However, this is only to ensure accountability and so to move to a role-based system.
+[ 362.5s] So either we need to use technology to pre-fill these forms or to ensure that there is a digital way of ensuring accountability.
+[ 369.5s] So I believe that is the way forward to move to a role-based system.
+[ 372.5s] Presently the bureaucracies basically the principles or the basic traits of bureaucracies based on mistrust.
+[ 378.5s] And it is-
+[ 379.5s] Don't you think that this high time the country should switch over from or move from this idea of mistrust to the idea of trust?
+[ 389.5s] So I believe that the fact that the bureaucracies is actually based on mistrust.
+[ 393.5s] So it is because of the fact like in our chastrimistra, so we have to take a look at the corruption in a place like a bureaucracies like a fish drinking water.
+[ 402.5s] So it has to be on mistrust because so there is the public funds, this is the tax pay money that is being used.
+[ 408.5s] And so there must be a system of checks and balances, there must be a system of ensuring accountability of individuals.
+[ 414.5s] So giving, so ensuring that there is a lot of trust, what certainly do good for efficiency.
+[ 420.5s] However, so it will be very difficult to find out the trouble because of the notorious elements in the bureaucracies.
+[ 425.5s] Okay, thank you, Ruth.
+[ 427.5s] Thank you, sir.
+[ 428.5s] Hello, hello, hello.
+[ 429.5s] Good afternoon sir.
+[ 430.5s] And you know, I can see that you just mentioned you, you are from Delhi.
+[ 436.5s] So you, father is IPs officer.
+[ 440.5s] You stay in China, Capri, studied from Sanskrit, Sanskrit.
+[ 444.5s] And you two privileged to become a civil servant.
+[ 448.5s] I mean, it is good, you can be a IAS officer, fine, maybe corporate law of service officer.
+[ 453.5s] But these privileges will be detrimental for your good work in services like IAS.
+[ 461.5s] Is it IIT?
+[ 463.5s] So I feel, my primary motivation for joining the services was to give back to the country that has given me so much.
+[ 470.5s] So like you mentioned, sir, I have lived in a government house all my life.
+[ 473.5s] So my college education was government funded, the school I went to was built on government land that was subsidized.
+[ 479.5s] My fees was subsidized because of the same fact.
+[ 481.5s] So I overheewed it.
+[ 483.5s] Everything I am today is because of the government.
+[ 485.5s] And so all the privileges that you also mentioned are because of the government itself.
+[ 490.5s] And so I owe my life to the government in that sense.
+[ 493.5s] And I believe working in the civil services is a way of repaying that taxor.
+[ 497.5s] That's only about the internal motivation you're talking about.
+[ 501.5s] My concern is that because of these privileges, sir.
+[ 504.5s] Your personality, in fact, lectured in things, for example, that you might, you father might already have.
+[ 511.5s] I mean, he might be not becoming from as privileged by ground as you are coming from.
+[ 517.5s] So if you compare your background with his background and then you'll realize that isn't it that you've,
+[ 523.5s] in by certain values which are detrimental to become good IAS or IPAS.
+[ 530.5s] IAS is fine.
+[ 532.5s] So it is my understanding that's a privilege is not the primary factor that drives one, one's traits or,
+[ 538.5s] so the different virtues that a person imbibes.
+[ 542.5s] So it is a factor of, so your internal thinking, the way you've been brought up by your parents,
+[ 546.5s] the challenges that your face in your life.
+[ 548.5s] And so while privilege, a thing like privilege can certainly ensure that living in a rural area perhaps might be tough.
+[ 553.5s] Or, so living in a far-flung area might be tough.
+[ 556.5s] So my perspective is that that is a challenge I want to overcome.
+[ 559.5s] So I want to give back to the country.
+[ 562.5s] And I want to ensure that by going there, I can understand the two nature of India,
+[ 566.5s] or which I've only read about in books.
+[ 568.5s] You come in from Channaki Purri?
+[ 569.5s] Sir.
+[ 570.5s] What is the local self-comment structure there?
+[ 573.5s] Sir, the local self-bombs.
+[ 575.5s] Sir, municipal councils are the NDMC, new Delhi municipality.
+[ 579.5s] What are the electrical, elected components in NDMC?
+[ 582.5s] So there is a mirror in NDMC, sir.
+[ 586.5s] And so there is, there is a mirror in NDMC.
+[ 588.5s] So there is an elected mirror in NDMC.
+[ 590.5s] There is a very substantial structure.
+[ 593.5s] Sorry, sir.
+[ 594.5s] How many wards are there in NDMC, where elections take place?
+[ 597.5s] Sir, I'm not sure, sir.
+[ 599.5s] Have you ever voted in NDMC election?
+[ 601.5s] No, sir.
+[ 602.5s] Then by saying there are elected component in NDMC,
+[ 605.5s] because I'm the first time I'm hearing somebody saying NDMC has elected components.
+[ 609.5s] I apologize for that.
+[ 610.5s] I apologize for that.
+[ 611.5s] I apologize for that.
+[ 613.5s] So you don't know about your own social local self-government.
+[ 616.5s] How will you know about the one I think?
+[ 618.5s] Sir, not aware of the structure of NDMC.
+[ 620.5s] Anyways, you are currently sitting in IAS, a FISA provisional, indeed.
+[ 625.5s] I think we can discuss right-to-information with you.
+[ 628.5s] Which is a nodal department for right-to-information at a certain nodal department.
+[ 633.5s] So there is an information officer that is in every department.
+[ 637.5s] And so that's true.
+[ 638.5s] But what is the nodal department in the Ministry, which ministry?
+[ 641.5s] Sir, the central information commission, sir.
+[ 643.5s] Comcent of which ministry?
+[ 645.5s] Who?
+[ 646.5s] The grants for the central information commission will be from which department?
+[ 651.5s] Sir, believe it is under the...
+[ 653.5s] So the Ministry of a Personnel.
+[ 655.5s] So it's TOPT.
+[ 657.5s] Sir.
+[ 658.5s] Why not to information ministry?
+[ 659.5s] I mean, there is a Ministry of Information already.
+[ 661.5s] You're an officer there.
+[ 662.5s] Indeed.
+[ 663.5s] The NRTI should be under you.
+[ 665.5s] Why do you do PIT?
+[ 666.5s] Sir, I believe that the reason for this is that the right-to-information act.
+[ 669.5s] So number one is to ensure that information can be gathered from all the ministries.
+[ 674.5s] And so it is more of a human resources challenge rather than information challenge.
+[ 680.5s] So because ensuring that the human resources of all ministries have the department.
+[ 685.5s] So ensuring that the guidelines under section four of proactively giving out information.
+[ 690.5s] But none of them actually know what information is.
+[ 692.5s] You guys are trained to understand what information is.
+[ 695.5s] What information is valuable?
+[ 697.5s] What information is to be disseminated?
+[ 699.5s] And you're kept out of it.
+[ 701.5s] Out of it.
+[ 702.5s] So the primary mandate of the information and broadcasting ministry is,
+[ 705.5s] So in the three departments, is to take out the information of the government and take it to the public.
+[ 710.5s] So with regard to RTI and resources in detail.
+[ 714.5s] So with respect to the RTI, there needs to be central ministry to ensure that all the other ministries are doing their work.
+[ 721.5s] And additionally, in the mandate of the RTI for instance, section four, section eight, et cetera.
+[ 728.5s] There needs to be a supervisor mechanism.
+[ 730.5s] So the information and broadcasting ministry is primarily only focused on ensuring that information of the central government goes out, such as keen, etc.
+[ 739.5s] We certainly, for more government, are actually made claim in the interview, in an interview that the list of guests, visitors to the president of India, are is wetted by PM.
+[ 755.3s] Right. If I want to find out this through RTI, will this information be supplied to me, who will supply this?
+[ 762.3s] Or it is against the national interest and cannot be given.
+[ 765.4s] What's your take as an IIS office?
+[ 767.4s] So I believe that it depends on whether the information is being, if the information being seen is before or after the event is taken place.
+[ 774.4s] So if it is before, perhaps they will not release the information, till after the event is complete.
+[ 780.4s] And so I believe that the RTI would be have to be filed with PMO, which is making the decisions.
+[ 786.4s] And you have taken anthropology as your option.
+[ 789.4s] And you have mentioned that you are working or you like to work on the causes of aging thing.
+[ 795.4s] Let's talk about disease. Is aging a disease technically speak?
+[ 800.4s] So very recently, so the world has organization has indeed classified aging as a disease.
+[ 806.7s] And so this is as of 2007.
+[ 808.7s] If it is a disease, what kind of disease it is?
+[ 810.7s] So currently it is understood to be a lifestyle disease.
+[ 813.7s] Like still disease.
+[ 814.7s] Tell me, since you have studied anthropology, what is the role of diseases in evolution of human kind?
+[ 821.7s] So it is said that diseases have actually made humans what they are.
+[ 825.7s] So about 11% of a DNA comes from the DNA of viruses in bacteria.
+[ 830.7s] So it is seen that diseases are the primary driver of what is called survival of the fittest.
+[ 835.7s] In other words, what you are saying that the treat-mails, the medical science, is disruption to evolution.
+[ 843.7s] Is it?
+[ 844.9s] So speaking from a biological science, yes sir.
+[ 847.9s] It is disruption to.
+[ 848.9s] So why do you want to prevent aging there? Why do you want to disrupt evolution?
+[ 853.2s] So with regard to prevention of aging, so the focus is on ensuring that the latter years of one's life are healthy.
+[ 859.2s] And so because in the latter years, one faces diseases such as cancer, et cetera.
+[ 864.2s] So not only are there psychological burden on the family, but additionally they also are a huge financial stress,
+[ 870.2s] especially two large parts of the Indian population.
+[ 873.2s] And so the reason for healthy aging is to ensure a healthy latter part of your life,
+[ 878.2s] where one can ensure that they are happy and enjoyed their retired life.
+[ 881.2s] But if you look at what is happening in France, it understand that people want to stop aging,
+[ 885.2s] so that they can push human being to work even more.
+[ 889.2s] Unfair, is it?
+[ 891.2s] Indeed, sir.
+[ 892.2s] So I believe that even if we look at history, so aging has always, we are always in a fight against aging.
+[ 897.2s] So there are life expectancy, 1900 was 40 globally, and it was about 27 in India.
+[ 902.2s] So currently it is at about 72.5.
+[ 906.2s] And so because it happened in a span of 100 years, and because we live through it, we don't look at it as prevention of aging.
+[ 912.2s] So the entire field of medical science is indeed doing the same thing of prevention,
+[ 919.2s] and it is a very good parenting, aging in the long run.
+[ 921.2s] Thank you.
+[ 922.2s] So, hi, you know, Riddh.
+[ 925.0s] Ratham sir.
+[ 926.0s] Good afternoon.
+[ 927.0s] If we, you are just continue with the Sars, argument with you.
+[ 933.3s] If you prevent aging and kind of becoming the most populous country in the world,
+[ 940.3s] how would that not be like anything?
+[ 943.6s] Nobody would be after us, but there would be huge gap.
+[ 948.0s] India is doing this in number of people who would be there, population wise, I would say.
+[ 953.1s] Does it okay or people should die on, as per their age or, why should we,
+[ 958.1s] intervene basically?
+[ 960.1s] I believe the idea is to ensure that pendant individual grows old.
+[ 964.1s] So for instance, there are a lot of individuals who are at the age of 60.
+[ 968.1s] Through their vast experience in their life, have learned so much.
+[ 971.1s] So for instance, if we compare someone like Mr. Rakije Jungen,
+[ 974.1s] Mr. Warren Buffett, so the only difference is that Mr. Rakije Jungen was a died early.
+[ 979.1s] Mr. Warren Buffett made a majority of his wealth after the age of 80s.
+[ 983.1s] It means we are focusing, or we have to focus on a few individuals, they have to live long.
+[ 990.1s] Who have that much, who have gained that much of knowledge, or in their particular field,
+[ 995.1s] like Rakije Jungen, Wala or per say you can say Michael Jackson or somebody is very famous around person.
+[1003.9s] In reference, this is just an anecdote, sir.
+[1005.9s] So for instance Mr. C. Rau, after retiring at the age of 60s,
+[1008.9s] you are naming the people who know you or who, who,
+[1011.9s] much love the people known by all over India, much love pan India.
+[1015.9s] What about the common people? Why not we work for the laborer's or for the people who are very,
+[1023.9s] who are not privileged, I would say?
+[1026.9s] Absolutely, sir.
+[1027.9s] I believe that any therapy to prevent and prevent the causes of aging will benefit.
+[1033.9s] So the lower socioeconomic status of the most.
+[1036.9s] So this is because sort of majority of their expenses are out of pocket expenses,
+[1040.9s] and are associated with the issues of aging such as cancer, such as high blood pressure, such as heart issues.
+[1047.9s] So it is estimated that on average a family spends more than 60% of its saving.
+[1052.9s] Sir, on average is it good for a country like India?
+[1055.9s] Sir, to spend this much on health care, health care and then population wise India is the top country in the world.
+[1062.9s] So that is the goal of those people will be burden on all resources.
+[1066.9s] So I believe that population is potential for a country, sir.
+[1071.9s] As long as we let's move on to other subject, who was an hero then in the mythology?
+[1077.9s] So an hero was the grandson of Lord Krishna, as returning in the Bhagavad Puran, sir.
+[1082.9s] And Lord Krishna, if we talk about how many chapters are there in the stream of Bhagavad Gita?
+[1088.9s] Sir, I'm not aware of the number of chapters.
+[1089.9s] Why we talk about Ramraj Javi used to talk about?
+[1093.9s] Sir, what is the concept of Ramraj?
+[1097.9s] Sir, I believe that the idea of Ramraj, so for instance, has understood by Gandhi ji, he said that Ramraj is Gramraj.
+[1104.9s] We need to ensure that the villages are the center of development.
+[1108.9s] We need to ensure that could you compare with your idea of prevention of phasing, to prevent aging and then Ramraj?
+[1116.9s] Why we talk about Ramraj?
+[1118.9s] No, sir, I'm not aware of that.
+[1121.9s] Okay, why it is generally said that media is biased.
+[1125.9s] What does it mean?
+[1126.9s] So it is generally seen that the media, all media houses tend to have a specific bias with foreign stensor in the community of United States.
+[1137.9s] There is a very clear division with channels such as India.
+[1140.9s] And there is no bias in the mindset of a Babu sitting in the government, working for the government.
+[1146.9s] Why a country, a democratic country, if I would say, as per kind of Indian democracy?
+[1152.9s] Okay, in a democratic system, why we should control the opinion, ideas and the number of things, and that is not in relation with the freedom of speech.
+[1166.6s] Why should government control media houses?
+[1168.6s] So I believe that media houses should not be controlled only regulated.
+[1172.6s] So to this extent, we have seen that even the regulation taken out by the government such as the press counsels act.
+[1178.6s] Most of these are self-regulatory bodies, with individuals from within the press houses regulating the information.
+[1185.6s] So only very recently in the IT rules.
+[1187.6s] And just asking in a democratic country, why these controls or I would say regulations?
+[1195.8s] Should be there.
+[1198.0s] So I believe that the only restriction through regulation on the media should be on the basis of article 192, which gives the reasonable restrictions of freedom and speech and expressions.
+[1209.0s] Is that just public order, excitement of violence, etc.
+[1212.0s] Okay.
+[1213.0s] Who are the differences between the similarities between print and digital media?
+[1217.0s] So both are sources of information.
+[1219.0s] So we see that the print media is now shifting to digital media, all the newspapers are slowly moving.
+[1225.0s] So we are seeing that the entire print industry, a lot of large centuries old newspapers such as the New York Times etc.
+[1233.0s] And to mend this pressure, because they are not being viable anymore, because in the print media space, we are moving to digital media.
+[1240.0s] So I believe there is more of a transition from print to digital.
+[1243.0s] Should not be stopped this kind of print media, because everybody is moving towards digital media.
+[1248.0s] And that would be also for the benefit of the moment.
+[1252.0s] So I believe that print media is the primary source of information, especially in rural areas.
+[1257.0s] So a lot of individuals are not, they don't have access to sort of mobile phone or mobile tower or an iPad.
+[1264.0s] So in print media, a lot of individuals are illiterate and it is one individual in the village who is reading out the news to everyone.
+[1270.0s] That was case in 70s and 80s. Now what is everybody else's mobile phone and a smartphone?
+[1276.0s] I would say you are talking about 70s and 80s and isn't it?
+[1280.4s] So I have read articles very even today during COVID, right, right, right in article.
+[1285.4s] Where all the COVID news was read out in a village in Maharashtra by one individual who was lifted over there.
+[1290.4s] This was a tribal community.
+[1291.4s] Okay, bye now.
+[1293.4s] Honey, I'm really fascinated by your work, which you are doing causes and prevention of aging.
+[1301.2s] Right.
+[1302.2s] A bit of more elaboration I would like to from you.
+[1305.2s] First, what kind of method you are actually using for studying such kind of researchers.
+[1311.7s] So what is the research method you have been used?
+[1315.2s] The primary method of research that is using in laboratories is a double blind placebo controlled method.
+[1322.2s] Where in different supplements, different exercises, different lifestyle changes, individual with certain habits are put in one control group and one active group.
+[1331.2s] And the efficiencies of different systems is tested.
+[1336.6s] Okay, so it's a controlled experiment if I would say.
+[1340.6s] Okay.
+[1341.6s] Tell me, honey, do you have been studying the causes of aging?
+[1347.0s] What are the causes?
+[1349.0s] The diseases are actually leading to aging, right?
+[1352.0s] As I could make out from the discussion you have been doing.
+[1355.0s] Now I believe that diseases are a little downstream of the core cause of aging.
+[1358.0s] Okay.
+[1359.0s] So tell me that this pregnancy kind of disease also?
+[1362.0s] No, I might not believe that pregnancy.
+[1364.0s] But it brings a lot of changes in the body.
+[1367.0s] Indeed.
+[1368.0s] So how can it be dealt with?
+[1371.0s] For instance, we see a lot of natural occurrences in the body such as puberty in adolescence, which bring a lot of changes in the body.
+[1378.0s] Now all of these, a lot of these changes are associated with growth and development.
+[1382.0s] And even though biologically we might age, the problem with the aging is not the chronological age.
+[1388.0s] But the fact that there are negative diseases and lack of efficiency in the body associated with the process.
+[1394.0s] So I am to that extent, I do not believe that pregnancy or adolescent puberty disease.
+[1400.0s] Okay.
+[1401.0s] Tell me in the recent, you know, global, global, Buddhist summit actually to place, right?
+[1408.0s] So what is the relevance of this Buddhist summit in India?
+[1413.0s] For the first three India is the birthplace of Buddhism.
+[1415.0s] I am secondly in the International sphere.
+[1417.0s] We see that India, while it cannot compete with China in the hard power sense, soft power plays a crucial role.
+[1423.0s] China being a primarily Buddhist country and additionally, India, if it can come the flagbearer of Buddhism, it can certainly gather a lot of support.
+[1433.0s] So a lot of neighbouring Buddhist countries such as Myanmar, such as Sri Lanka, such as countries and Southeast Asia.
+[1440.0s] So it is politically driven.
+[1442.0s] Otherwise, no relevance of Buddhism in India.
+[1445.0s] I am India has a large Buddhist population and I am culturally India was like I mentioned in the birthplace of Buddhism.
+[1450.0s] Okay.
+[1451.0s] So what are the four teachings of Buddha?
+[1452.0s] The first was non-violence.
+[1456.0s] The second was in short controlling the senses through meditation.
+[1461.0s] These are the only two I can do.
+[1463.0s] Okay.
+[1464.0s] You are from Delhi, right?
+[1466.0s] So tell me that how can one protect dead river like Yamuna?
+[1471.0s] I consider it a dead river.
+[1473.0s] You know, while I am coming here on my way, the sinking, that smell actually suffocates me.
+[1480.0s] It's not a river now, it's a drain.
+[1484.0s] So how can this dead river be revived?
+[1488.0s] And as a student of anthropology, what is the cultural relevance of river?
+[1493.0s] I am to revive a river such as Yamuna in the current state that it is.
+[1497.0s] Now, a forced step process can be used to folk wrong approach.
+[1501.0s] I am the first being monitoring of all the industrial effluents that are released into the Yamuna.
+[1506.0s] And the second being ensuring that there is floodplain management.
+[1510.0s] And the floodplain is often called the vital part of the health of the river.
+[1514.0s] In ensuring that the river is a green construction doesn't happen on the areas, etc.
+[1518.0s] And the third is bio-remediation of the river itself using natural causes.
+[1523.0s] And for instance, there are plants.
+[1525.0s] There are a lot of microorganisms that can be used to clean up the river itself.
+[1529.0s] And through a process called bio-minding.
+[1532.0s] And fourthly, the use of sewage treatment plants and wastewater treatment plants
+[1536.0s] that is pumping the river of the Yamuna into these plants where it is cleaned and put further.
+[1542.0s] And the fifth would be to, I mean, extra point would be just to ensure that the natural flow of the river.
+[1547.0s] If it is maintained as we saw in the COVID crisis, the nature has a remarkable tendency to heal itself.
+[1553.0s] Okay, so what is the sociological relevance of river or any river?
+[1558.5s] So it's your cultural relevance.
+[1560.5s] The water is something that is central to society.
+[1562.5s] It is said that thousands have lived without love but not one without water.
+[1565.5s] And rivers have traditionally been one of the foremost sources of water.
+[1570.5s] Individuals have always, large civilizations have always been made on the banks of river.
+[1576.5s] What is the cultural relevance?
+[1577.5s] Bammal otter, for instance, in the Yamuna, we see that a lot of the rights associated with that, etc.
+[1583.5s] The last remains are often flooring to the river.
+[1587.5s] And there are a lot of poochas that are at the banks of the river.
+[1592.5s] I'm often interested in India to cleanse your sins, you need to take a dip in the Ganga.
+[1597.5s] Clean your self and make the river polluted.
+[1600.5s] So you agree?
+[1602.5s] There are no cultural relevance.
+[1604.5s] Mam the cultural relevance is the fact that our very being are understanding of the universe around us,
+[1609.5s] are understanding of the world.
+[1610.5s] Okay, do we have any policy over this? Do we have any robust policy?
+[1614.8s] I'm specifically for river.
+[1616.8s] Yes. We have to Ganga action plan.
+[1618.8s] For the Yamuna also, there was a Yamuna board that was created specifically for the purpose of cleaning it.
+[1624.8s] Okay, thank you, and it is.
+[1626.8s] Thank you.
+[1627.8s] Anya, you have mentioned that playing football is one of your hobbies, right?
+[1633.9s] So did you watch the last FIFA World Cup?
+[1636.9s] Indeed, sir.
+[1637.9s] Okay, right.
+[1638.9s] See, in these international events, we often hear that,
+[1642.9s] the officials of these bodies are actually requested to make a statement of international contentious issues.
+[1652.9s] For example, it was Russian Ukraine issue at that moment of time.
+[1656.9s] Similarly, in the past there was Tibetan crisis, Tibetan issue in Olympics.
+[1661.9s] So do you find it okay?
+[1664.9s] Or you would like to have more independent space for international sports bodies?
+[1669.9s] Sir, I believe sports is something that brings the world together.
+[1673.9s] It crosses national boundaries and has the unique power of uniting people.
+[1677.9s] So be it a football match, be it athletics in the Olympics.
+[1681.9s] And to that degree, sir, I believe that sports, sir, what is often called sports washing.
+[1686.9s] That sports should not be used as an excuse by a country or by any international organization.
+[1690.9s] To bring up a certain political issue or to cleanse things that have happened in the past in that particular countries.
+[1697.9s] Okay.
+[1698.9s] See, where do you see Indian football today?
+[1701.9s] Do you think that you know in certain time down the line you know,
+[1706.9s] India will be able to participate in FIFA World Cup?
+[1709.9s] Sir, I certainly hope so, but I think that day is about at least 12 to 16 years away.
+[1715.9s] So what would you like to do?
+[1717.9s] Sir, I believe that firstly, we need to scout the talent because it's a lot of talent,
+[1722.9s] but harnessing it and identifying it early is the key challenge.
+[1726.9s] So secondly, we see that in countries like Europe and Brazil, there is a certain craze of football.
+[1731.9s] The same way we have a craze of cricket, which makes individuals drive forward in football.
+[1737.9s] So thirdly, is the facilities, the infrastructure, so ensuring that there are coaches.
+[1741.9s] So in the western world, we have diet, taste, nutritionist, geneticists, often working with football teams.
+[1747.9s] And so in shorting that there is a little more funding towards the professional aspect of the scene.
+[1752.9s] And so fourthly, there would be the coaching industry.
+[1754.9s] So India has not, does not have any pre-eminent coaches in football and so coaching,
+[1760.9s] it is said can create an average player into an extraordinary player.
+[1763.9s] So these four steps I believe would, okay.
+[1765.9s] See, in this month, India's external affairs minister will be on a visit to Latin America and Caribbean countries.
+[1774.9s] So what do these countries in a whole, for India in terms of many things?
+[1782.9s] So the Latin American countries, the Caribbean countries, whole-limin significance to India,
+[1787.9s] especially in the current scenario.
+[1788.9s] So firstly, because we have seen that a lot of technology, especially related to Lithium,
+[1793.9s] so we will be transferred there at Oxford, there are talks going on with Bolivia.
+[1798.9s] So secondly, we see that, so countries such as Brazil are part of major international organizations and ensuring that we have relations with all the American countries.
+[1811.0s] So the fact that India needs more votes of the United Nations, that is the asset.
+[1818.0s] So thirdly, the diaspora of India is not too much in South America, so that is not a reason for concerns.
+[1824.0s] And so fourthly, I believe the fact that South America, as a border with the Pacific Ocean and with the Pacific Ocean,
+[1832.0s] now being called the Indo-Pacific and becoming into a coming-in-to-in-preased relevance.
+[1837.0s] So that is also a fact that needs to be considered.
+[1840.0s] And with, what is the status of data protection bill and digital India bill?
+[1846.3s] So the data protection bill is currently, it has been revised and will be brought in during the monsoum sanctions.
+[1852.3s] And digital India bill.
+[1853.3s] So I am not aware of the status of the data protection bill.
+[1856.3s] You have had the exposure to MIT also, isn't it?
+[1860.3s] So my visa application was cancelled, sir.
+[1862.3s] It didn't go to…
+[1863.3s] I put in a vote to MIT, but I was part of the team I was supposed to go.
+[1866.3s] So, okay.
+[1867.3s] I attended it virtually.
+[1868.3s] Okay.
+[1869.3s] And did you go to Vienna or did you go to Vienna or…
+[1871.3s] That was a three month long internship, sir.
+[1873.3s] So I had gone there.
+[1874.3s] So most have had some exposure of academics in the European countries.
+[1881.3s] The new education policy, government is trying to attract foreign investors to set up
+[1888.3s] campuses in our country.
+[1891.3s] In your opinion, is it a pragmatic proposition?
+[1896.1s] Will reputation and reputation from the world world will come and set up
+[1901.1s] campuses in India?
+[1903.1s] Indeed.
+[1904.1s] So I do believe that it is a valuable proposition.
+[1907.1s] So firstly, because we see that there are a lot of individuals going from India abroad in search
+[1912.1s] of these universities and foreign degrees.
+[1914.1s] So this money can not only stay in India, but the brain drain that is happening can stay in India.
+[1919.1s] So secondly, I believe that India right now.
+[1921.1s] So only today there was an article saying a number of people who give GRE in India and US is the same.
+[1926.1s] That is India's concern.
+[1927.1s] Do you think that foreign universities will be attracted to be financially,
+[1932.1s] and will certainly, economically, a viable proposition for them to set up a campus in our country?
+[1937.1s] Certainly, sir.
+[1938.1s] So I believe that in India, so because there are so many people graduating of GRE in search of quality education.
+[1944.1s] So a lot of these institutes that come in will come in with a tag of a foreign university.
+[1949.1s] That is often in demand in a country like India and students who are paying upwards.
+[1953.1s] So there are students paying upwards of 10 lakhs, 15 lakhs for engineering fields.
+[1957.1s] So at something at a price point such as this, in India they will certainly be financially viable as well.
+[1963.1s] Well last question before you let you go.
+[1966.1s] Can you prescribe a prescription to me by which I can delay my aging?
+[1972.1s] Absolutely sir.
+[1973.1s] There will be what is the prescription.
+[1975.1s] Sir, the first and foremost would be to sleep eight hours a day.
+[1978.1s] So because that is the number one causal region for stress etc.
+[1982.1s] That exacerbates everything else.
+[1984.1s] So the second would be exercise.
+[1985.1s] Sir, ensuring that 220 minutes of exercise done is something that should everyone should do.
+[1990.1s] So third is the use of what we call Ayurvedic supplements etc.
+[1995.1s] So eating Chavan Prash daily is the most beneficial thing one can do for their immunity.
+[2000.1s] And ensuring that the self-healing system works well.
+[2003.1s] So they are having a healthy regularly, something that is especially good for everyone.
+[2008.1s] So for instance, if you have a clover garlic every day, so you can certainly ensure that you are hot.
+[2013.1s] Heart health remains fine.
+[2016.1s] So there are a lot of other biohacks as well.
+[2018.1s] So there is something called a solius push-up which everyone can do just while sitting.
+[2022.1s] So this ensures that the LDL, the bad cholesterol in our body reduces by about 25 percent.
+[2028.1s] Only if we do this about one to two hours it will be.
+[2030.1s] And this is as simple as just raising your so-called every about 10 seconds if you are sitting for two hours.
+[2037.1s] And so a lot for your valuable suggestion.
+[2039.1s] I will nice talking to you.
+[2041.1s] You are doing it over.
+[2042.1s] Thank you so. Thank you.
+[2044.1s] Thank you.
+[2055.8s] Sit on.
+[2056.8s] Thank you.
+[2059.0s] This is your second or third.
+[2061.0s] This is my third interview.
+[2062.0s] Third interview.
+[2063.0s] Mark's first interview.
+[2066.0s] Sir, I got 19th first.
+[2067.0s] First.
+[2068.0s] One, ninety second interview.
+[2069.0s] The 173.
+[2070.0s] One, seventeen.
+[2071.0s] And with a capital of getting anything between 170 to 200, no doubt about it.
+[2076.4s] Excellent communication skills.
+[2078.4s] Your ideas are very clear, confident.
+[2081.4s] No issues with that.
+[2083.4s] No.
+[2085.1s] Your interview will be conducted with a different ethos now.
+[2091.9s] You are already a member of Indian Civil Service.
+[2094.9s] Are you your occasions?
+[2095.9s] You are aspiring to become a member.
+[2097.9s] This year we will be going as a member of Indian Civil Service.
+[2102.9s] So a lot of questions you should expect about the role of services in the making of our country.
+[2108.9s] That is very important.
+[2109.9s] What are the positive sites?
+[2111.9s] What are the negative sites and all that?
+[2114.9s] And you must be aware of all that.
+[2116.9s] As you are also, father also happened to be in the military scene.
+[2120.9s] And particularly in the department of police and all that.
+[2123.9s] So the negative perception about the police, the police, the forms,
+[2127.9s] what are your suggestions, community policing and all that.
+[2131.9s] The issues faced by the cutting edge level of
+[2135.9s] constability and all that.
+[2137.9s] Those funding issues and all that.
+[2139.9s] So you should expect questions regarding that.
+[2143.9s] Now you are a member of Indian Information Service.
+[2146.9s] So read thoroughly about your service.
+[2151.1s] What exactly?
+[2152.1s] Because there would be a very direct question.
+[2155.1s] It will only be a situational question.
+[2158.1s] And a problem posed before you.
+[2161.4s] What is the need of Indian Information Society in the modern nature?
+[2165.4s] So there you have to justify the need and what way it regulates.
+[2172.0s] It can't be controlling or does it regulate and all that.
+[2176.0s] In that case, in that respect only the right to information act and all that comes handy.
+[2183.4s] Who controls print media, which agency controls digital media,
+[2189.4s] OTTP platform and all that.
+[2190.4s] Expect questions on all that.
+[2193.4s] RTI read it thoroughly.
+[2196.4s] It's very important because I was not expecting you to get confused on the issue of RTI.
+[2201.4s] And the OTTP is the nodal ministry for that.
+[2204.4s] One nodal department for that.
+[2206.4s] So as a civil servant, you should not be on wanting on such issues and all that.
+[2212.4s] And then you are a product of IIT issues with regard to IIT issues with regard to higher education.
+[2221.6s] Problems in the IIT per se is IITs dropout rates and all that position.
+[2226.6s] Also relevant, must remain growth of IITs.
+[2231.6s] So maybe as to compare the new upcoming IITs with yeah.
+[2238.7s] So that is another private institutions come up to the level of IITs and all that.
+[2244.7s] So larger issue of our Indian education system and all that.
+[2248.7s] So here a boy from Delhi, Delhi should prepare thoroughly from all angles.
+[2255.5s] So because you should expect to be a issue of pollution,
+[2259.5s] beauty issue of landfills, beauty issue of transport problems.
+[2264.5s] And so on and so forth is a long, long list.
+[2267.5s] Isn't it?
+[2268.5s] And you have studied from school called Sanskrit I believe.
+[2272.5s] So issue surrounding IITs, what are the problems you have seen and all that.
+[2277.5s] So that would bring you to the question of slum dwelling and all that.
+[2281.5s] That is also an important area.
+[2283.5s] And the bills which are in the offing, the details of those bills related to your ministry.
+[2289.5s] That is very important for you.
+[2292.6s] And try to get intent of the question.
+[2296.6s] You want question, you heard on the wrong side.
+[2299.6s] The question was asked about NDMC and you spoke about MCD.
+[2303.6s] Then later on you realized that you are giving.
+[2306.6s] So don't ensure that such occasions don't arise.
+[2310.6s] Okay.
+[2311.6s] Otherwise you are a wonderful candidate and you have proved your mental twice.
+[2315.8s] So nothing much to add to what we have told you.
+[2318.8s] So what is the only on your department's work?
+[2321.8s] On the bureaucracy.
+[2323.8s] How the bureaucracy has contributed so far.
+[2327.8s] How should contribute in the future?
+[2329.8s] What changes do you recommend in the way we are bureaucracy works and all that.
+[2334.8s] You are using natural entry and so on and so forth.
+[2337.8s] All those issues are there.
+[2338.8s] But you are a wonderful candidate.
+[2339.8s] And if you have really done well in your main examination.
+[2343.8s] What will be in the rest of the university services.
+[2348.1s] Okay.
+[2349.1s] Thank you.
+[2350.1s] All the best.
+[2351.1s] Thank you.

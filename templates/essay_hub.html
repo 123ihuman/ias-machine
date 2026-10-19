@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>✍️ Essay Topics Hub</h2>
+<p class="text-muted">Real UPSC Essay PYQs + AI-generated topics with full framework. 125 marks — practice on paper.</p>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">Generate New Essay Topic</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('essay_generate') }}">
+          <select class="form-select mb-2" name="cat">
+            {% for c in categories %}<option>{{ c }}</option>{% endfor %}
+          </select>
+          <input type="text" class="form-control mb-2" name="context" placeholder="Optional context / keyword">
+          <button class="btn btn-primary w-100">Generate Topic + Framework</button>
+        </form>
+        <hr>
+        <form method="post" action="{{ url_for('essay_seed_pyq') }}">
+          <button class="btn btn-outline-success w-100">📚 Seed Real UPSC PYQs (2015-2024)</button>
+          <small class="text-muted d-block mt-1">15 actual essay topics from past papers.</small>
+        </form>
+      </div>
+    </div>
+
+    <form method="get">
+      <select class="form-select" name="cat" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for c in categories %}<option {% if c==active %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+
+  <div class="col-md-8">
+    {% if pyq_topics %}
+    <h5 class="text-success">📚 Real UPSC PYQs ({{ pyq_topics|length }})</h5>
+    {% for t in pyq_topics %}
+    <div class="card mb-2 border-success">
+      <div class="card-body">
+        <a href="{{ url_for('essay_view', tid=t.id) }}"><strong>{{ t.title }}</strong></a>
+        <div class="mt-1">
+          <span class="badge bg-info text-dark">{{ t.pyq_year }}</span>
+          <span class="badge bg-secondary">{{ t.category }}</span>
+          <span class="badge bg-warning text-dark">{{ t.difficulty }}</span>
+          {% if t.likely_2027 %}<span class="badge bg-danger">Likely Repeat</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if ai_topics %}
+    <h5 class="text-primary mt-3">🤖 AI-Generated Topics ({{ ai_topics|length }})</h5>
+    {% for t in ai_topics %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <a href="{{ url_for('essay_view', tid=t.id) }}"><strong>{{ t.title }}</strong></a>
+        <div class="mt-1">
+          <span class="badge bg-secondary">{{ t.category }}</span>
+          <span class="badge bg-warning text-dark">{{ t.difficulty }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if not pyq_topics and not ai_topics %}
+    <div class="alert alert-info">Start by clicking <strong>Seed Real UPSC PYQs</strong> on the left.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d1117">
+<title>World Countries</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f5f5f5;color:#1a1a1a;padding-bottom:20px}
+body.dark{background:#0d1117;color:#e6edf3}
+header{position:sticky;top:0;background:#0d1117;color:#fff;padding:10px 14px;z-index:10}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+h1{font-size:1.1rem}
+button{cursor:pointer;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#fff;padding:6px 12px;font-size:.85rem}
+input{width:100%;padding:10px;border-radius:8px;border:none;background:#21262d;color:#fff;font-size:.95rem}
+input::placeholder{color:#8b949e}
+.filters{display:flex;gap:6px;padding:8px 14px;background:#fff;border-bottom:1px solid #e0e0e0;overflow-x:auto;scrollbar-width:none}
+body.dark .filters{background:#161b22;border-color:#30363d}
+.filters::-webkit-scrollbar{display:none}
+.pill{white-space:nowrap;padding:6px 12px;border-radius:20px;background:#eef2f6;border:1px solid #d0d7de;font-size:.8rem;cursor:pointer;color:#24292f}
+body.dark .pill{background:#21262d;color:#e6edf3;border-color:#30363d}
+.pill.on{background:#0969da;color:#fff;border-color:#0969da}
+.grid{padding:12px;display:grid;gap:10px;max-width:900px;margin:0 auto}
+@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer}
+body.dark .card{background:#161b22;border-color:#30363d}
+.card img{width:52px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #d0d7de;background:#eee}
+.card .info{flex:1;min-width:0}
+.card h3{font-size:.95rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card small{font-size:.75rem;color:#57606a}
+body.dark .card small{color:#8b949e}
+.loadmore{display:block;margin:16px auto;padding:10px 24px;background:#0969da;color:#fff;border:none;border-radius:8px;font-size:.9rem}
+.loading{text-align:center;padding:40px;color:#8b949e;font-size:.9rem}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;padding:14px}
+.modal.on{display:flex}
+.box{background:#fff;padding:18px;border-radius:12px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto}
+body.dark .box{background:#161b22;color:#e6edf3}
+.box img.flag{width:100%;height:auto;border-radius:8px;border:1px solid #d0d7de;margin-bottom:12px;background:#eee}
+.box h2{font-size:1.15rem;margin-bottom:4px}
+.box .off{font-size:.8rem;color:#8b949e;margin-bottom:12px}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e0e0e0;font-size:.88rem;gap:12px}
+body.dark .kv{border-color:#30363d}
+.kv span:first-child{color:#57606a;flex-shrink:0}
+body.dark .kv span:first-child{color:#8b949e}
+.kv b{font-weight:600;text-align:right}
+.kv.clickable{cursor:pointer}
+.kv.clickable:hover{background:#f0f6ff}
+body.dark .kv.clickable:hover{background:#1f2937}
+.close{width:100%;padding:10px;margin-top:12px;background:#0969da;color:#fff;border:none;border-radius:8px;font-size:.9rem;cursor:pointer}
+.btn-green{background:#2da44e !important;margin-bottom:6px !important}
+</style>
+</head>
+<body>
+<header>
+<div class="row">
+<h1>🌍 World Countries</h1>
+<button id="darkBtn" onclick="window.dark()">🌙</button>
+</div>
+<input id="q" placeholder="Search country, capital or code..." oninput="window.render()">
+</header>
+<div class="filters" id="filters"></div>
+<div class="grid" id="grid"><div class="loading">Loading countries...</div></div>
+<button class="loadmore" id="moreBtn" style="display:none" onclick="window.loadMore()">Load More</button>
+
+<div class="modal" id="modal" onclick="if(event.target===this)window.closeModal()">
+<div class="box" id="modalBox"></div>
+</div>
+
+<script type="module">
+import {
+  getCountries,
+  getStatesOfCountry,
+  getCitiesOfState
+} from 'https://cdn.jsdelivr.net/npm/@countrystatecity/countries-browser/+esm';
+
+const DATA_URL = "https://raw.githubusercontent.com/mledoze/countries/master/countries.json";
+const FALLBACK_URL = "https://cdn.jsdelivr.net/gh/mledoze/countries@master/countries.json";
+
+let all = [];
+let shown = 0;
+const PAGE = 30;
+let region = "All";
+const REGIONS = ["All","Asia","Europe","Africa","Americas","Oceania"];
+
+async function load(){
+  const g = document.getElementById("grid");
+  g.innerHTML = '<div class="loading">Loading countries...</div>';
+  for(const url of [DATA_URL, FALLBACK_URL]){
+    try{
+      const r = await fetch(url, {cache:"no-store"});
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const data = await r.json();
+      if(!Array.isArray(data) || data.length < 50) throw new Error("Bad data");
+      all = data.filter(c => c.name && c.name.common && c.region)
+                .sort((a,b)=>a.name.common.localeCompare(b.name.common));
+      window.renderFilters();
+      window.render();
+      return;
+    }catch(e){
+      console.warn("Failed:", url, e.message);
+      continue;
+    }
+  }
+  g.innerHTML = `<div class="loading">⚠️ Could not load data.<br><br>1. Check internet<br>2. Wait 10 seconds and retry<br><br><button onclick="location.reload()" style="padding:10px 20px;background:#0969da;color:#fff;border:none;border-radius:8px;margin-top:10px;cursor:pointer">Retry</button></div>`;
+}
+
+window.renderFilters = function(){
+  document.getElementById("filters").innerHTML = REGIONS.map(r=>
+    `<div class="pill ${r===region?"on":""}" onclick="window.setRegion('${r}')">${r}</div>`
+  ).join("");
+};
+window.setRegion = function(r){ region=r; window.renderFilters(); shown=0; window.render(); };
+
+function filter(){
+  const q = document.getElementById("q").value.toLowerCase().trim();
+  return all.filter(c=>{
+    if(region !== "All" && c.region !== region) return false;
+    if(!q) return true;
+    const name = (c.name.common||"").toLowerCase();
+    const official = (c.name.official||"").toLowerCase();
+    const capital = (c.capital?.[0]||"").toLowerCase();
+    const cca2 = (c.cca2||"").toLowerCase();
+    const cca3 = (c.cca3||"").toLowerCase();
+    return name.includes(q) || official.includes(q) || capital.includes(q) || cca2.includes(q) || cca3.includes(q);
+  });
+}
+
+window.render = function(){
+  const list = filter();
+  if(shown === 0) shown = PAGE;
+  const visible = list.slice(0, shown);
+  const g = document.getElementById("grid");
+  if(!visible.length){
+    g.innerHTML = '<div class="loading">No countries match your search.</div>';
+    document.getElementById("moreBtn").style.display = "none";
+    return;
+  }
+  g.innerHTML = visible.map(c=>{
+    const flagUrl = `https://flagcdn.com/w160/${(c.cca2||"").toLowerCase()}.png`;
+    const cap = (c.capital && c.capital[0]) || "—";
+    return `<div class="card" onclick="window.detail('${c.cca3}')">
+      <img src="${flagUrl}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+      <div class="info">
+        <h3>${esc(c.name.common)}</h3>
+        <small>${esc(cap)} · ${fmt(c.population)}</small>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("moreBtn").style.display = list.length > shown ? "block" : "none";
+};
+
+window.loadMore = function(){
+  shown += PAGE;
+  window.render();
+  window.scrollTo({top:document.body.scrollHeight, behavior:"smooth"});
+};
+
+window.detail = function(code){
+  const c = all.find(x=>x.cca3===code);
+  if(!c) return;
+
+  const langs = c.languages ? Object.values(c.languages).join(", ") : "—";
+  const curr = c.currencies ? Object.entries(c.currencies).map(([k,v])=>`${v.name} (${k})`).join(", ") : "—";
+  const cap = (c.capital && c.capital.join(", ")) || "—";
+  const tz = (c.timezones || []).slice(0,3).join(", ") || "—";
+  const borders = (c.borders && c.borders.length)
+    ? c.borders.map(b=>{ const f = all.find(x=>x.cca3===b); return f ? f.name.common : b; }).join(", ")
+    : "None (island/isolated)";
+
+  document.getElementById("modalBox").innerHTML = `
+    <img class="flag" src="https://flagcdn.com/w320/${(c.cca2||"").toLowerCase()}.png" alt="" onerror="this.style.display='none'">
+    <h2>${esc(c.name.common)}</h2>
+    <div class="off">${esc(c.name.official)}</div>
+    <div class="kv"><span>Capital</span><b>${esc(cap)}</b></div>
+    <div class="kv"><span>Region</span><b>${esc(c.region||"—")}${c.subregion?" / "+esc(c.subregion):""}</b></div>
+    <div class="kv"><span>Population</span><b>${fmt(c.population)}</b></div>
+    <div class="kv"><span>Area</span><b>${fmt(c.area)} km²</b></div>
+    <div class="kv"><span>Languages</span><b>${esc(langs)}</b></div>
+    <div class="kv"><span>Currency</span><b>${esc(curr)}</b></div>
+    <div class="kv"><span>Timezones</span><b>${esc(tz)}</b></div>
+    <div class="kv"><span>Borders</span><b>${esc(borders)}</b></div>
+    <div class="kv"><span>Code</span><b>${c.cca2} / ${c.cca3}</b></div>
+    <button class="close btn-green" onclick="window.showStates('${c.cca2}','${esc(c.name.common)}')">View States & Districts</button>
+    <button class="close" onclick="window.closeModal()">Close</button>`;
+  document.getElementById("modal").classList.add("on");
+};
+
+window.closeModal = function(){ document.getElementById("modal").classList.remove("on"); };
+
+window.showStates = async function(countryCode, countryName){
+  const box = document.getElementById("modalBox");
+  box.innerHTML = `<div class="loading">Loading states for ${esc(countryName)}...</div>`;
+  try {
+    const states = await getStatesOfCountry(countryCode);
+    if(!states || states.length === 0){
+      box.innerHTML = `<h2>${esc(countryName)}</h2><p class="off">No state-level data available in the database.</p>
+        <button class="close" onclick="window.detail('${countryCodeTo3(countryCode)}')">Back</button>
+        <button class="close" onclick="window.closeModal()">Close</button>`;
+      return;
+    }
+
+    let html = `<h2>${esc(countryName)} — States/Provinces</h2>
+      <p class="off" style="margin-bottom:12px">${states.length} states found. Tap to view districts.</p>`;
+    html += states.map(s => `
+      <div class="kv clickable" onclick="window.showDistricts('${countryCode}','${esc(s.iso2)}','${esc(s.name)}','${esc(countryName)}')">
+        <span>${esc(s.name)}</span>
+        <b>→</b>
+      </div>`).join("");
+    html += `<button class="close" onclick="window.detail('${countryCodeTo3(countryCode)}')">Back to Country</button>`;
+    html += `<button class="close" onclick="window.closeModal()">Close</button>`;
+    box.innerHTML = html;
+  } catch(e){
+    console.error(e);
+    box.innerHTML = `<div class="loading">⚠️ Could not load: ${esc(e.message)}</div>
+      <button class="close" onclick="window.closeModal()">Close</button>`;
+  }
+};
+
+window.showDistricts = async function(countryCode, stateCode, stateName, countryName){
+  const box = document.getElementById("modalBox");
+  box.innerHTML = `<div class="loading">Loading districts for ${esc(stateName)}...</div>`;
+  try {
+    const cities = await getCitiesOfState(countryCode, stateCode);
+    if(!cities || cities.length === 0){
+      box.innerHTML = `<h2>${esc(stateName)}</h2><p class="off">No district/city data available.</p>
+        <button class="close" onclick="window.showStates('${countryCode}','${esc(countryName)}')">Back</button>
+        <button class="close" onclick="window.closeModal()">Close</button>`;
+      return;
+    }
+    let html = `<h2>${esc(stateName)}</h2>
+      <p class="off" style="margin-bottom:12px">${cities.length} districts/cities</p>`;
+    html += cities.map(d => `<div class="kv"><span>${esc(d.name)}</span></div>`).join("");
+    html += `<button class="close" onclick="window.showStates('${countryCode}','${esc(countryName)}')">← Back to States</button>`;
+    html += `<button class="close" onclick="window.closeModal()">Close</button>`;
+    box.innerHTML = html;
+  } catch(e){
+    console.error(e);
+    box.innerHTML = `<div class="loading">⚠️ Could not load: ${esc(e.message)}</div>
+      <button class="close" onclick="window.closeModal()">Close</button>`;
+  }
+};
+
+function countryCodeTo3(c2){
+  const found = all.find(x=>(x.cca2||"").toUpperCase() === c2.toUpperCase());
+  return found ? found.cca3 : "";
+}
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, ch=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+}
+function fmt(n){ return n ? Number(n).toLocaleString("en-IN") : "—"; }
+
+window.dark = function(){
+  document.body.classList.toggle("dark");
+  const d = document.body.classList.contains("dark");
+  localStorage.setItem("wc_dark", d?"1":"0");
+  document.getElementById("darkBtn").textContent = d ? "☀️" : "🌙";
+};
+if(localStorage.getItem("wc_dark")==="1"){
+  document.body.classList.add("dark");
+  document.getElementById("darkBtn").textContent = "☀️";
+}
+
+load();
+</script>
+</body>
+</html>

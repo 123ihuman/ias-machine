@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('optional_hub') }}" class="btn btn-sm btn-outline-secondary mb-2">← All Optionals</a>
+<h2>{{ subj.label }}</h2>
+<p class="text-muted">Sub-sections: {{ subj.papers|join(' · ') }}</p>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-3">
+      <div class="card-header">🎯 Generate Practice Question</div>
+      <div class="card-body">
+        <select class="form-select mb-2" id="paperSel">
+          {% for p in subj.papers %}<option>{{ p }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-primary w-100" onclick="genQ()">Generate 20-Mark Question</button>
+      </div>
+    </div>
+    <div id="genResult" style="display:none">
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white">AI Question + Skeleton</div>
+        <div class="card-body">
+          <p id="qText" style="font-weight:600"></p>
+          <details><summary>Model Skeleton</summary><div id="sText" style="white-space:pre-wrap"></div></details>
+          <details><summary>References</summary><div id="rText"></div></details>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <h5>PYQs in this Optional</h5>
+    {% for q in pyqs %}
+    <div class="card mb-2"><div class="card-body py-2">
+      <div><strong>Q{{ loop.index }}.</strong> {{ q.text[:200] }}</div>
+      {% if q.year %}<small class="text-muted">Year: {{ q.year }} · {{ q.marks or '—' }} marks</small>{% endif %}
+    </div></div>
+    {% else %}
+    <p class="text-muted small">No PYQs stored. Add past papers under Library to populate.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+async function genQ(){
+  const paper = document.getElementById('paperSel').value;
+  const fd = new FormData(); fd.append('paper', paper);
+  const btn = event.target; btn.disabled = true; btn.innerText = '⏳ Generating...';
+  try {
+    const r = await fetch('/optional/{{ key }}/generate-question', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { alert(d.error); btn.disabled=false; btn.innerText='Generate 20-Mark Question'; return; }
+    document.getElementById('qText').innerText = d.question || '';
+    document.getElementById('sText').innerText = d.skeleton || '';
+    document.getElementById('rText').innerText = d.references || '';
+    document.getElementById('genResult').style.display = 'block';
+    btn.disabled = false; btn.innerText = '🔄 Regenerate';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled=false; btn.innerText='Generate 20-Mark Question'; }
+}
+</script>
+{% endblock %}

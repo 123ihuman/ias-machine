@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding:20px 14px;max-width:720px;margin:0 auto;font-family:Georgia,serif;">
+  <h2 style="margin:0 0 6px;">📂 Book Zone</h2>
+  <p style="color:#666;margin:0 0 20px;font-size:14px;">Organize books by exam. Tap a category to add or move books.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    {% for key, info in cats.items() %}
+    <a href="/bookzone/c/{{ key }}" style="background:#fff;border-radius:14px;padding:22px 12px;text-align:center;text-decoration:none;color:#222;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:block;">
+      <div style="font-size:34px;margin-bottom:8px;">{{ info.icon }}</div>
+      <div style="font-size:15px;font-weight:600;">{{ info.label }}</div>
+      <div style="font-size:12px;color:#888;margin-top:4px;">{{ counts.get(key,0) }} book{{ 's' if counts.get(key,0)!=1 }}</div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

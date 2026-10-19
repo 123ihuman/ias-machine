@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('twin_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← Twin Home</a>
+<h2>📦 Batch Add Toppers</h2>
+<p class="text-muted">Paste multiple topper copies at once. Separate each with a marker line.</p>
+
+<div class="alert alert-info">
+<strong>Format:</strong>
+<pre style="background:#fff;padding:10px;border-radius:5px;margin-top:6px;font-size:.75rem">===TOPPER: Anudeep Durishetty | Year: 2017 | Rank: 1 | Optional: Geography ===
+[paste full answer text here, 1000+ words]
+
+===TOPPER: Srushti Deshmukh | Year: 2022 | Rank: 5 | Optional: PSIR ===
+[paste full answer text here]
+
+===TOPPER: Tina Dabi | Year: 2015 | Rank: 1 ===
+[paste full answer text]</pre>
+</div>
+
+<form method="post" action="{{ url_for('twin_batch') }}">
+  <label class="small fw-bold">Default Paper (can override per topper later)</label>
+  <select class="form-select mb-2" name="default_paper">
+    <option>GS1</option><option selected>GS2</option><option>GS3</option><option>GS4</option><option>Essay</option><option>Optional</option>
+  </select>
+
+  <label class="small fw-bold">Batch Text</label>
+  <textarea class="form-control mb-3" name="batch_text" rows="18" placeholder="Paste multi-topper text here with ===TOPPER: === markers..."></textarea>
+
+  <button class="btn btn-primary w-100">📦 Parse & Add All Toppers</button>
+</form>
+{% endblock %}

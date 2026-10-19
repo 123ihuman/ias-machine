@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>👮 All India Services Officer Directory</h2>
+<p class="text-muted">Direct links to official Civil Lists of IAS, IPS, and IFS officers. Updated by the Government of India.</p>
+
+<div class="row mb-4">
+  <div class="col-md-4 mb-3">
+    <div class="card h-100 border-primary">
+      <div class="card-body">
+        <h4>🏛️ IAS</h4>
+        <p class="small text-muted">Indian Administrative Service — District Collectors, Secretaries, Chief Secretaries.</p>
+        <div class="d-grid gap-2">
+          <a href="https://easy.nic.in/civilListIAS/Home/ViewList" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+            🔗 Official Civil List
+          </a>
+          <a href="https://dopt.gov.in" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+            📄 DoPT Website
+          </a>
+          <a href="https://www.google.com/search?q=IAS+officers+civil+list+2026+state+cadre" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">
+            🔍 Google Search
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="card h-100 border-success">
+      <div class="card-body">
+        <h4>🚔 IPS</h4>
+        <p class="small text-muted">Indian Police Service — SPs, DIGs, IGPs, DGPs.</p>
+        <div class="d-grid gap-2">
+          <a href="https://ips.gov.in" target="_blank" rel="noopener" class="btn btn-success btn-sm">
+            🔗 Official Portal
+          </a>
+          <a href="https://ips.gov.in/civil-list/" target="_blank" rel="noopener" class="btn btn-outline-success btn-sm">
+            📋 Civil List
+          </a>
+          <a href="https://www.google.com/search?q=IPS+officers+civil+list+2026+state+cadre" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">
+            🔍 Google Search
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="card h-100 border-warning">
+      <div class="card-body">
+        <h4>🌳 IFS</h4>
+        <p class="small text-muted">Indian Forest Service — DFOs, CCFs, PCCFs.</p>
+        <div class="d-grid gap-2">
+          <a href="https://ifs.nic.in" target="_blank" rel="noopener" class="btn btn-warning btn-sm text-white">
+            🔗 Official Portal
+          </a>
+          <a href="https://ifs.nic.in/civil-list" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm">
+            📋 Civil List
+          </a>
+          <a href="https://www.google.com/search?q=IFS+officers+civil+list+2026+state+cadre" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">
+            🔍 Google Search
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h4>🗺️ State-wise Civil Lists</h4>
+<p class="small text-muted">Many state governments publish their own cadre civil lists with photos and postings.</p>
+
+<div class="row">
+  {% set states = [
+    ('Kerala','https://gad.kerala.gov.in/en/civil-list'),
+    ('Himachal Pradesh','https://himachal.nic.in/personnel'),
+    ('Bihar','https://state.bihar.gov.in/gad'),
+    ('Odisha','https://www.gaodisha.gov.in'),
+    ('Uttar Pradesh','https://up.gov.in'),
+    ('Maharashtra','https://www.maharashtra.gov.in'),
+    ('Karnataka','https://dpal.karnataka.gov.in'),
+    ('Tamil Nadu','https://www.tn.gov.in'),
+    ('Rajasthan','https://dop.rajasthan.gov.in'),
+    ('Madhya Pradesh','https://www.mp.gov.in'),
+    ('Andhra Pradesh','https://www.ap.gov.in'),
+    ('Telangana','https://www.telangana.gov.in'),
+    ('West Bengal','https://wb.gov.in'),
+    ('Gujarat','https://gad.gujarat.gov.in'),
+    ('Punjab','https://punjab.gov.in'),
+    ('Haryana','https://haryanacivilsecretariat.gov.in'),
+    ('Assam','https://assam.gov.in'),
+    ('Jharkhand','https://jharkhand.gov.in'),
+    ('Chhattisgarh','https://cgstate.gov.in'),
+    ('Uttarakhand','https://uk.gov.in')
+  ] %}
+  {% for name, url in states %}
+  <div class="col-md-4 col-6 mb-2">
+    <a href="{{ url }}" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm w-100 text-start">
+      {{ name }}
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="alert alert-info mt-4">
+  <strong>💡 How to use this for interview prep:</strong>
+  <ul class="mb-0 mt-2">
+    <li>Look up the DM/SP of your home district — know their work and challenges</li>
+    <li>Read about officers from your state cadre — their career paths inspire answers</li>
+    <li>In the interview, showing awareness of ground-level administration impresses the board</li>
+  </ul>
+</div>
+{% endblock %}

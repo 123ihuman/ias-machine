@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-2 flex-wrap gap-2">
+  <h3 class="mb-0">🎙️ Voice Recorder</h3>
+  <a href="{{ url_for('toolkit_home') }}" class="btn btn-sm btn-secondary">← Toolkit</a>
+</div>
+
+<div class="card mb-3"><div class="card-body text-center">
+  <div id="recStatus" style="font-size:1rem;margin-bottom:12px;color:#666">Ready to record</div>
+  <div id="recTimer" style="font-size:2.5rem;font-family:monospace;color:#dc3545;margin-bottom:12px">00:00</div>
+  <div class="d-flex gap-2 justify-content-center flex-wrap">
+    <button class="btn btn-danger btn-lg" id="recStartBtn" onclick="startRec()">🔴 Start</button>
+    <button class="btn btn-warning btn-lg" id="recStopBtn" onclick="stopRec()" disabled>⏹ Stop</button>
+  </div>
+  <audio id="recPlayback" controls style="width:100%;margin-top:16px;display:none"></audio>
+  <div id="recDownload" style="display:none;margin-top:8px">
+    <a id="recDownloadLink" class="btn btn-success" download>⬇ Download Recording</a>
+  </div>
+  <small class="text-muted d-block mt-3">Recording saves locally. Download to keep. Nothing sent to server.</small>
+</div></div>
+
+<script>
+let mediaRecorder = null, chunks = [], recInt = null, recStart = 0;
+
+async function startRec(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const player = document.getElementById('recPlayback');
+      player.src = url;
+      player.style.display = 'block';
+      const dl = document.getElementById('recDownloadLink');
+      dl.href = url;
+      dl.download = 'recording_' + new Date().toISOString().replace(/[:.]/g,'-') + '.webm';
+      document.getElementById('recDownload').style.display = 'block';
+      document.getElementById('recStatus').innerText = 'Recording stopped';
+      stream.getTracks().forEach(t => t.stop());
+    };
+    mediaRecorder.start();
+    recStart = Date.now();
+    document.getElementById('recStartBtn').disabled = true;
+    document.getElementById('recStopBtn').disabled = false;
+    document.getElementById('recStatus').innerText = '🔴 Recording...';
+    document.getElementById('recPlayback').style.display = 'none';
+    document.getElementById('recDownload').style.display = 'none';
+    recInt = setInterval(() => {
+      const s = Math.floor((Date.now() - recStart) / 1000);
+      document.getElementById('recTimer').innerText = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+    }, 500);
+  } catch(e){
+    alert('Microphone permission needed: ' + e.message);
+  }
+}
+
+function stopRec(){
+  if (mediaRecorder && mediaRecorder.state === 'recording'){
+    mediaRecorder.stop();
+    clearInterval(recInt);
+    document.getElementById('recStartBtn').disabled = false;
+    document.getElementById('recStopBtn').disabled = true;
+  }
+}
+</script>
+{% endblock %}

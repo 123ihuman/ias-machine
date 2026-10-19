@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🧰 Study Toolkit</h2>
+<p class="text-muted">Simple study tools — no internet needed once loaded. All run in your browser.</p>
+
+<div class="row">
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="{{ url_for('toolkit_notes') }}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">📝</div>
+        <h5>Notepad + Flashcards</h5>
+        <p class="small text-muted mb-0">Write notes, quick facts. Auto-saves. Cards mode for revision.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="{{ url_for('toolkit_timer') }}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">⏱️</div>
+        <h5>Timer + Stopwatch</h5>
+        <p class="small text-muted mb-0">Pomodoro, countdown, countup. Click counter & tally.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="{{ url_for('toolkit_recorder') }}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">🎙️</div>
+        <h5>Voice Recorder</h5>
+        <p class="small text-muted mb-0">Record lectures, revision notes. Playback + download.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="/toolkit" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">🧮</div>
+        <h5>Calculator</h5>
+        <p class="small text-muted mb-0">Basic + scientific mode. History saving.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="{{ url_for('toolkit_calendar') }}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">📅</div>
+        <h5>Calendar + Reminders</h5>
+        <p class="small text-muted mb-0">Mark exam dates, revision days. Daily view.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="{{ url_for('toolkit_camera') }}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">📷</div>
+        <h5>Quick Camera</h5>
+        <p class="small text-muted mb-0">Snap pages, whiteboard notes. Save to phone.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="{{ url_for('toolkit_random') }}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">🎲</div>
+        <h5>Random Picker</h5>
+        <p class="small text-muted mb-0">Decide revision topic, dice, coin flip, name picker.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-6 col-lg-4 mb-3">
+    <a href="{{ url_for('toolkit_converter') }}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div style="font-size:2.5rem">🔁</div>
+        <h5>Unit Converter</h5>
+        <p class="small text-muted mb-0">Length, weight, temperature, currency (basic).</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="alert alert-info small mt-3 mb-0">
+  💡 All tools work offline. Data saves to your phone's local storage. Nothing goes to server.
+</div>
+{% endblock %}

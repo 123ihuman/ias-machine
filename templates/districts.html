@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🏛️ District Portal Directory</h2>
+<p class="text-muted">
+  {% if total_states %}
+  All {{ total_states }} states/UTs · {{ total_districts }}+ districts — official portals, maps, DM & SP info.
+  {% else %}
+  Explore Indian districts — official portals, maps, and officer info.
+  {% endif %}
+</p>
+
+{% if error %}
+<div class="alert alert-danger">
+  Could not load district data. Check your internet connection and reload.
+</div>
+{% endif %}
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-5">
+    <select class="form-select" name="state" onchange="this.form.submit()">
+      <option value="">Select State / UT</option>
+      {% for s in states %}<option value="{{ s }}" {% if s == state %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-5">
+    <input class="form-control" name="q" value="{{ search }}" placeholder="Search district...">
+  </div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+
+{% if state %}
+<h5>{{ state }} — {{ districts|length }} districts</h5>
+<div class="row">
+  {% for d in districts %}
+  <div class="col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="mb-2">{{ d.name }}</h6>
+        <div class="d-grid gap-1">
+          <a href="{{ d.official }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">🌐 Official Portal</a>
+          <a href="{{ d.wikipedia }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-info">📖 Wikipedia</a>
+          <a href="{{ d.map }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success">🗺️ Map</a>
+          <a href="{{ d.dm_search }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-dark">👤 DM / Collector</a>
+          <a href="{{ d.sp_search }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-warning">🚔 SP / Police</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+  <strong>Select a state above.</strong>
+  <p class="mb-0 mt-2 small">Covers all 28 states + 8 Union Territories. Each district links to its official portal (e.g., <code>gonda.nic.in</code>), Wikipedia, Google Maps, and officer searches.</p>
+</div>
+{% endif %}
+{% endblock %}

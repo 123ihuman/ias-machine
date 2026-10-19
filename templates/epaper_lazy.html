@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=Oswald:wght@500;700&family=Libre+Baskerville:wght@700&family=Cinzel:wght@900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+
+<style>
+body{background:#e8e0d0}
+body.fs-mode{overflow:hidden}
+body.fs-mode .navbar,body.fs-mode .reminder-banner{display:none!important}
+body.fs-mode .container{margin:0!important;padding:0!important;max-width:100%!important;width:100%!important}
+
+.ep-toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:#1a1a1a;border-radius:8px;margin:6px 0 10px}
+.ep-toolbar a,.ep-toolbar button{flex:1;min-width:75px;text-align:center;padding:10px 8px;border-radius:6px;font-size:.82rem;font-family:'Oswald',sans-serif;font-weight:500;letter-spacing:.5px;text-decoration:none;border:none;cursor:pointer;color:#fff}
+.ep-btn-pdf{background:#198754}
+.ep-btn-mode{background:#0d6efd}
+.ep-btn-fs{background:#ffc107;color:#1a1a1a!important}
+.ep-btn-reset{background:#dc3545}
+
+.ep-shell{background:#fff;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.1);min-height:70vh;padding:16px;font-family:'Lora',serif;color:#111}
+.ep-masthead{text-align:center;padding:8px 0 6px;border-top:4px double #111;border-bottom:4px double #111;margin-bottom:6px}
+.ep-title{font-family:'Playfair Display',serif;font-weight:900;font-size:1.6rem;letter-spacing:1px;margin:0}
+.ep-sub{font-family:'Oswald',sans-serif;font-size:.55rem;letter-spacing:3px;text-transform:uppercase;margin-top:4px;color:#666;font-weight:500}
+.ep-dateline{display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:.62rem;padding:5px 0;border-bottom:1px solid #111;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;gap:4px;flex-wrap:wrap}
+
+.ep-sechead{text-align:center;font-family:'Oswald',sans-serif;font-weight:700;font-size:1rem;letter-spacing:5px;text-transform:uppercase;margin:16px 0 10px;padding:6px 0;border-top:2px solid #111;border-bottom:2px solid #111}
+
+.ep-story{margin-bottom:14px;padding:8px 0 10px 10px;border-bottom:1px dashed #ccc;border-left:3px solid #1a3a6b}
+.ep-headline{font-family:'Libre Baskerville',serif;font-weight:700;font-size:.95rem;line-height:1.25;margin-bottom:4px;color:#1a3a6b}
+.ep-headline a{color:inherit;text-decoration:none}
+.ep-meta{font-family:'Oswald',sans-serif;font-size:.58rem;text-transform:uppercase;letter-spacing:.6px;color:#666;margin-bottom:6px;font-weight:500}
+.ep-summary{font-family:'Lora',serif;font-size:.82rem;line-height:1.5;text-align:justify}
+.ep-angle{border-left:3px solid #f0b400;background:#fffbeb;padding:5px 8px;font-family:'Lora',serif;font-size:.68rem;font-style:italic;margin-top:6px}
+.ep-angle strong{font-style:normal;letter-spacing:.6px;font-size:.58rem;text-transform:uppercase;font-family:'Oswald',sans-serif;font-weight:700}
+
+.ep-progress{background:#e0d8c8;height:5px;border-radius:3px;margin:6px 0 12px;overflow:hidden}
+.ep-progress-bar{height:100%;background:#1a3a6b;transition:width .4s}
+
+.ep-pending{text-align:center;color:#666;font-style:italic;padding:30px 20px;font-family:'Oswald',sans-serif;font-size:.85rem}
+.ep-pending-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.ep-pending-chips span{background:#ddd;color:#666;padding:4px 10px;border-radius:12px;font-size:.72rem;font-weight:500;letter-spacing:.5px}
+
+.ep-botnav{display:flex;gap:8px;align-items:center;padding:10px;background:#1a1a1a;border-radius:8px;position:sticky;bottom:8px;margin-top:14px;box-shadow:0 -4px 12px rgba(0,0,0,.25);z-index:50}
+.ep-botnav button{background:#f5f1e8;color:#1a1a1a;border:none;padding:12px 10px;border-radius:6px;font-family:'Oswald',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.ep-botnav button:disabled{opacity:.35;cursor:not-allowed}
+.ep-botnav .ep-counter{font-family:'Playfair Display',serif;font-weight:700;color:#fff;font-size:.9rem;padding:0 6px;flex-shrink:0}
+.ep-botnav .ep-load{background:#f0b400;flex:1.4}
+
+.ep-loading{position:fixed;inset:0;background:rgba(13,17,23,.94);color:#fff;z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px}
+.ep-loading.show{display:flex}
+.ep-spinner{width:60px;height:60px;border:5px solid rgba(255,255,255,.15);border-top-color:#0d6efd;border-radius:50%;animation:epspin 1s linear infinite;margin-bottom:20px}
+@keyframes epspin{to{transform:rotate(360deg)}}
+.ep-loading-title{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:8px}
+.ep-loading-sub{font-family:'Lora',serif;opacity:.85;font-size:.9rem;margin-bottom:16px;max-width:320px}
+.ep-loading-bar{width:220px;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;margin-top:8px}
+.ep-loading-bar div{height:100%;background:#0d6efd;width:0%;transition:width .3s}
+.ep-loading-timer{font-family:monospace;font-size:.85rem;color:#79c0ff;margin-top:14px}
+
+@media(max-width:640px){
+  .ep-shell{padding:10px;border-radius:0}
+  .ep-title{font-size:1.3rem}
+  .ep-headline{font-size:.9rem}
+  .ep-summary{font-size:.78rem}
+  .ep-botnav button{padding:10px 6px;font-size:.75rem}
+}
+</style>
+
+<!-- TOP TOOLBAR -->
+<div class="ep-toolbar">
+  <a href="{{ url_for('epaper_pdf') }}" target="_blank" class="ep-btn-pdf">📄 PDF</a>
+  <button type="button" id="epModeBtn" onclick="epToggleMode()" class="ep-btn-mode">📖 1 Page</button>
+  <button type="button" id="epFsBtn" onclick="epToggleFs()" class="ep-btn-fs">⛶ Fullscreen</button>
+  <form action="{{ url_for('epaper_lazy_reset') }}" method="post" style="flex:1;min-width:75px;margin:0">
+    <button class="ep-btn-reset" style="width:100%">🗑 Reset</button>
+  </form>
+</div>
+
+<!-- PROGRESS -->
+<div style="font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:#666;display:flex;justify-content:space-between;padding:0 4px">
+  <span>✅ {{ done }} of {{ total }} sections ready</span>
+  {% if pending %}<span>Next: <strong style="color:#0d6efd">{{ pending[0].name }}</strong></span>{% endif %}
+</div>
+<div class="ep-progress"><div class="ep-progress-bar" style="width:{{ (done/total*100)|round if total else 0 }}%"></div></div>
+
+<!-- CONTENT -->
+<div class="ep-shell">
+  <div class="ep-masthead">
+    <div class="ep-title">THE ASPIRANT'S TIMES</div>
+    <div class="ep-sub">A Free Daily for Civil Services Aspirants</div>
+  </div>
+  <div class="ep-dateline">
+    <span>Vol. I</span><span>{{ today }}</span><span>FREE</span>
+  </div>
+
+  {% for sec in ready %}
+    {% if sec.name == 'Front Page' %}
+      {% for a in sec.articles %}
+        <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:1.4rem;line-height:1.15;text-align:center;margin:8px 0">{{ a.title|clean }}</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:.6rem;text-align:center;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:10px">By AI Desk · {{ a.source }} · Relevance {{ a.relevance }}/10</div>
+        <div style="font-size:.9rem;line-height:1.6;text-align:justify">{{ a.summary|clean }}</div>
+      {% endfor %}
+    {% else %}
+      <div class="ep-sechead">{{ sec.name }}</div>
+      {% for a in sec.articles %}
+        <div class="ep-story">
+          <div class="ep-headline"><a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.title|clean }}</a></div>
+          <div class="ep-meta">{% if a.gs_paper %}<span style="background:#1a3a6b;color:#fff;padding:2px 6px;border-radius:3px">{{ a.gs_paper }}</span> {% endif %}{{ a.source }} · {{ a.relevance }}/10</div>
+          <div class="ep-summary">{{ a.summary|clean }}</div>
+          {% if a.gs_paper %}<div class="ep-angle"><strong>UPSC ANGLE · {{ a.gs_paper }}</strong><br>Add to your revision notes.</div>{% endif %}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+
+  {% if pending %}
+    <div class="ep-pending">
+      ⏳ {{ pending|length }} more section{{ 's' if pending|length > 1 else '' }} to load
+      <div class="ep-pending-chips">
+        {% for p in pending %}<span>{{ p.name }}</span>{% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="ep-pending" style="color:#198754">🎉 All sections loaded! Today's paper is complete.</div>
+  {% endif %}
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="ep-botnav">
+  <button type="button" onclick="epFlipPrev()" style="flex:1">◀ Prev</button>
+  <div class="ep-counter">{{ done }}/{{ total }}</div>
+  <button type="button" id="epLoadNextBtn" onclick="epLoadNext()" {% if not pending %}disabled{% endif %} class="ep-load">
+    {% if pending %}📄 +{{ pending[0].name }}{% else %}✅ Done{% endif %}
+  </button>
+  <button type="button" onclick="epFlipNext()" style="flex:1">Next ▶</button>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="ep-loading" id="epLoadingOverlay">
+  <div class="ep-spinner"></div>
+  <div class="ep-loading-title" id="epLoadingTitle">Generating...</div>
+  <div class="ep-loading-sub" id="epLoadingSub">AI is fetching and summarizing news</div>
+  <div class="ep-loading-bar"><div id="epLoadingBar"></div></div>
+  <div class="ep-loading-timer" id="epLoadingTimer">0s</div>
+</div>
+
+<script>
+// Exposed functions for toolbar / bottom nav
+window.epFlipPrev = function(){ window.scrollBy({top: -window.innerHeight * 0.7, behavior:'smooth'}); };
+window.epFlipNext = function(){ window.scrollBy({top: window.innerHeight * 0.7, behavior:'smooth'}); };
+
+window.epToggleFs = function(){
+  if (!document.fullscreenElement){
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+  }
+};
+
+window.epToggleMode = function(){
+  document.body.classList.toggle('mode-2p');
+  const btn = document.getElementById('epModeBtn');
+  if (btn) btn.innerText = document.body.classList.contains('mode-2p') ? '📖📖 2 Pages' : '📖 1 Page';
+};
+
+document.addEventListener('fullscreenchange', () => {
+  document.body.classList.toggle('fs-mode', !!document.fullscreenElement);
+});
+
+window.epLoadNext = async function(){
+  const btn = document.getElementById('epLoadNextBtn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+
+  const overlay = document.getElementById('epLoadingOverlay');
+  const title = document.getElementById('epLoadingTitle');
+  const sub = document.getElementById('epLoadingSub');
+  const bar = document.getElementById('epLoadingBar');
+  const timer = document.getElementById('epLoadingTimer');
+
+  // Get target section name from the button's text
+  const btnText = btn.innerText.replace('📄 +', '').trim();
+  title.innerText = 'Generating "' + btnText + '"';
+  sub.innerText = 'AI is fetching and summarizing ' + btnText + ' news';
+  bar.style.width = '5%';
+  timer.innerText = '0s';
+  overlay.classList.add('show');
+
+  let progress = 5;
+  const startT = Date.now();
+  const progInt = setInterval(() => {
+    progress = Math.min(90, progress + Math.random() * 4);
+    bar.style.width = progress + '%';
+  }, 700);
+  const timeInt = setInterval(() => {
+    const s = Math.floor((Date.now() - startT) / 1000);
+    timer.innerText = s + 's elapsed';
+    if (s > 15) sub.innerText = 'Still working — compiling ' + btnText + ' headlines...';
+    if (s > 30) sub.innerText = 'Almost there — verifying sources...';
+    if (s > 45) sub.innerText = 'Taking longer than usual. Please wait...';
+  }, 500);
+
+  try {
+    const r = await fetch('/epaper/lazy/load-next', {method:'POST'});
+    clearInterval(progInt);
+    clearInterval(timeInt);
+    const data = await r.json();
+    bar.style.width = '100%';
+    if (data.error){
+      overlay.classList.remove('show');
+      alert('Error: ' + data.error);
+      btn.disabled = false;
+      return;
+    }
+    if (data.done){
+      overlay.classList.remove('show');
+      btn.innerText = '✅ All loaded';
+      return;
+    }
+    sub.innerText = '✅ ' + btnText + ' loaded! Reloading...';
+    setTimeout(() => location.reload(), 700);
+  } catch(e){
+    clearInterval(progInt);
+    clearInterval(timeInt);
+    overlay.classList.remove('show');
+    alert('Network error: ' + e.message);
+    btn.disabled = false;
+  }
+};
+</script>
+{% endblock %}
+
+<!-- PATCH6: On This Day banner -->
+<script>
+(function(){
+  function insert(){
+    fetch('/epaper/this-day').then(r=>r.json()).then(d=>{
+      if(!d.events||!d.events.length) return;
+      var box=document.createElement('div');
+      box.id='ias-otd-banner';
+      box.style.cssText='margin:14px 18px 6px;padding:12px 14px;background:#fffdf3;border:1px solid #e8d9a8;border-left:5px solid #b8860b;font-family:Georgia,serif;font-size:13px;line-height:1.55;color:#2b2b2b;border-radius:4px;';
+      var h='<div style="font-weight:bold;letter-spacing:2px;font-size:11px;color:#8b6914;margin-bottom:8px;text-transform:uppercase;">📅 On This Day in History</div>';
+      d.events.slice(0,4).forEach(function(e){
+        h+='<div style="margin:5px 0;padding-left:6px;">'+
+           '<span style="display:inline-block;min-width:46px;font-weight:bold;color:#8b6914;">'+e.year+'</span> — '+e.text+'</div>';
+      });
+      box.innerHTML=h;
+      var anchor=document.querySelector('.ep-masthead,.masthead,header,.paper-header,.ep-header');
+      if(anchor && anchor.parentNode){
+        anchor.parentNode.insertBefore(box, anchor.nextSibling);
+      } else {
+        var container=document.querySelector('.ep-page,.paper-page,.flipbook,.page');
+        if(container) container.insertBefore(box, container.firstChild);
+        else document.body.insertBefore(box, document.body.firstChild);
+      }
+    }).catch(function(){});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', insert);
+  else insert();
+})();
+</script>
+
+<!-- PATCH12: Refresh button + freshness indicator -->
+<script>
+(function(){
+  function addRefreshBar(){
+    if(document.getElementById('ias-refresh-bar')) return;
+
+    var bar = document.createElement('div');
+    bar.id = 'ias-refresh-bar';
+    bar.style.cssText = [
+      'position:fixed',
+      'top:68px',
+      'right:10px',
+      'z-index:9999',
+      'display:flex',
+      'align-items:center',
+      'gap:8px',
+      'font-family:system-ui,-apple-system,sans-serif'
+    ].join(';');
+
+    var status = document.createElement('span');
+    status.id = 'ias-refresh-status';
+    status.style.cssText = [
+      'background:rgba(0,0,0,0.75)',
+      'color:#fff',
+      'font-size:11px',
+      'padding:6px 10px',
+      'border-radius:14px',
+      'letter-spacing:0.5px',
+      'white-space:nowrap'
+    ].join(';');
+    status.textContent = '🕒 loaded just now';
+
+    var btn = document.createElement('button');
+    btn.id = 'ias-refresh-btn';
+    btn.innerHTML = '⟳ Refresh';
+    btn.style.cssText = [
+      'background:#d4a017',
+      'color:#1a1a1a',
+      'border:none',
+      'padding:8px 14px',
+      'border-radius:16px',
+      'font-size:12px',
+      'font-weight:600',
+      'cursor:pointer',
+      'box-shadow:0 2px 6px rgba(0,0,0,0.2)'
+    ].join(';');
+
+    btn.addEventListener('click', function(){
+      btn.disabled = true;
+      btn.innerHTML = '⟳ Reloading…';
+      status.textContent = '🔄 fetching…';
+      // Force cache-bypass so we get truly fresh state from server
+      var u = new URL(window.location.href);
+      u.searchParams.set('_t', Date.now());
+      setTimeout(function(){ window.location.replace(u.toString()); }, 250);
+    });
+
+    bar.appendChild(status);
+    bar.appendChild(btn);
+    document.body.appendChild(bar);
+
+    // Live freshness counter
+    var loadedAt = Date.now();
+    setInterval(function(){
+      var s = Math.floor((Date.now() - loadedAt)/1000);
+      var label;
+      if(s < 5)         label = '🟢 fresh · just now';
+      else if(s < 30)   label = '🟢 ' + s + 's ago';
+      else if(s < 120)  label = '🟡 ' + Math.floor(s/60) + 'm ' + (s%60) + 's ago';
+      else              label = '🟠 ' + Math.floor(s/60) + 'm ago · tap Refresh';
+      status.textContent = label;
+      status.style.background = (s < 120) ? 'rgba(20,80,20,0.85)' :
+                                (s < 600) ? 'rgba(140,110,0,0.85)' :
+                                            'rgba(140,30,30,0.85)';
+    }, 1000);
+
+    // Also show section-ready count from the page if present
+    var readySpan = document.querySelector('span');
+    if(readySpan){
+      var m = (document.body.innerText.match(/(\d+)\s+of\s+(\d+)\s+SECTIONS/i));
+      if(m){
+        status.textContent = '📄 ' + m[1] + '/' + m[2] + ' ready';
+        loadedAt = Date.now();
+      }
+    }
+  }
+
+  if(document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', addRefreshBar);
+  else
+    addRefreshBar();
+})();
+</script>

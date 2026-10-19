@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 Book Storage Status</h2>
+<p class="text-muted">Where each book's PDF lives — cloud (B2) or local disk.</p>
+
+<div class="row mb-3">
+  <div class="col-md-4"><div class="card text-center border-success"><div class="card-body py-2">
+    <small>☁️ On B2 Cloud</small><h3 class="text-success mb-0">{{ b2_count }}</h3>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center border-warning"><div class="card-body py-2">
+    <small>💾 Local Disk</small><h3 class="text-warning mb-0">{{ local_count }}</h3>
+    <small class="text-muted">{{ local_size_mb }} MB</small>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center border-danger"><div class="card-body py-2">
+    <small>❓ Missing File</small><h3 class="text-danger mb-0">{{ missing_count }}</h3>
+  </div></div></div>
+</div>
+
+{% if local %}
+<div class="card mb-3 border-warning">
+  <div class="card-header bg-warning text-dark">
+    💾 Local Books ({{ local|length }}) · {{ local_size_mb }} MB total
+    <form method="post" action="{{ url_for('library_migrate_to_b2') }}" style="display:inline;float:right;margin:0" onsubmit="return confirm('Migrate ALL local books to B2?')">
+      <button class="btn btn-sm btn-success">☁️ Migrate All</button>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>ID</th><th>Title</th><th>Size</th><th>File</th><th></th></tr></thead>
+      <tbody>
+        {% for b in local %}
+        <tr>
+          <td>{{ b.id }}</td>
+          <td><strong>{{ b.title[:50] }}</strong>{% if b.subject %}<br><small class="text-muted">{{ b.subject }}</small>{% endif %}</td>
+          <td>{{ b.size_mb }} MB</td>
+          <td><code class="small">{{ b.filename[:40] }}</code></td>
+          <td>
+            <form method="post" action="{{ url_for('library_migrate_one', book_id=b.id) }}" style="display:inline;margin:0">
+              <button class="btn btn-sm btn-outline-success">Migrate</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if on_b2 %}
+<div class="card mb-3 border-success">
+  <div class="card-header bg-success text-white">☁️ On B2 ({{ on_b2|length }})</div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>ID</th><th>Title</th><th>Remote Path</th></tr></thead>
+      <tbody>
+        {% for b in on_b2[:50] %}
+        <tr>
+          <td>{{ b.id }}</td>
+          <td><strong>{{ b.title[:50] }}</strong></td>
+          <td><code class="small">{{ b.remote[:50] }}</code></td>
+        </tr>
+        {% endfor %}
+        {% if on_b2|length > 50 %}<tr><td colspan="3" class="text-muted small">... {{ on_b2|length - 50 }} more</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if missing %}
+<div class="card mb-3 border-danger">
+  <div class="card-header bg-danger text-white">❓ Missing Files ({{ missing|length }})</div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>ID</th><th>Title</th><th>Filename</th></tr></thead>
+      <tbody>
+        {% for b in missing %}
+        <tr>
+          <td>{{ b.id }}</td>
+          <td>{{ b.title[:50] }}</td>
+          <td><code class="small">{{ b.filename[:50] }}</code></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="alert alert-info small">
+  <strong>How it works:</strong> Books on B2 = cloud-stored, no disk usage. Books local = still using PythonAnywhere disk. Migrate moves them to B2 and deletes the local copy — book still works everywhere.
+</div>
+
+<div class="d-flex gap-2 flex-wrap">
+  <a href="{{ url_for('library_home') }}" class="btn btn-primary">← Library</a>
+  <a href="{{ url_for('library_storage_status') }}" class="btn btn-outline-primary">🔄 Refresh</a>
+  <a href="{{ url_for('library_disk_status') }}" target="_blank" class="btn btn-outline-secondary">Raw JSON</a>
+</div>
+{% endblock %}

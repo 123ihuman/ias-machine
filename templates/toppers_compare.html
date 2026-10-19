@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⚖️ Compare Toppers</h2>
+<p class="text-muted">Pick any two toppers to see their paper-wise performance side by side.</p>
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-5">
+    <label class="small text-muted">Topper 1</label>
+    <select class="form-control" name="t1">
+      <option value="">— Select —</option>
+      {% for t in all_toppers %}
+      <option value="{{ t.id }}" {% if t1 == t.id|string %}selected{% endif %}>{{ t.year }} AIR {{ t.rank }} — {{ t.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-5">
+    <label class="small text-muted">Topper 2</label>
+    <select class="form-control" name="t2">
+      <option value="">— Select —</option>
+      {% for t in all_toppers %}
+      <option value="{{ t.id }}" {% if t2 == t.id|string %}selected{% endif %}>{{ t.year }} AIR {{ t.rank }} — {{ t.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2 d-flex align-items-end">
+    <button class="btn btn-primary w-100">Compare</button>
+  </div>
+</form>
+
+{% if a or b %}
+<div class="row">
+  <div class="col-md-6">
+    {% if a %}
+    <div class="card mb-3">
+      <div class="card-header bg-primary text-white">{{ a.year }} AIR {{ a.rank }} — {{ a.name }}</div>
+      <div class="card-body">
+        <div class="kv d-flex justify-content-between"><span>Written</span><b>{{ a.written_marks or '—' }}</b></div>
+        <div class="kv d-flex justify-content-between"><span>Interview</span><b>{{ a.interview_marks or '—' }}</b></div>
+        <div class="kv d-flex justify-content-between"><span>Total</span><b>{{ a.total_marks or '—' }}</b></div>
+        <div class="kv d-flex justify-content-between"><span>Optional</span><b>{{ a.optional_subject or '—' }}</b></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-md-6">
+    {% if b %}
+    <div class="card mb-3">
+      <div class="card-header bg-success text-white">{{ b.year }} AIR {{ b.rank }} — {{ b.name }}</div>
+      <div class="card-body">
+        <div class="kv d-flex justify-content-between"><span>Written</span><b>{{ b.written_marks or '—' }}</b></div>
+        <div class="kv d-flex justify-content-between"><span>Interview</span><b>{{ b.interview_marks or '—' }}</b></div>
+        <div class="kv d-flex justify-content-between"><span>Total</span><b>{{ b.total_marks or '—' }}</b></div>
+        <div class="kv d-flex justify-content-between"><span>Optional</span><b>{{ b.optional_subject or '—' }}</b></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">📊 Paper-wise Marks</div>
+  <div class="card-body">
+    <canvas id="cmpChart" height="160"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if a or b %}
+(function(){
+  const labels = ['Essay','GS-I','GS-II','GS-III','GS-IV','Opt-I','Opt-II'];
+  const keys   = ['essay','gs1','gs2','gs3','gs4','optional1','optional2'];
+  const aMarks = {{ a_marks|tojson if a_marks else '{}' }};
+  const bMarks = {{ b_marks|tojson if b_marks else '{}' }};
+
+  const datasets = [];
+  if ({{ 'true' if a else 'false' }}) {
+    datasets.push({
+      label: '{{ a.name if a else "" }}',
+      data: keys.map(k => aMarks[k] || 0),
+      backgroundColor: 'rgba(13,110,253,.7)'
+    });
+  }
+  if ({{ 'true' if b else 'false' }}) {
+    datasets.push({
+      label: '{{ b.name if b else "" }}',
+      data: keys.map(k => bMarks[k] || 0),
+      backgroundColor: 'rgba(25,135,84,.7)'
+    });
+  }
+
+  new Chart(document.getElementById('cmpChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true, max: 200 } }
+    }
+  });
+})();
+{% endif %}
+</script>
+{% endblock %}

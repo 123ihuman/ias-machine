@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>🧠 How a Topper Thinks</h4>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <p class="mb-1"><strong>Q{{ q.id }}.</strong></p>
+    <p style="white-space:pre-wrap">{{ q.text }}</p>
+    <p class="small text-muted mb-0">
+      {% if q.topic %}<span class="badge bg-info text-dark">{{ q.topic }}</span>{% endif %}
+      {% if q.year %}<span class="badge bg-secondary">{{ q.year }}</span>{% endif %}
+      {% if q.correct_answer %}<span class="badge bg-success">Key: {{ q.correct_answer }}</span>{% endif %}
+    </p>
+  </div>
+</div>
+
+<button class="btn btn-primary w-100 mb-3" id="goBtn">🧠 Show Topper's Reasoning</button>
+
+<div class="alert alert-info" id="status" style="display:none">
+  <strong>Reasoning...</strong> ~10-15 sec
+</div>
+
+<div id="result" style="display:none">
+  <div class="card mb-3 border-warning">
+    <div class="card-header bg-warning text-dark">🎯 Step-by-Step Reasoning</div>
+    <div class="card-body" id="thinkBox" style="white-space:pre-wrap;line-height:1.7;font-size:.95rem"></div>
+  </div>
+  <a href="{{ url_for('question_detail', qid=q.id) }}" class="btn btn-outline-primary">← Back to Question</a>
+</div>
+
+<script>
+document.getElementById('goBtn').onclick = async () => {
+  document.getElementById('goBtn').disabled = true;
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+  try {
+    const r = await fetch('/question/{{ q.id }}/think-like-topper', {method:'POST'});
+    const data = await r.json();
+    if (data.error) {
+      alert(data.error);
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('goBtn').disabled = false;
+      return;
+    }
+    document.getElementById('thinkBox').innerText = data.thinking;
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('status').style.display = 'none';
+  } catch(e) {
+    alert('Error: ' + e.message);
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('goBtn').disabled = false;
+  }
+};
+</script>
+{% endblock %}

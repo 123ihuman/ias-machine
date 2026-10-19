@@ -1,50 +1,128 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>{{ plan.name }}</h2>
-<p>
-    <strong>Exam:</strong> {{ plan.exam_date }} ·
-    <strong>Hours/day:</strong> {{ plan.hours_per_day }} ·
-    <strong>Subjects:</strong> {{ plan.subjects }}
-    {% if plan.weak_areas %} · <strong>Weak:</strong> {{ plan.weak_areas }}{% endif %}
+<p class="small text-muted mb-2">
+  Exam: <strong>{{ plan.exam_date }}</strong> ·
+  {{ plan.hours_per_day }}h/day ·
+  {{ plan.subjects }}
+  {% if plan.weak_areas %}· Weak: {{ plan.weak_areas }}{% endif %}
 </p>
 
 {% if data.weeks %}
-    {% for week in data.weeks %}
-    <div class="card mb-3">
-        <div class="card-header bg-dark text-white">
-            <strong>Week {{ week.week }}</strong> — {{ week.theme }}
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-sm mb-0">
-                <thead>
-                    <tr>
-                        <th style="width:60px;">Day</th>
-                        <th>Morning</th>
-                        <th>Afternoon</th>
-                        <th>Evening</th>
-                        <th>Test</th>
-                        <th>Revision</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for d in week.days %}
-                    <tr>
-                        <td><strong>D{{ d.day }}</strong></td>
-                        <td>{{ d.morning }}</td>
-                        <td>{{ d.afternoon }}</td>
-                        <td>{{ d.evening }}</td>
-                        <td>{% if d.test %}<span class="badge bg-danger">{{ d.test }}</span>{% endif %}</td>
-                        <td>{% if d.revision %}<span class="badge bg-info text-dark">{{ d.revision }}</span>{% endif %}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div class="d-flex mb-3 gap-2">
+  <button class="btn btn-sm btn-primary" id="calBtn" onclick="showView('calendar')">📅 Calendar</button>
+  <button class="btn btn-sm btn-outline-secondary" id="tblBtn" onclick="showView('table')">📋 Table</button>
+</div>
+
+<!-- CALENDAR VIEW -->
+<div id="calendarView">
+  {% for week in data.weeks %}
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong>Week {{ week.week }}</strong>
+      <span class="small text-muted">{{ week.theme }}</span>
     </div>
-    {% endfor %}
+    <div class="card-body p-2">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+        {% for d in week.days %}
+        {% set color = (d.morning or '')[:6]|replace('Polity','#0d6efd')|replace('History','#6f42c1')|replace('Geograph','#198754')|replace('Econom','#fd7e14')|replace('Environ','#20c997')|replace('Scienc','#0dcaf0')|replace('Current','#dc3545')|replace('Essay','#ffc107') %}
+        <div class="p-1" style="border:1px solid #ddd;border-radius:8px;background:#f8f9fa;min-height:100px;font-size:.7rem;cursor:pointer"
+             onclick="openDay('{{ loop.index }}','{{ week.week }}','{{ d.morning|e }}','{{ d.afternoon|e }}','{{ d.evening|e }}','{{ d.test|default('')|e }}','{{ d.revision|default('')|e }}')">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong style="font-size:.75rem;">Day {{ d.day }}</strong>
+            {% if d.test %}<span title="Test" style="color:#dc3545">📝</span>{% endif %}
+          </div>
+          <div style="color:#0d6efd;font-weight:600;line-height:1.15;">{{ (d.morning or '')[:18] }}{% if (d.morning or '')|length > 18 %}…{% endif %}</div>
+          <div style="color:#198754;line-height:1.15;">{{ (d.afternoon or '')[:18] }}{% if (d.afternoon or '')|length > 18 %}…{% endif %}</div>
+          <div style="color:#6f42c1;line-height:1.15;">{{ (d.evening or '')[:18] }}{% if (d.evening or '')|length > 18 %}…{% endif %}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- TABLE VIEW -->
+<div id="tableView" style="display:none;">
+  {% for week in data.weeks %}
+  <div class="card mb-3">
+    <div class="card-header bg-dark text-white">
+      <strong>Week {{ week.week }}</strong> — {{ week.theme }}
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        <thead>
+          <tr>
+            <th style="width:60px;">Day</th>
+            <th>Morning</th>
+            <th>Afternoon</th>
+            <th>Evening</th>
+            <th>Test</th>
+            <th>Revision</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in week.days %}
+          <tr>
+            <td><strong>D{{ d.day }}</strong></td>
+            <td>{{ d.morning }}</td>
+            <td>{{ d.afternoon }}</td>
+            <td>{{ d.evening }}</td>
+            <td>{% if d.test %}<span class="badge bg-danger">{{ d.test }}</span>{% endif %}</td>
+            <td>{% if d.revision %}<span class="badge bg-info text-dark">{{ d.revision }}</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- DAY DETAIL MODAL -->
+<div class="modal" id="dayModal" onclick="if(event.target===this)closeDay()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:14px">
+  <div style="background:#fff;padding:18px;border-radius:12px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto">
+    <h4 id="dayTitle">Day</h4>
+    <div class="mb-2"><strong style="color:#0d6efd">🌅 Morning</strong><br><span id="dayMorning"></span></div>
+    <div class="mb-2"><strong style="color:#198754">☀️ Afternoon</strong><br><span id="dayAfternoon"></span></div>
+    <div class="mb-2"><strong style="color:#6f42c1">🌙 Evening</strong><br><span id="dayEvening"></span></div>
+    <div class="mb-2" id="dayTestBox"><strong style="color:#dc3545">📝 Test</strong><br><span id="dayTest"></span></div>
+    <div class="mb-3" id="dayRevisionBox"><strong style="color:#0dcaf0">🔁 Revision</strong><br><span id="dayRevision"></span></div>
+    <button class="btn btn-primary w-100" onclick="closeDay()">Close</button>
+  </div>
+</div>
+
+<script>
+function showView(v){
+  document.getElementById('calendarView').style.display = v === 'calendar' ? '' : 'none';
+  document.getElementById('tableView').style.display = v === 'table' ? '' : 'none';
+  document.getElementById('calBtn').className = v === 'calendar' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-secondary';
+  document.getElementById('tblBtn').className = v === 'table' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-secondary';
+  localStorage.setItem('studyPlanView', v);
+}
+const saved = localStorage.getItem('studyPlanView');
+if (saved === 'table') showView('table');
+
+function openDay(idx, week, m, a, e, t, r){
+  document.getElementById('dayTitle').innerText = 'Week ' + week + ' — Day ' + idx;
+  document.getElementById('dayMorning').innerText = m || '—';
+  document.getElementById('dayAfternoon').innerText = a || '—';
+  document.getElementById('dayEvening').innerText = e || '—';
+  document.getElementById('dayTest').innerText = t || '—';
+  document.getElementById('dayRevision').innerText = r || '—';
+  document.getElementById('dayTestBox').style.display = t ? '' : 'none';
+  document.getElementById('dayRevisionBox').style.display = r ? '' : 'none';
+  document.getElementById('dayModal').style.display = 'flex';
+}
+function closeDay(){
+  document.getElementById('dayModal').style.display = 'none';
+}
+</script>
+
 {% else %}
-<div class="alert alert-warning">Plan data missing. Try regenerating.</div>
+<div class="alert alert-warning">No plan data. Try regenerating.</div>
 {% endif %}
 
-<a href="{{ url_for('study_plan_list') }}" class="btn btn-primary">← Back to Plans</a>
+<a href="{{ url_for('study_plan_list') }}" class="btn btn-outline-primary mt-3">← Back to Plans</a>
 {% endblock %}

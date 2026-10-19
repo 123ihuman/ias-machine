@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{{ topper.name }} — AIR {{ topper.rank }} ({{ topper.year }})</h2>
+<div class="d-flex align-items-center gap-3 mb-3">
+  {% if topper.photo_url %}
+  <img src="{{ topper.photo_url }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+  {% endif %}
+  <div>
+    <h2 class="mb-0">{{ topper.name }}</h2>
+    <small class="text-muted">AIR {{ topper.rank }} · {{ topper.year }}</small>
+  </div>
+</div>
 
 <div class="card mb-3">
     <div class="card-body">

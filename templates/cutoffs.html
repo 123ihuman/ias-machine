@@ -5,7 +5,7 @@
 
 <div class="row">
     <div class="col-md-5">
-        <div class="card">
+        <div class="card mb-3">
             <div class="card-header">Your Scores</div>
             <div class="card-body">
                 <form method="post">
@@ -33,61 +33,99 @@
                 </form>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-7">
         {% if result %}
-        <div class="card mb-3">
+        <div class="card">
             <div class="card-header">Your Standing vs {{ result.target_year }} Cut-off</div>
-            <div class="card-body">
-                <table class="table table-bordered">
-                    <thead><tr><th>Stage</th><th>Your Score</th><th>Cut-off</th><th>Gap</th><th>Status</th></tr></thead>
+            <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                    <thead><tr><th>Stage</th><th>You</th><th>Cut-off</th><th>Gap</th><th></th></tr></thead>
                     <tbody>
                         <tr>
                             <td>Prelims</td>
                             <td>{{ result.user_prelims }}</td>
                             <td>{{ result.base.prelims }}</td>
                             <td>{{ result.prelims_gap }}</td>
-                            <td>{% if result.prelims_gap >= 0 %}✅ Safe{% else %}⚠️ Below{% endif %}</td>
+                            <td>{% if result.prelims_gap >= 0 %}✅{% else %}⚠️{% endif %}</td>
                         </tr>
                         <tr>
                             <td>Mains</td>
                             <td>{{ result.user_mains }}</td>
-                            <td>{{ result.base.mains }}</td>
+                            <td>{{ result.base.mains or '—' }}</td>
                             <td>{{ result.mains_gap }}</td>
-                            <td>{% if result.mains_gap >= 0 %}✅ Safe{% else %}⚠️ Below{% endif %}</td>
+                            <td>{% if result.mains_gap >= 0 %}✅{% else %}⚠️{% endif %}</td>
                         </tr>
                         <tr>
                             <td>Final</td>
                             <td>{{ result.user_final }}</td>
-                            <td>{{ result.base.final }}</td>
+                            <td>{{ result.base.final or '—' }}</td>
                             <td>{{ result.final_gap }}</td>
-                            <td>{% if result.final_gap >= 0 %}✅ Safe{% else %}⚠️ Below{% endif %}</td>
+                            <td>{% if result.final_gap >= 0 %}✅{% else %}⚠️{% endif %}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
         {% endif %}
+    </div>
+
+    <div class="col-md-7">
+        <div class="card mb-3">
+            <div class="card-header">📈 Cut-off Trend (2017–2026)</div>
+            <div class="card-body">
+                <canvas id="trendChart" height="180"></canvas>
+                <p class="text-muted small mb-0 mt-2">Prelims scales up to 200, Mains to 1750, Final to 2025. Trend shows difficulty across years.</p>
+            </div>
+        </div>
 
         <h5>📚 Historical Cut-offs</h5>
         <table class="table table-sm">
-            <thead><tr><th>Year</th><th>Prelims (200)</th><th>Mains (1750)</th><th>Final (2025)</th></tr></thead>
+            <thead><tr><th>Year</th><th>Prelims (200)</th><th>Mains (1750)</th><th>Final (2025)</th><th>Status</th></tr></thead>
             <tbody>
-    {% for y, c in cutoffs.items() | sort(reverse=True) %}
-    <tr>
-        <td>{{ y }}
-            {% if c.status == 'expected' %}
-            <span class="badge bg-warning text-dark">Expected</span>
-            {% endif %}
-        </td>
-        <td>{{ c.prelims }}</td>
-        <td>{{ c.mains or '—' }}</td>
-        <td>{{ c.final or '—' }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
+                {% for y, c in cutoffs.items() | sort(reverse=True) %}
+                <tr>
+                    <td>{{ y }}</td>
+                    <td>{{ c.prelims }}</td>
+                    <td>{{ c.mains or '—' }}</td>
+                    <td>{{ c.final or '—' }}</td>
+                    <td>{% if c.status == 'expected' %}<span class="badge bg-warning text-dark">Expected</span>{% else %}<span class="badge bg-success">Official</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function(){
+    const cutoffs = {{ cutoffs|tojson }};
+    const years = Object.keys(cutoffs).sort((a,b)=>a-b);
+    const prelims = years.map(y => cutoffs[y].prelims);
+    const mains = years.map(y => cutoffs[y].mains);
+    const final = years.map(y => cutoffs[y].final);
+
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [
+                { label: 'Prelims', data: prelims, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.1)', tension: 0.3, spanGaps: true },
+                { label: 'Mains', data: mains, borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,.1)', tension: 0.3, spanGaps: true },
+                { label: 'Final', data: final, borderColor: '#198754', backgroundColor: 'rgba(25,135,84,.1)', tension: 0.3, spanGaps: true }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y || 'N/A') } }
+            },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: 'Marks' } }
+            }
+        }
+    });
+})();
+</script>
 {% endblock %}

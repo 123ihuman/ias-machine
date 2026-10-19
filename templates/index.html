@@ -1,78 +1,260 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Library</h2>
-<div class="row">
-    <div class="col-md-8">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Title</th><th>Author</th><th>Subject</th><th>Topic</th><th>Type</th><th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for book in books %}
-                <tr>
-                    <td>{{ book.title }}</td>
-                    <td>{{ book.author }}</td>
-                    <td>{{ book.subject }}</td>
-                    <td>{{ book.topic }}</td>
-                    <td>{{ book.category }}</td>
-                    <td>
-                        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-sm btn-primary">View</a>
-                        <a href="{{ url_for('download_book', book_id=book.id) }}" class="btn btn-sm btn-success">Download</a>
-                        <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline;">
-                            <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this book?')">Del</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="6">No books uploaded yet.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">Upload PDF</div>
-            <div class="card-body">
-                <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
-                    <div class="mb-2">
-                        <label class="form-label">Title</label>
-                        <input type="text" class="form-control" name="title" placeholder="e.g., Indian Polity - Laxmikanth">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Author</label>
-                        <input type="text" class="form-control" name="author">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Subject</label>
-                        <input type="text" class="form-control" name="subject" placeholder="e.g., Polity">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Topic (optional)</label>
-                        <input type="text" class="form-control" name="topic" placeholder="e.g., Federalism">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Type</label>
-                        <select class="form-control" name="category">
-                            <option value="book">Book</option>
-                            <option value="paper">Past Paper</option>
-                            <option value="notes">Notes</option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">PDF File</label>
-                        <input type="file" class="form-control" name="file" accept=".pdf" required>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" name="use_ocr" id="use_ocr" checked>
-                        <label class="form-check-label" for="use_ocr">Use OCR (for scanned PDFs)</label>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Upload</button>
-                </form>
-                <small class="text-muted d-block mt-2">OCR takes ~2–5 sec per page. Large books may take a few minutes.</small>
-            </div>
-        </div>
-    </div>
+
+{% set current_col = request.args.get('collection', '') %}
+{% set current_year = request.args.get('year', '') %}
+{% set current_subject = request.args.get('subject', '') %}
+
+<h2>📚 Library</h2>
+
+<!-- Disk Status Banner -->
+<div id="diskBanner" class="alert alert-warning py-2 small mb-2" style="display:none">
+  <strong>⚠️ PythonAnywhere disk:</strong> <span id="diskPct">--</span>% used
+  (<span id="diskFree">--</span> MB free) ·
+  <span id="uploadsMb">--</span> MB in uploads folder
+  <div class="mt-2 d-flex gap-2 flex-wrap">
+    <form method="post" action="{{ url_for('library_migrate_to_b2') }}" style="margin:0" onsubmit="return confirm('Move all local PDFs to B2 and free disk? Safe — books remain accessible.')">
+      <button class="btn btn-sm btn-success">☁️ Migrate Local Books to B2</button>
+    </form>
+    <a href="{{ url_for('library_storage_status') }}" class="btn btn-sm btn-primary">📊 Book Storage Status</a>
+    <a href="{{ url_for('library_disk_status') }}" target="_blank" class="btn btn-sm btn-outline-secondary">Raw JSON</a>
+  </div>
 </div>
+
+<script>
+(function(){
+  fetch('{{ url_for("library_disk_status") }}')
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) return;
+      const pct = d.home_percent || 0;
+      const show = pct > 60 || (d.uploads_folder_mb || 0) > 50;
+      if (show) {
+        document.getElementById('diskBanner').style.display = 'block';
+        document.getElementById('diskPct').textContent = pct.toFixed(1);
+        document.getElementById('diskFree').textContent = d.home_free_mb;
+        document.getElementById('uploadsMb').textContent = d.uploads_folder_mb;
+      }
+    })
+    .catch(() => {});
+})();
+</script>
+
+<!-- Upload Panel -->
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer" onclick="toggleUpload()">
+    <strong>📤 Upload PDF</strong>
+    <div class="d-flex gap-2 align-items-center">
+      <a href="{{ url_for('library_quick_upload_page') }}" class="btn btn-sm btn-primary" onclick="event.stopPropagation()">⚡ Quick Upload</a>
+      <a href="{{ url_for('upload_zip') }}" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation()">📦 Bulk ZIP</a>
+      <form method="post" action="{{ url_for('library_auto_classify') }}" style="display:inline;margin:0" onclick="event.stopPropagation()">
+        <button class="btn btn-sm btn-info">🧠 AI Classify</button>
+      </form>
+      <span id="toggleIcon" style="font-size:1.2rem">▼</span>
+    </div>
+  </div>
+  <div class="card-body" id="uploadBody">
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+      <div class="row g-2">
+        <div class="col-md-6"><input type="text" class="form-control" name="title" placeholder="Title" required></div>
+        <div class="col-md-6"><input type="text" class="form-control" name="author" placeholder="Author"></div>
+        <div class="col-md-4"><input type="text" class="form-control" name="subject" placeholder="Subject"></div>
+        <div class="col-md-4">
+          <select class="form-control" name="category">
+            <option value="book">Book</option>
+            <option value="paper">Past Paper</option>
+            <option value="notes">Notes</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-control" name="collection">
+            <option value="">Auto-classify</option>
+            {% for k, v in collections.items() %}<option value="{{ k }}">{{ v.icon }} {{ v.label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-8"><input type="file" class="form-control" name="file" accept=".pdf" required></div>
+        <div class="col-md-4 d-flex align-items-center">
+          <div class="form-check"><input class="form-check-input" type="checkbox" name="use_ocr" id="ocrChk"><label class="form-check-label small" for="ocrChk">Use OCR (scanned PDFs)</label></div>
+        </div>
+        <div class="col-12"><button type="submit" class="btn btn-primary w-100">Upload</button></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Collection Tabs -->
+<div style="display:flex;overflow-x:auto;gap:6px;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none">
+  <a href="{{ url_for('library_home') }}" class="btn btn-sm {% if not current_col %}btn-primary{% else %}btn-outline-primary{% endif %}" style="white-space:nowrap">
+    📚 All ({{ total_count }})
+  </a>
+  {% for k, v in collections.items() %}
+    {% set count = collection_counts.get(k, 0) %}
+    {% if count > 0 %}
+    <a href="{{ url_for('library_home', collection=k) }}" class="btn btn-sm {% if current_col == k %}btn-primary{% else %}btn-outline-primary{% endif %}" style="white-space:nowrap">
+      {{ v.icon }} {{ v.label }} ({{ count }})
+    </a>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<!-- Filters Row -->
+{% if current_col or current_year or current_subject %}
+<div class="card mb-2">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <input type="hidden" name="collection" value="{{ current_col }}">
+      {% if years %}
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" name="year" onchange="this.form.submit()">
+          <option value="">All Years</option>
+          {% for y in years %}<option value="{{ y }}" {% if current_year == y|string %}selected{% endif %}>{{ y }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      {% if subjects %}
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" name="subject" onchange="this.form.submit()">
+          <option value="">All Subjects</option>
+          {% for s in subjects %}<option value="{{ s }}" {% if current_subject == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div class="col-md-6 text-end">
+        <a href="{{ url_for('library_home', collection=current_col) }}" class="btn btn-sm btn-outline-secondary">Clear Filters</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- Books Grid -->
+{% if books %}
+<form method="post" action="{{ url_for('library_bulk_move') }}" id="bulkForm">
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <small class="text-muted">{{ books|length }} book(s) shown</small>
+  <div class="d-flex gap-2">
+    <select class="form-select form-select-sm" name="bulk_collection" style="width:auto">
+      <option value="">Move selected →</option>
+      {% for k, v in collections.items() %}<option value="{{ k }}">{{ v.icon }} {{ v.label }}</option>{% endfor %}
+    </select>
+    <input class="form-control form-control-sm" name="bulk_year" placeholder="Year" style="width:80px">
+    <button class="btn btn-sm btn-warning">Move</button>
+  </div>
+</div>
+
+<div class="row g-2">
+  {% for book in books %}
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body py-2">
+        <div class="d-flex gap-2">
+          <input type="checkbox" name="book_ids" value="{{ book.id }}" class="form-check-input mt-1">
+          <div class="flex-grow-1" style="min-width:0">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div style="min-width:0;flex:1">
+                <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ book.title }}">{{ book.title[:60] }}{% if book.title|length > 60 %}…{% endif %}</div>
+                <div class="small text-muted">{{ book.author or '—' }}</div>
+              </div>
+              {% if book.collection %}
+              <span class="badge bg-dark" style="white-space:nowrap">{{ collections[book.collection].icon if book.collection in collections else '📎' }} {{ book.collection }}</span>
+              {% endif %}
+            </div>
+            <div class="mt-1 d-flex flex-wrap gap-1">
+              {% if book.subject %}<span class="badge bg-info text-dark">{{ book.subject }}</span>{% endif %}
+              {% if book.year %}<span class="badge bg-secondary">{{ book.year }}</span>{% endif %}
+              {% if book.sub_subject %}<span class="badge bg-light text-dark">{{ book.sub_subject }}</span>{% endif %}
+              {% if book.ocr_status == 'complete' %}<span class="badge bg-success">✅ OCR</span>
+              {% elif book.ocr_status == 'pending' %}<span class="badge bg-warning text-dark">⏳ OCR</span>
+              {% elif book.filename and book.filename.startswith('b2://') %}<span class="badge bg-primary">☁️ B2</span>{% endif %}
+            </div>
+            <div class="mt-2 d-flex gap-1 flex-wrap">
+              <a href="{{ url_for('read_book_page', book_id=book.id, page_num=1) }}" class="btn btn-sm btn-primary">Read</a>
+              <button type="button" class="btn btn-sm btn-info text-white" id="offlineBtn_{{ book.id }}" onclick="saveOffline({{ book.id }}, {{ book.title|tojson }}, this)">📴 Save</button>
+              <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline-primary">Info</a>
+              <a href="{{ url_for('download_book', book_id=book.id) }}" class="btn btn-sm btn-success">⬇</a>
+              <button type="button" class="btn btn-sm btn-outline-warning" onclick="moveOne({{ book.id }})">Move</button>
+              <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display:inline" onsubmit="return confirm('Delete?')">
+                <button class="btn btn-sm btn-danger">Del</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+</form>
+{% else %}
+<div class="alert alert-info">
+  No books{% if current_col %} in <strong>{{ collections[current_col].label if current_col in collections else current_col }}</strong>{% endif %}.
+  {% if current_col %}<a href="{{ url_for('library_home') }}">View all</a>{% endif %}
+</div>
+{% endif %}
+
+<div style="margin:24px auto;max-width:680px;padding:0 14px;">
+  <a href="/library" style="display:block;padding:22px;background:linear-gradient(135deg,#d4a017,#b8860b);color:#1a1a1a;text-decoration:none;border-radius:16px;text-align:center;font-family:Georgia,serif;box-shadow:0 4px 14px rgba(0,0,0,0.15);">
+    <div style="font-size:24px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">📚 OPEN LIBRARY</div>
+    <div style="font-size:14px;opacity:0.85;">100+ NCERT · UPSC · SSC · Banking PDFs</div>
+    <div style="margin-top:10px;font-size:12px;opacity:0.7;">Tap to browse →</div>
+  </a>
+</div>
+
+<script>
+function toggleUpload(){
+  const body = document.getElementById('uploadBody');
+  const icon = document.getElementById('toggleIcon');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  icon.innerText = hidden ? '▼' : '►';
+  localStorage.setItem('uploadOpen', hidden ? '1' : '0');
+}
+if (localStorage.getItem('uploadOpen') === '0') {
+  document.getElementById('uploadBody').style.display = 'none';
+  document.getElementById('toggleIcon').innerText = '►';
+}
+async function saveOffline(bookId, title, btn){
+  if (!window.IASOffline){
+    alert('Offline module not loaded. Refresh the page.');
+    return;
+  }
+  const orig = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = '⏳ Saving...';
+  try {
+    const r = await IASOffline.saveBookOffline(bookId, title);
+    if (r.ok){
+      const mb = Math.round(r.size / 1024 / 1024 * 10) / 10;
+      btn.innerText = '✅ ' + mb + 'MB';
+      btn.classList.remove('btn-info');
+      btn.classList.add('btn-success');
+      setTimeout(() => {
+        btn.innerText = '📴 Saved';
+      }, 2000);
+    } else {
+      alert('Save failed: ' + (r.error || 'unknown'));
+      btn.innerText = orig;
+      btn.disabled = false;
+    }
+  } catch(e){
+    alert('Error: ' + e.message);
+    btn.innerText = orig;
+    btn.disabled = false;
+  }
+}
+
+function moveOne(bid){
+  const col = prompt('Move to which collection?\nNCERT / STANDARD / PYQ / TOPPER / MAGAZINE / COACHING / NOTES / ANSWER_KEY / OPTIONAL / CURRENT_AFFAIRS / OTHER');
+  if (!col) return;
+  const yr = prompt('Year (optional, blank to skip):') || '';
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/library/move';
+  const f1 = document.createElement('input'); f1.name = 'book_id'; f1.value = bid; form.appendChild(f1);
+  const f2 = document.createElement('input'); f2.name = 'collection'; f2.value = col.toUpperCase(); form.appendChild(f2);
+  const f3 = document.createElement('input'); f3.name = 'year'; f3.value = yr; form.appendChild(f3);
+  document.body.appendChild(form);
+  form.submit();
+}
+</script>
 {% endblock %}

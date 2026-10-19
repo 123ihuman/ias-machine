@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Drive Backup</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font-family:Georgia,serif;background:#f7f5ee;margin:0;padding:20px;max-width:700px;margin:auto}
+.hdr{background:#f39c12;color:#fff;padding:16px;border-radius:12px;margin-bottom:16px}
+.hdr h1{margin:0;font-size:20px}
+.card{background:#fff;padding:16px;border-radius:12px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.k{color:#666}.v{font-weight:600}
+button{padding:12px 20px;background:#f39c12;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:8px}
+button:disabled{opacity:.6}
+.file{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;font-size:13px}
+.file:last-child{border:none}
+.del{background:#da3633;color:#fff;border:none;padding:6px 10px;border-radius:8px;font-size:11px;cursor:pointer}
+</style></head>
+<body>
+<div class="hdr"><h1>📤 Google Drive Backup</h1><div>Backup all app data to your Drive (15 GB free)</div></div>
+<div class="card">
+  <div class="row"><span class="k">Status</span><span class="v" id="status">checking…</span></div>
+  <div class="row"><span class="k">Files on Drive</span><span class="v" id="count">—</span></div>
+  <div class="row"><span class="k">Total size</span><span class="v" id="size">—</span></div>
+  <button id="btn" onclick="runBackup()">📤 Backup Now</button>
+  <div id="msg" style="margin-top:10px;font-size:13px;"></div>
+</div>
+<div class="card">
+  <h3 style="margin:0 0 8px;font-size:15px;">📁 Recent Backups</h3>
+  <div id="files"></div>
+</div>
+<script>
+async function load(){
+  try{
+    const s = await (await fetch('/backup/status')).json();
+    document.getElementById('status').textContent = s.has_key ? '✅ Ready' : '⚠️ Key missing';
+    document.getElementById('status').style.color = s.has_key ? '#27ae60' : '#c0392b';
+    const d = await (await fetch('/backup/list-drive')).json();
+    document.getElementById('count').textContent = d.count || 0;
+    document.getElementById('size').textContent = ((d.total_bytes||0)/1024/1024).toFixed(2) + ' MB';
+    document.getElementById('files').innerHTML = (d.files||[]).map(f=>
+      '<div class="file"><span>'+f.name+'</span><span>'+(f.size?((parseInt(f.size)/1024).toFixed(1)+' KB'):'')+' <button class="del" onclick="delFile(\''+f.id+'\')">🗑</button></span></div>'
+    ).join('') || '<div style="text-align:center;color:#999;padding:12px;">No backups yet</div>';
+  }catch(e){ document.getElementById('status').textContent = 'Error: '+e.message; }
+}
+async function runBackup(){
+  const b = document.getElementById('btn'), m = document.getElementById('msg');
+  b.disabled = true; b.textContent = 'Uploading…'; m.textContent = '';
+  try{
+    const r = await fetch('/backup/to-drive', {method:'POST'});
+    const j = await r.json();
+    if(j.ok){ m.style.color='#27ae60'; m.textContent = '✅ Done · ' + (j.size_bytes/1024/1024).toFixed(2) + ' MB'; setTimeout(load, 800); }
+    else{ m.style.color='#c0392b'; m.textContent = '❌ ' + (j.error||'failed').slice(0,120); }
+  }catch(e){ m.style.color='#c0392b'; m.textContent = '❌ '+e.message; }
+  b.disabled = false; b.textContent = '📤 Backup Now';
+}
+async function delFile(id){
+  if(!confirm('Delete this backup?')) return;
+  await fetch('/backup/delete/'+id, {method:'POST'});
+  load();
+}
+load();
+</script>
+</body></html>

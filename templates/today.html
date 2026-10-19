@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.digest-hero{background:linear-gradient(135deg,#0d6efd 0%,#6610f2 100%);color:#fff;padding:20px;border-radius:14px;margin-bottom:16px}
+.digest-hero h1{margin:0;font-size:1.4rem}
+.digest-hero .days{font-size:3rem;font-weight:800;line-height:1}
+.digest-hero .sub{opacity:.85;font-size:.85rem}
+.digest-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:14px;margin-bottom:12px}
+body.dark .digest-card{background:#161b22;border-color:#30363d}
+.digest-card h5{margin-bottom:10px;font-size:.95rem}
+.pill-stat{display:inline-block;background:#f0f3f7;padding:6px 12px;border-radius:20px;margin-right:6px;margin-bottom:6px;font-size:.85rem}
+body.dark .pill-stat{background:#21262d}
+</style>
+
+<div class="digest-hero">
+  <p class="sub mb-1">{{ greeting }}</p>
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+    <div>
+      <div class="days">{{ days_left }}</div>
+      <div class="sub">days to Prelims</div>
+    </div>
+    <div class="text-end">
+      <div style="font-size:1.6rem">🔥 {{ streak }}</div>
+      <div class="sub">day streak</div>
+    </div>
+  </div>
+  <p class="mb-0 mt-3" style="font-size:.9rem">{{ motiv }}</p>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="digest-card">
+      <h5>📋 Quick Actions</h5>
+      <div>
+        <span class="pill-stat">🃏 <strong>{{ due_cards }}</strong> cards due</span>
+        <span class="pill-stat">⚠️ <strong>{{ overdue|length }}</strong> overdue</span>
+        <span class="pill-stat">⏳ <strong>{{ due_soon|length }}</strong> due soon</span>
+      </div>
+      <div class="d-flex gap-2 flex-wrap mt-2">
+        {% if due_cards > 0 %}<a href="{{ url_for('flashcards_review') }}" class="btn btn-sm btn-primary">Review Cards</a>{% endif %}
+        <a href="{{ url_for('adaptive_plan') }}" class="btn btn-sm btn-warning">Today's Plan</a>
+        <a href="{{ url_for('news_top') }}" class="btn btn-sm btn-info text-white">Top News</a>
+      </div>
+    </div>
+
+    {% if overdue %}
+    <div class="digest-card border-danger">
+      <h5 class="text-danger">🔥 Overdue Topics</h5>
+      <ul class="mb-0 small">
+        {% for o in overdue %}
+        <li><strong>{{ o.name }}</strong> <span class="text-muted">({{ o.subject }})</span> — <span class="text-danger">{{ o.days }} days late</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if due_soon %}
+    <div class="digest-card border-warning">
+      <h5 class="text-warning">⏳ Due Soon</h5>
+      <ul class="mb-0 small">
+        {% for d in due_soon %}
+        <li><strong>{{ d.name }}</strong> <span class="text-muted">({{ d.subject }})</span> — in {{ d.days }} days</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if weak %}
+    <div class="digest-card border-warning">
+      <h5 class="text-warning">📉 Weak Topics (from mocks)</h5>
+      <ul class="mb-0 small">
+        {% for w in weak %}<li><strong>{{ w.topic }}</strong> — {{ w.acc }}% accuracy</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-6">
+    {% if top_news %}
+    <div class="digest-card">
+      <h5>📰 Top Current Affairs</h5>
+      {% for n in top_news %}
+      <div class="d-flex justify-content-between gap-2 mb-2 pb-2 border-bottom">
+        <a href="{{ url_for('news_detail', aid=n.art.id) }}" class="small flex-grow-1">{{ n.art.title[:110] }}{% if n.art.title|length > 110 %}…{% endif %}</a>
+        <span class="badge bg-{% if n.score >= 8 %}danger{% elif n.score >= 5 %}warning text-dark{% else %}secondary{% endif %} align-self-start">{{ n.score }}</span>
+      </div>
+      {% endfor %}
+      <a href="{{ url_for('news_list') }}" class="btn btn-sm btn-outline-primary mt-2">View All News →</a>
+    </div>
+    {% else %}
+    <div class="digest-card">
+      <h5>📰 Top Current Affairs</h5>
+      <p class="small text-muted mb-2">No AI-ranked articles yet. Rank your news feed to unlock.</p>
+      <a href="{{ url_for('news_list') }}" class="btn btn-sm btn-outline-primary">Go to News →</a>
+    </div>
+    {% endif %}
+
+    {% if prob %}
+    <div class="digest-card border-primary">
+      <h5 class="text-primary">🔥 High-Probability Topics</h5>
+      <ul class="mb-0 small">
+        {% for p in prob %}<li><strong>{{ p.topic }}</strong> — {{ p.count }} times in PYQs</li>{% endfor %}
+      </ul>
+      <a href="{{ url_for('trend_predictor') }}" class="btn btn-sm btn-outline-primary mt-2">Full Predictions →</a>
+    </div>
+    {% endif %}
+
+    <div class="digest-card">
+      <h5>⚡ Quick Jump</h5>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('voice_mentor') }}" class="btn btn-sm btn-outline-dark">🎤 Voice</a>
+        <a href="{{ url_for('mains_photo') }}" class="btn btn-sm btn-outline-dark">📷 Photo Mains</a>
+        <a href="{{ url_for('book_chat') }}" class="btn btn-sm btn-outline-dark">📖 Book Chat</a>
+        <a href="{{ url_for('syllabus_tracker') }}" class="btn btn-sm btn-outline-dark">📚 Syllabus</a>
+        <a href="{{ url_for('delta_dashboard') }}" class="btn btn-sm btn-outline-dark">📈 Delta</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

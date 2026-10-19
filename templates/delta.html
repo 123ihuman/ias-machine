@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📈 Delta — Your Progress Over Time</h2>
+<p class="text-muted">A daily snapshot is saved when you open this page. Come back weekly to see improvement.</p>
+
+{% if total_snaps < 2 %}
+<div class="alert alert-info">
+  Only {{ total_snaps }} snapshot saved so far. Visit this page daily — after 3-4 days, charts will show trends.
+</div>
+{% endif %}
+
+<div class="row mb-3">
+  <div class="col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2">
+        <small class="text-muted">Syllabus (30d)</small>
+        <h4 class="mb-0 {% if deltas.syllabus_30d and deltas.syllabus_30d > 0 %}text-success{% elif deltas.syllabus_30d and deltas.syllabus_30d < 0 %}text-danger{% endif %}">
+          {% if deltas.syllabus_30d is not none %}
+            {% if deltas.syllabus_30d >= 0 %}+{% endif %}{{ deltas.syllabus_30d }}%
+          {% else %}--{% endif %}
+        </h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2">
+        <small class="text-muted">Mock Accuracy (30d)</small>
+        <h4 class="mb-0 {% if deltas.mock_30d and deltas.mock_30d > 0 %}text-success{% elif deltas.mock_30d and deltas.mock_30d < 0 %}text-danger{% endif %}">
+          {% if deltas.mock_30d is not none %}
+            {% if deltas.mock_30d >= 0 %}+{% endif %}{{ deltas.mock_30d }}%
+          {% else %}--{% endif %}
+        </h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2">
+        <small class="text-muted">Cards Mastered (30d)</small>
+        <h4 class="mb-0 {% if deltas.cards_30d and deltas.cards_30d > 0 %}text-success{% endif %}">
+          {% if deltas.cards_30d is not none %}
+            {% if deltas.cards_30d >= 0 %}+{% endif %}{{ deltas.cards_30d }}
+          {% else %}--{% endif %}
+        </h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-2">
+    <div class="card text-center">
+      <div class="card-body py-2">
+        <small class="text-muted">Snapshots</small>
+        <h4 class="mb-0">{{ total_snaps }}</h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">📊 Syllabus Progress</div>
+  <div class="card-body"><canvas id="c1" height="140"></canvas></div>
+</div>
+<div class="card mb-3">
+  <div class="card-header">🎯 Mock Accuracy</div>
+  <div class="card-body"><canvas id="c2" height="140"></canvas></div>
+</div>
+<div class="card mb-3">
+  <div class="card-header">🔥 Study Streak</div>
+  <div class="card-body"><canvas id="c3" height="120"></canvas></div>
+</div>
+<div class="card mb-3">
+  <div class="card-header">🃏 Cards Mastered</div>
+  <div class="card-body"><canvas id="c4" height="120"></canvas></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = {{ labels|tojson }};
+function lineChart(id, label, data, color) {
+  new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels: labels, datasets: [{ label: label, data: data, borderColor: color, backgroundColor: color + '22', tension: 0.3, fill: true }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+lineChart('c1', 'Syllabus %', {{ syllabus|tojson }}, '#0d6efd');
+lineChart('c2', 'Mock %', {{ mock|tojson }}, '#198754');
+lineChart('c3', 'Streak', {{ streak|tojson }}, '#dc3545');
+lineChart('c4', 'Cards', {{ cards|tojson }}, '#6f42c1');
+</script>
+{% endblock %}

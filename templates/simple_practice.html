@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('simple_exam_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← All Exams</a>
+<h4>{{ exam_label }} · {{ subject }}</h4>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div id="qArea">
+      <button class="btn btn-primary w-100" id="genBtn" onclick="genQ()">▶ Start — Generate Question</button>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-6"><div class="card text-center"><div class="card-body py-2">
+    <small>Score</small><h4 id="score" class="mb-0">0</h4>
+  </div></div></div>
+  <div class="col-6"><div class="card text-center"><div class="card-body py-2">
+    <small>Total</small><h4 id="total" class="mb-0">0</h4>
+  </div></div></div>
+</div>
+
+<div class="d-flex gap-2">
+  <button class="btn btn-outline-secondary flex-grow-1" onclick="resetStats()">🔄 Reset Session</button>
+  <a href="{{ url_for('simple_exam_stats') }}" class="btn btn-outline-primary flex-grow-1">📊 Stats</a>
+</div>
+
+<script>
+let currentQ = null;
+let sessionScore = 0;
+let sessionTotal = 0;
+
+async function genQ(){
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('genBtn').innerText = '⏳ Generating...';
+  try {
+    const fd = new FormData();
+    fd.append('exam', '{{ exam }}');
+    fd.append('subject', '{{ subject }}');
+    const r = await fetch('/simple-exam/generate', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { alert(d.error); document.getElementById('genBtn').disabled=false; document.getElementById('genBtn').innerText='▶ Generate Question'; return; }
+    currentQ = d;
+    renderQ(d);
+  } catch(e) { alert('Error: ' + e.message); document.getElementById('genBtn').disabled=false; }
+}
+
+function renderQ(d){
+  const html = `
+    <div style="background:#f8f9fa;padding:14px;border-radius:8px">
+      <p style="font-size:1rem;font-weight:600;white-space:pre-wrap">${d.question}</p>
+      <div class="d-grid gap-2 mt-3">
+        <button class="btn btn-outline-primary text-start ans" data-ans="A"><strong>A.</strong> ${d.option_a}</button>
+        <button class="btn btn-outline-primary text-start ans" data-ans="B"><strong>B.</strong> ${d.option_b}</button>
+        <button class="btn btn-outline-primary text-start ans" data-ans="C"><strong>C.</strong> ${d.option_c}</button>
+        <button class="btn btn-outline-primary text-start ans" data-ans="D"><strong>D.</strong> ${d.option_d}</button>
+      </div>
+      <div id="fb" style="display:none;margin-top:12px"></div>
+      <button class="btn btn-success mt-3 w-100" id="nextBtn" style="display:none" onclick="genQ()">Next Question →</button>
+    </div>`;
+  document.getElementById('qArea').innerHTML = html;
+  document.querySelectorAll('.ans').forEach(btn => {
+    btn.onclick = () => submitAns(btn.dataset.ans);
+  });
+}
+
+async function submitAns(ans){
+  document.querySelectorAll('.ans').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.ans === currentQ.correct) b.classList.add('btn-success');
+  });
+  if (ans !== currentQ.correct) {
+    const el = document.querySelector('.ans[data-ans="'+ans+'"]');
+    if (el) { el.classList.remove('btn-success'); el.classList.add('btn-danger'); }
+  }
+  sessionTotal++;
+  if (ans === currentQ.correct) sessionScore++;
+  document.getElementById('score').innerText = sessionScore;
+  document.getElementById('total').innerText = sessionTotal;
+
+  const fd = new FormData();
+  fd.append('exam', currentQ.exam);
+  fd.append('subject', currentQ.subject);
+  fd.append('question', currentQ.question);
+  fd.append('user_answer', ans);
+  fd.append('correct', currentQ.correct);
+  fetch('/simple-exam/submit', {method:'POST', body: fd});
+
+  document.getElementById('fb').innerHTML =
+    '<div class="alert alert-' + (ans === currentQ.correct ? 'success' : 'danger') + ' mb-0">' +
+    '<strong>Answer: ' + currentQ.correct + '</strong> — ' + (currentQ.explanation || '') + '</div>';
+  document.getElementById('fb').style.display = 'block';
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function resetStats(){
+  sessionScore = 0; sessionTotal = 0;
+  document.getElementById('score').innerText = 0;
+  document.getElementById('total').innerText = 0;
+}
+</script>
+{% endblock %}

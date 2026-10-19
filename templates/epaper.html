@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=Oswald:wght@500;700&family=Libre+Baskerville:wght@700&family=Cinzel:wght@900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+
+<style>
+body{background:#f5f1e8}
+body.fs-mode{background:#f5f1e8;overflow-x:hidden}
+body.fs-mode .navbar,body.fs-mode #topToolbar,body.fs-mode .reminder-banner{display:none!important}
+.epaper-shell{padding:4px;position:relative;width:100%}
+body.fs-mode .epaper-shell{padding:0;width:100%}
+body.fs-mode .container{margin-top:0!important;padding-top:0!important;max-width:100%!important}
+#book{width:100%;margin:0 auto}
+.stf__parent{width:100%!important}
+.stf__wrapper{width:100%!important}
+.my-page{background:#ffffff;overflow:hidden;box-shadow:inset 0 0 40px rgba(0,0,0,.03)}
+.page-inner{padding:14px;height:100%;overflow-y:auto;box-sizing:border-box;font-family:'Lora',serif;color:#111;-webkit-overflow-scrolling:touch}
+
+.np-masthead{text-align:center;padding:6px 0 4px;border-top:3px double #111;border-bottom:3px double #111;margin-bottom:5px}
+.np-title{font-family:'Playfair Display',serif;font-weight:900;font-size:1.5rem;letter-spacing:1px;line-height:1;margin:0;color:#111}
+.np-sub{font-family:'Oswald',sans-serif;font-size:.58rem;letter-spacing:3px;text-transform:uppercase;margin-top:3px;color:#666;font-weight:500}
+.np-dateline{display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:.62rem;padding:4px 0;border-bottom:1px solid #111;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px;color:#111;font-weight:500;gap:4px}
+
+.np-sec-divider{text-align:center;font-family:'Oswald',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:3px;text-transform:uppercase;margin:10px 0 8px;padding:3px 0;border-top:1px solid #ccc;border-bottom:1px solid #ccc}
+.polity{color:#1a3a6b;border-color:#1a3a6b}
+.economy{color:#8b0000;border-color:#8b0000}
+.international{color:#0b5d3b;border-color:#0b5d3b}
+.environment{color:#2d5016;border-color:#2d5016}
+.science{color:#4b0082;border-color:#4b0082}
+.governance{color:#8b1a1a;border-color:#8b1a1a}
+.society{color:#005757;border-color:#005757}
+.editorial{color:#4a3428;border-color:#4a3428}
+.general{color:#333;border-color:#333}
+
+.np-lead{font-family:'Playfair Display',serif;font-weight:900;font-size:1.3rem;line-height:1.15;text-align:center;margin:4px 0 6px;color:#111}
+.np-lead.red{color:#b00020}
+.np-lead.blue{color:#1a3a6b}
+.np-lead.maroon{color:#8b0000}
+.np-lead.green{color:#0b5d3b}
+.np-lead.purple{color:#4b0082}
+.np-byline{font-family:'Oswald',sans-serif;font-size:.58rem;text-align:center;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:6px;font-weight:500}
+
+.np-body{font-family:'Lora',serif;font-size:.82rem;line-height:1.45;text-align:justify;color:#111}
+.np-body p{margin-bottom:5px}
+.np-body p:first-child::first-letter{font-family:'Cinzel',serif;font-weight:900;font-size:2.4rem;float:left;line-height:.85;padding:2px 5px 0 0;color:#1a3a6b}
+
+.np-story{margin-bottom:10px;padding:8px 0 8px 8px;border-bottom:1px dashed #d0d0d0;border-left:3px solid #999}
+.polity-story{border-left-color:#1a3a6b}
+.economy-story{border-left-color:#8b0000}
+.international-story{border-left-color:#0b5d3b}
+.environment-story{border-left-color:#2d5016}
+.science-story{border-left-color:#4b0082}
+.governance-story{border-left-color:#8b1a1a}
+.society-story{border-left-color:#005757}
+.editorial-story{border-left-color:#4a3428}
+.urgent{border-left-color:#b00020!important}
+.urgent .np-headline{color:#b00020!important}
+
+.np-headline{font-family:'Libre Baskerville',serif;font-weight:700;font-size:.9rem;line-height:1.2;margin-bottom:3px}
+.np-headline a{color:inherit;text-decoration:none}
+.polity-story .np-headline{color:#1a3a6b}
+.economy-story .np-headline{color:#8b0000}
+.international-story .np-headline{color:#0b5d3b}
+.environment-story .np-headline{color:#2d5016}
+.science-story .np-headline{color:#4b0082}
+.governance-story .np-headline{color:#8b1a1a}
+.society-story .np-headline{color:#005757}
+.editorial-story .np-headline{color:#4a3428}
+
+.np-meta{font-family:'Oswald',sans-serif;font-size:.55rem;text-transform:uppercase;letter-spacing:.6px;color:#666;margin-bottom:4px;font-weight:500}
+.np-tag{display:inline-block;border:1px solid #111;padding:1px 5px;font-size:.55rem;margin-right:3px;letter-spacing:.4px;font-family:'Oswald',sans-serif;font-weight:500}
+.np-tag.gs1{background:#8b0000;color:#fff;border-color:#8b0000}
+.np-tag.gs2{background:#1a3a6b;color:#fff;border-color:#1a3a6b}
+.np-tag.gs3{background:#0b5d3b;color:#fff;border-color:#0b5d3b}
+.np-tag.gs4{background:#4b0082;color:#fff;border-color:#4b0082}
+.np-tag.gs{background:#111;color:#fff}
+.np-score{font-family:'Oswald',sans-serif;font-weight:700;font-size:.7rem;padding:1px 5px;border-radius:2px;color:#fff}
+.np-score.hot{background:#b00020}
+.np-score.warm{background:#d97706}
+.np-score.normal{background:#666}
+
+.np-summary{font-family:'Lora',serif;font-size:.75rem;line-height:1.4;text-align:justify;color:#222}
+.np-angle{border-left:3px solid #f0b400;background:#fffbeb;padding:4px 7px;font-family:'Lora',serif;font-size:.68rem;font-style:italic;margin-top:5px;color:#111}
+.np-angle strong{font-style:normal;letter-spacing:.6px;font-size:.58rem;text-transform:uppercase;font-family:'Oswald',sans-serif;font-weight:700}
+.np-footer{text-align:center;font-family:'Oswald',sans-serif;font-size:.55rem;letter-spacing:2px;text-transform:uppercase;border-top:3px double #111;padding:6px 0;margin-top:12px;color:#333;font-weight:500}
+
+.epaper-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding:0 4px;opacity:.4;transition:opacity .3s}
+.epaper-nav:hover,.epaper-nav:active{opacity:1}
+body.fs-mode .epaper-nav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:6px 14px;border-radius:30px;z-index:9999;opacity:.3}
+body.fs-mode .epaper-nav:hover,body.fs-mode .epaper-nav:active{opacity:1}
+body.fs-mode .epaper-counter{color:#fff}
+.epaper-nav button{background:#1a1a1a;color:#f5f1e8;border:none;padding:8px 14px;border-radius:4px;font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:1px;cursor:pointer}
+.epaper-nav button:disabled{opacity:.3;cursor:not-allowed}
+.epaper-counter{font-family:'Playfair Display',serif;font-weight:700;font-size:.85rem;color:#111}
+
+@media(max-width:640px){
+  #book{width:100vw!important;max-width:100vw!important}
+  .st-page{width:100vw!important;max-width:100vw!important}
+  .page-inner{padding:10px!important}
+  .np-title{font-size:1.3rem}
+  .np-body{font-size:.78rem}
+}
+
+@media print{
+  .navbar,#topToolbar,.epaper-nav{display:none!important}
+  body{background:#fff}
+  .my-page{page-break-after:always;box-shadow:none}
+}
+</style>
+
+<div class="d-flex gap-2 mb-2 flex-wrap" id="topToolbar">
+  <a href="{{ url_for('epaper_generate') }}" class="btn btn-sm btn-light">🔄 New</a>
+  <a href="{{ url_for('epaper_archive') }}" class="btn btn-sm btn-outline-dark">📅 Archive</a>
+  <button class="btn btn-sm btn-outline-dark" onclick="window.print()">🖨️ PDF</button>
+  <button class="btn btn-sm btn-info" id="modeBtn" onclick="toggleMode()">📖 1 Page</button>
+  <button class="btn btn-sm btn-warning" id="fsBtn" onclick="toggleFS()">⛶ Fullscreen</button>
+</div>
+
+<div class="epaper-shell">
+<div id="book">
+{% set pages = [] %}
+{% if paper.sections %}
+  {% set first_sec = paper.sections[0] %}
+  {% set _ = pages.append({'kind':'front','sec':first_sec,'arts':first_sec.articles[:1]}) %}
+  {% for sec in paper.sections %}
+    {% for i in range(0, sec.articles|length, 3) %}
+      {% set _ = pages.append({'kind':'sec','sec':sec,'arts':sec.articles[i:i+3]}) %}
+    {% endfor %}
+  {% endfor %}
+{% endif %}
+
+{% macro seckey(name) %}{% set n = (name or '')|lower %}{% if 'polity' in n %}polity{% elif 'economy' in n or 'econom' in n %}economy{% elif 'international' in n or 'world' in n or 'foreign' in n %}international{% elif 'environment' in n or 'ecology' in n %}environment{% elif 'science' in n or 'tech' in n %}science{% elif 'governance' in n %}governance{% elif 'society' in n or 'social' in n %}society{% elif 'editorial' in n or 'analysis' in n or 'opinion' in n %}editorial{% else %}general{% endif %}{% endmacro %}
+
+{% macro leadcolor(name, relevance) %}{% if relevance >= 9 %}red{% else %}{% set n = (name or '')|lower %}{% if 'polity' in n %}blue{% elif 'economy' in n or 'econom' in n %}maroon{% elif 'environment' in n or 'ecology' in n %}green{% elif 'science' in n or 'tech' in n %}purple{% else %}blue{% endif %}{% endif %}{% endmacro %}
+
+{% macro scorecls(rel) %}{% if rel >= 9 %}hot{% elif rel >= 7 %}warm{% else %}normal{% endif %}{% endmacro %}
+
+{% macro gscls(gs) %}{% if '1' in (gs or '') %}gs1{% elif '2' in (gs or '') %}gs2{% elif '3' in (gs or '') %}gs3{% elif '4' in (gs or '') %}gs4{% else %}gs{% endif %}{% endmacro %}
+
+{% for pg in pages %}
+<div class="my-page">
+  <div class="page-inner">
+  {% if pg.kind == 'front' %}
+    <div class="np-masthead">
+      <div class="np-title">THE ASPIRANT'S TIMES</div>
+      <div class="np-sub">A Free Daily for Civil Services Aspirants</div>
+    </div>
+    <div class="np-dateline">
+      <span>Vol. I</span><span>{{ today }}</span><span>FREE</span>
+    </div>
+    {% for a in pg.arts %}
+    <div class="np-lead {{ leadcolor(pg.sec.name, a.relevance) }}">{{ a.title }}</div>
+    <div class="np-byline">By AI Desk · {{ a.source }} · Relevance {{ a.relevance }}/10</div>
+    <div class="np-body"><p>{{ a.summary }}</p></div>
+    {% if a.gs_paper %}
+    <div class="np-angle mt-2"><strong>UPSC ANGLE · {{ a.gs_paper }}</strong><br>Link this to your syllabus. Refer standard book chapters.</div>
+    {% endif %}
+    {% endfor %}
+    <div class="np-footer">Page 1 · The Aspirant's Times</div>
+  {% else %}
+    {% set sk = seckey(pg.sec.name) %}
+    <div class="np-masthead" style="border-top:1px solid #111;border-bottom:1px solid #111;padding:3px 0">
+      <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:.8rem;letter-spacing:2px;color:#111">THE ASPIRANT'S TIMES</div>
+    </div>
+    <div class="np-dateline">
+      <span>{{ today }}</span><span>{{ pg.sec.name }}</span>
+    </div>
+    <div class="np-sec-divider {{ sk }}">{{ pg.sec.name }}</div>
+    {% for a in pg.arts %}
+    <div class="np-story {{ sk }}-story{% if a.relevance >= 9 %} urgent{% endif %}">
+      <div class="np-headline"><a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.title }}</a></div>
+      <div class="np-meta">
+        {% if a.gs_paper %}<span class="np-tag {{ gscls(a.gs_paper) }}">{{ a.gs_paper }}</span>{% endif %}
+        <span class="np-tag">{{ a.source }}</span>
+        <span class="np-score {{ scorecls(a.relevance) }}">{{ a.relevance }}/10</span>
+      </div>
+      <div class="np-summary">{{ a.summary }}</div>
+      {% if a.gs_paper %}
+      <div class="np-angle"><strong>UPSC ANGLE · {{ a.gs_paper }}</strong><br>Add to your notes for revision.</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="np-footer">The Aspirant's Times</div>
+  {% endif %}
+  </div>
+</div>
+{% endfor %}
+</div>
+</div>
+
+<div class="epaper-nav">
+  <button id="prevBtn">◀ Prev</button>
+  <div class="epaper-counter">Page <span id="pNum">1</span> / <span id="pTot">{{ pages|length }}</span></div>
+  <button id="nextBtn">Next ▶</button>
+</div>
+
+<script>
+(function(){
+  const el = document.getElementById('book');
+  let pageFlip = null;
+  let isPortrait = localStorage.getItem('epaperMode') !== 'two';
+
+  function buildFlip(){
+    if(pageFlip){ try{ pageFlip.destroy(); }catch(e){} }
+    const total = document.querySelectorAll('.my-page').length;
+    document.getElementById('pTot').innerText = total;
+    pageFlip = new St.PageFlip(el, {
+      width: isPortrait ? 400 : 220,
+      height: isPortrait ? 640 : 540,
+      size: 'stretch',
+      minWidth: isPortrait ? 300 : 180,
+      maxWidth: isPortrait ? 640 : 500,
+      minHeight: isPortrait ? 480 : 380,
+      maxHeight: isPortrait ? 900 : 760,
+      maxShadowOpacity: 0.35,
+      showCover: false,
+      mobileScrollSupport: true,
+      usePortrait: isPortrait,
+      startZIndex: 0,
+      autoSize: true,
+      drawShadow: true,
+      flippingTime: 800,
+      useMouseEvents: true,
+      clickEventForward: true,
+      swipeDistance: 20,
+      showPageCorners: true
+    });
+    pageFlip.loadFromHTML(document.querySelectorAll('.my-page'));
+    pageFlip.on('flip', e => { document.getElementById('pNum').innerText = e.data + 1; });
+  }
+
+  window.toggleMode = function(){
+    isPortrait = !isPortrait;
+    localStorage.setItem('epaperMode', isPortrait ? 'one' : 'two');
+    document.getElementById('modeBtn').innerText = isPortrait ? '📖 1 Page' : '📖📖 2 Pages';
+    buildFlip();
+  };
+
+  window.toggleFS = function(){
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(()=>{});
+      document.body.classList.add('fs-mode');
+      document.getElementById('fsBtn').innerText = '✕ Exit FS';
+    } else {
+      document.exitFullscreen().catch(()=>{});
+      document.body.classList.remove('fs-mode');
+      document.getElementById('fsBtn').innerText = '⛶ Fullscreen';
+    }
+  };
+
+  document.addEventListener('fullscreenchange', () => {
+    if(!document.fullscreenElement){
+      document.body.classList.remove('fs-mode');
+      document.getElementById('fsBtn').innerText = '⛶ Fullscreen';
+    }
+  });
+
+  document.getElementById('prevBtn').onclick = () => pageFlip && pageFlip.flipPrev();
+  document.getElementById('nextBtn').onclick = () => pageFlip && pageFlip.flipNext();
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowRight') pageFlip && pageFlip.flipNext();
+    if(e.key === 'ArrowLeft') pageFlip && pageFlip.flipPrev();
+    if(e.key === 'f' || e.key === 'F') window.toggleFS();
+  });
+
+  document.getElementById('modeBtn').innerText = isPortrait ? '📖 1 Page' : '📖📖 2 Pages';
+  buildFlip();
+})();
+</script>
+{% endblock %}

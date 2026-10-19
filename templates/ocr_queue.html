@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>☁️ OCR Queue</h2>
+<p class="text-muted">Books waiting for OCR. Upload on mobile → run <code>python sync_ocr.py</code> on laptop → books become searchable.</p>
+
+<div class="row mb-3">
+  <div class="col-md-3"><div class="card text-center border-warning"><div class="card-body py-2">
+    <small>⏳ Pending</small><h3 class="text-warning mb-0">{{ pending|length }}</h3>
+  </div></div></div>
+  <div class="col-md-3"><div class="card text-center border-success"><div class="card-body py-2">
+    <small>✅ OCR Complete</small><h3 class="text-success mb-0">{{ complete|length }}</h3>
+  </div></div></div>
+  <div class="col-md-3"><div class="card text-center border-info"><div class="card-body py-2">
+    <small>📄 PDF Only</small><h3 class="text-info mb-0">{{ pdf_only|length }}</h3>
+  </div></div></div>
+  <div class="col-md-3"><div class="card text-center border-secondary"><div class="card-body py-2">
+    <small>📚 Local</small><h3 class="text-secondary mb-0">{{ no_status|length }}</h3>
+  </div></div></div>
+</div>
+
+{% if pending %}
+<h4 class="text-warning">⏳ Needs OCR ({{ pending|length }})</h4>
+<p class="small text-muted">These will be processed when you run <code>python sync_ocr.py</code> on your laptop.</p>
+{% for b in pending %}
+<div class="card mb-2 border-warning">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-start">
+      <div class="flex-grow-1">
+        <strong>{{ b.title }}</strong>
+        {% if b.author %} · {{ b.author }}{% endif %}
+        <div class="small text-muted">
+          <span class="badge bg-secondary">{{ b.category }}</span>
+          {% if b.subject %}<span class="badge bg-info text-dark">{{ b.subject }}</span>{% endif %}
+          {% if b.is_b2 %}<span class="badge bg-primary">☁️ B2 stored</span>{% endif %}
+          · ID #{{ b.id }}
+        </div>
+      </div>
+      <div class="text-end">
+        <form method="post" action="{{ url_for('ocr_queue_mark_pdf_only', book_id=b.id) }}" style="display:inline">
+          <button class="btn btn-sm btn-outline-secondary">Skip OCR</button>
+        </form>
+        <a href="{{ url_for('book_detail', book_id=b.id) }}" class="btn btn-sm btn-outline-primary">Open</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if complete %}
+<h4 class="text-success mt-4">✅ OCR Complete ({{ complete|length }})</h4>
+<p class="small text-muted">Fully searchable. Used by Book Chat, PYQ Match, and search.</p>
+{% for b in complete %}
+<div class="card mb-2 border-success">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ b.title }}</strong>
+        <div class="small text-muted">
+          {{ b.page_count }} pages extracted · {{ b.category }}
+          {% if b.subject %} · {{ b.subject }}{% endif %}
+        </div>
+      </div>
+      <a href="{{ url_for('book_detail', book_id=b.id) }}" class="btn btn-sm btn-outline-success">Open</a>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if pdf_only %}
+<h4 class="text-info mt-4">📄 PDF Only ({{ pdf_only|length }})</h4>
+<p class="small text-muted">Readable but not searchable. You skipped OCR for these.</p>
+{% for b in pdf_only %}
+<div class="card mb-2">
+  <div class="card-body py-2 d-flex justify-content-between align-items-center">
+    <div>
+      <strong>{{ b.title }}</strong>
+      <div class="small text-muted">{{ b.category }}{% if b.subject %} · {{ b.subject }}{% endif %}</div>
+    </div>
+    <div>
+      <form method="post" action="{{ url_for('ocr_queue_mark_pending', book_id=b.id) }}" style="display:inline">
+        <button class="btn btn-sm btn-outline-warning">Move to OCR Queue</button>
+      </form>
+      <a href="{{ url_for('book_detail', book_id=b.id) }}" class="btn btn-sm btn-outline-primary">Open</a>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if no_status %}
+<h4 class="text-secondary mt-4">📚 Local Files ({{ no_status|length }})</h4>
+<p class="small text-muted">Old uploads without OCR status.</p>
+{% for b in no_status[:20] %}
+<div class="card mb-2">
+  <div class="card-body py-2 d-flex justify-content-between align-items-center">
+    <div>
+      <strong>{{ b.title }}</strong>
+      <div class="small text-muted">{{ b.page_count or 0 }} pages</div>
+    </div>
+    <a href="{{ url_for('book_detail', book_id=b.id) }}" class="btn btn-sm btn-outline-primary">Open</a>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if total == 0 %}
+<div class="alert alert-info">No books uploaded yet. Use <a href="{{ url_for('library_quick_upload_page') }}">⚡ Quick Upload</a> to add books.</div>
+{% endif %}
+
+<div class="alert alert-info mt-3">
+  <strong>📋 Laptop Workflow:</strong>
+  <ol class="mb-0 mt-1">
+    <li>Upload books from mobile (<a href="{{ url_for('library_quick_upload_page') }}">Quick Upload</a>)</li>
+    <li>On laptop: <code>python sync_ocr.py</code></li>
+    <li>Script auto-downloads PDFs from B2 → runs OCR → uploads text back</li>
+    <li>Books move from ⏳ Pending → ✅ Complete</li>
+  </ol>
+</div>
+
+<a href="{{ url_for('ocr_queue_list_json') }}" class="btn btn-sm btn-outline-primary" target="_blank">🔗 View JSON (for laptop script)</a>
+{% endblock %}

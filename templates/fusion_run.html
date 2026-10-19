@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('fusion_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← All Runs</a>
+<h2>{{ run.name }}</h2>
+<p class="text-muted">{{ run.exam_type }} · {{ run.total_topics }} topics predicted</p>
+
+{% if not topics %}
+<div class="alert alert-warning">
+  <strong>No topics computed yet.</strong> This run needs PYQ data to work.
+  <form method="post" action="{{ url_for('fusion_compute', rid=run.id) }}" class="mt-2">
+    <button class="btn btn-primary">▶ Run 7-Layer Fusion Analysis</button>
+  </form>
+  <small class="d-block mt-2 text-muted">Requires at least some PYQs in the database. Upload past papers + Auto-Extract first if count is low.</small>
+</div>
+{% else %}
+
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="card text-center border-danger">
+      <div class="card-body py-2">
+        <small class="text-muted">Perennial (60-70%)</small>
+        <h3 class="text-danger mb-0">{{ perennial|length }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-center border-warning">
+      <div class="card-body py-2">
+        <small class="text-muted">Rising (30-50%)</small>
+        <h3 class="text-warning mb-0">{{ rising|length }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-center border-secondary">
+      <div class="card-body py-2">
+        <small class="text-muted">Wildcard (5-15%)</small>
+        <h3 class="text-secondary mb-0">{{ wildcard|length }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENARIO 1 -->
+<h5 class="text-danger mt-4">🎯 Scenario 1 — Perennial Pillars (Highest Probability)</h5>
+<p class="small text-muted">Core topics that appear every 2-3 years from different angles.</p>
+{% for t in perennial %}
+<div class="card mb-2 border-danger">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-start">
+      <div class="flex-grow-1">
+        <strong>{{ t.topic }}</strong>
+        <span class="badge bg-secondary ms-1">{{ t.subject }}</span>
+        {% if t.cycle_due %}<span class="badge bg-warning text-dark ms-1">⏰ Due</span>{% endif %}
+        <div class="small text-muted mt-1">{{ t.reason }}</div>
+      </div>
+      <div class="text-end ms-2">
+        <span class="badge bg-danger">{{ t.probability }}%</span>
+        <div class="mt-1">
+          <button class="btn btn-sm btn-outline-primary" onclick="genQ({{ t.id }}, this)">🤖 Q</button>
+        </div>
+      </div>
+    </div>
+    <div id="q_{{ t.id }}" style="display:none" class="mt-2"></div>
+  </div>
+</div>
+{% else %}
+<p class="text-muted small">No perennial topics (need more PYQ data).</p>
+{% endfor %}
+
+<!-- SCENARIO 2 -->
+<h5 class="text-warning mt-4">📈 Scenario 2 — Rising Stars (Moderate Probability)</h5>
+<p class="small text-muted">Topics growing in frequency or linked to current affairs.</p>
+{% for t in rising %}
+<div class="card mb-2 border-warning">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-start">
+      <div class="flex-grow-1">
+        <strong>{{ t.topic }}</strong>
+        <span class="badge bg-secondary ms-1">{{ t.subject }}</span>
+        <div class="small text-muted mt-1">{{ t.reason }}</div>
+      </div>
+      <div class="text-end ms-2">
+        <span class="badge bg-warning text-dark">{{ t.probability }}%</span>
+        <div class="mt-1">
+          <button class="btn btn-sm btn-outline-primary" onclick="genQ({{ t.id }}, this)">🤖 Q</button>
+        </div>
+      </div>
+    </div>
+    <div id="q_{{ t.id }}" style="display:none" class="mt-2"></div>
+  </div>
+</div>
+{% else %}
+<p class="text-muted small">No rising topics.</p>
+{% endfor %}
+
+<!-- SCENARIO 3 -->
+<h5 class="text-secondary mt-4">🎲 Scenario 3 — Wildcards (Lower Probability, High Surprise)</h5>
+<p class="small text-muted">Topics linked to unusual news or anniversaries.</p>
+{% for t in wildcard %}
+<div class="card mb-2">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-start">
+      <div class="flex-grow-1">
+        <strong>{{ t.topic }}</strong>
+        <span class="badge bg-secondary ms-1">{{ t.subject }}</span>
+        <div class="small text-muted mt-1">{{ t.reason }}</div>
+      </div>
+      <div class="text-end ms-2">
+        <span class="badge bg-secondary">{{ t.probability }}%</span>
+        <div class="mt-1">
+          <button class="btn btn-sm btn-outline-primary" onclick="genQ({{ t.id }}, this)">🤖 Q</button>
+        </div>
+      </div>
+    </div>
+    <div id="q_{{ t.id }}" style="display:none" class="mt-2"></div>
+  </div>
+</div>
+{% else %}
+<p class="text-muted small">No wildcard topics.</p>
+{% endfor %}
+
+{% endif %}
+
+<script>
+async function genQ(tid, btn){
+  btn.disabled = true;
+  btn.innerText = '⏳';
+  try {
+    const r = await fetch('/fusion/topic/' + tid + '/generate-q', {method:'POST'});
+    const d = await r.json();
+    if (d.error) { alert(d.error); btn.disabled=false; btn.innerText='🤖 Q'; return; }
+    const box = document.getElementById('q_' + tid);
+    box.innerHTML = '<div style="background:#fff;border-left:3px solid #0d6efd;padding:8px 10px;border-radius:4px"><div style="white-space:pre-wrap;font-size:.85rem">' +
+                    d.q + '</div><details class="mt-2"><summary class="small">Show answer</summary><div style="white-space:pre-wrap;font-size:.8rem;color:#333;margin-top:6px">' + d.answer + '</div></details></div>';
+    box.style.display = 'block';
+    btn.disabled = false;
+    btn.innerText = '🔄 Q';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled=false; btn.innerText='🤖 Q'; }
+}
+</script>
+{% endblock %}

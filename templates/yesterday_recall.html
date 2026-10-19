@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📚 Yesterday Revisited</h2>
+<p class="text-muted">Spaced repetition works — reattempting yesterday's questions cements memory 3x faster.</p>
+
+{% if mcqs %}
+<div id="recallArea">
+  {% for m in mcqs %}
+  <div class="card mb-3" data-mcq-id="{{ m.id }}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="badge bg-warning text-dark">Recall Q{{ loop.index }}</span>
+        <span class="badge bg-secondary">{{ m.difficulty or 'Moderate' }}</span>
+      </div>
+      <p style="white-space:pre-wrap;font-size:.92rem">{{ m.question|clean }}</p>
+      <div>
+        <button class="recall-opt btn btn-outline-secondary btn-sm d-block w-100 text-start mb-1" data-ans="A"><strong>A.</strong> {{ m.option_a|clean }}</button>
+        <button class="recall-opt btn btn-outline-secondary btn-sm d-block w-100 text-start mb-1" data-ans="B"><strong>B.</strong> {{ m.option_b|clean }}</button>
+        <button class="recall-opt btn btn-outline-secondary btn-sm d-block w-100 text-start mb-1" data-ans="C"><strong>C.</strong> {{ m.option_c|clean }}</button>
+        <button class="recall-opt btn btn-outline-secondary btn-sm d-block w-100 text-start mb-1" data-ans="D"><strong>D.</strong> {{ m.option_d|clean }}</button>
+      </div>
+      <div class="recall-exp mt-2" style="display:none;background:#fffbeb;padding:8px 10px;border-left:3px solid #f0b400;border-radius:3px;font-size:.82rem"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+  No questions from yesterday. Come back tomorrow — today's paper becomes tomorrow's recall.
+</div>
+{% endif %}
+
+<a href="{{ url_for('epaper_lazy') }}" class="btn btn-primary">← Today's Paper</a>
+
+<script>
+document.querySelectorAll('.card[data-mcq-id]').forEach(card => {
+  const mcqId = card.dataset.mcqId;
+  const exp = card.querySelector('.recall-exp');
+  card.querySelectorAll('.recall-opt').forEach(btn => {
+    btn.onclick = async () => {
+      const ans = btn.dataset.ans;
+      card.querySelectorAll('.recall-opt').forEach(b => b.disabled = true);
+      const fd = new FormData();
+      fd.append('mcq_id', mcqId);
+      fd.append('answer', ans);
+      try {
+        const r = await fetch('/quiz/answer', {method:'POST', body: fd});
+        const data = await r.json();
+        card.querySelectorAll('.recall-opt').forEach(b => {
+          if (b.dataset.ans === data.answer) b.classList.add('btn-success');
+        });
+        if (!data.correct) btn.classList.add('btn-danger');
+        exp.innerHTML = '<strong>Answer: ' + data.answer + '</strong> — ' + data.explanation;
+        exp.style.display = 'block';
+      } catch(e) { alert('Error: ' + e.message); }
+    };
+  });
+});
+</script>
+{% endblock %}

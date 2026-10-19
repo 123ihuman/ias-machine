@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>💾 Storage Dashboard</h2>
+<p class="text-muted">Live usage across all free-tier services. Updated every page load.</p>
+
+<!-- TOTAL BANNER -->
+<div class="card mb-3 border-primary">
+  <div class="card-body text-center">
+    <small class="text-muted">Total Free Storage</small>
+    <h2 class="mb-1">{{ total_used }} GB <small class="text-muted">/ {{ total_free }} GB</small></h2>
+    <div class="progress mt-2" style="height:14px">
+      <div class="progress-bar bg-{% if total_pct > 80 %}danger{% elif total_pct > 50 %}warning{% else %}success{% endif %}"
+           style="width:{{ total_pct }}%">{{ total_pct }}%</div>
+    </div>
+    <small class="text-muted">Across Supabase + B2 + Drive + Local</small>
+  </div>
+</div>
+
+<div class="row">
+  <!-- SUPABASE -->
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-header bg-success text-white">🗄️ Supabase (Database)</div>
+      <div class="card-body">
+        <h4 class="mb-1">{{ db.estimated_mb }} MB <small class="text-muted">/ {{ db_limit }} MB</small></h4>
+        <div class="progress mb-2" style="height:12px">
+          <div class="progress-bar bg-{% if db_pct > 80 %}danger{% elif db_pct > 50 %}warning{% else %}success{% endif %}"
+               style="width:{{ db_pct }}%">{{ db_pct }}%</div>
+        </div>
+        <p class="small mb-2"><strong>Rows:</strong> {{ '{:,}'.format(db.total_rows) }} · <strong>Tables:</strong> {{ db.tables|length }}</p>
+
+        {% if top_tables %}
+        <details>
+          <summary class="small text-muted" style="cursor:pointer">Top tables by rows</summary>
+          <table class="table table-sm mt-2 mb-0">
+            <thead><tr><th>Table</th><th class="text-end">Rows</th></tr></thead>
+            <tbody>
+              {% for t in top_tables %}
+              <tr><td class="small">{{ t.name }}</td><td class="small text-end">{{ '{:,}'.format(t.rows) }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </details>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- B2 -->
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-header bg-primary text-white">☁️ Backblaze B2 (Cloud Files)</div>
+      <div class="card-body">
+        {% if b2.connected %}
+        <h4 class="mb-1">{{ b2.total_mb }} MB <small class="text-muted">/ {{ b2_limit }} GB</small></h4>
+        <div class="progress mb-2" style="height:12px">
+          <div class="progress-bar bg-{% if b2_pct > 80 %}danger{% elif b2_pct > 50 %}warning{% else %}info{% endif %}"
+               style="width:{{ b2_pct }}%">{{ b2_pct }}%</div>
+        </div>
+        <p class="small mb-2"><strong>Files:</strong> {{ b2.file_count }}</p>
+        <p class="small text-muted mb-0">Original PDFs, backups live here. Very cheap to grow.</p>
+        {% else %}
+        <p class="text-danger small">⚠️ B2 not connected. <a href="{{ url_for('b2_status') }}">Check status →</a></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- DRIVE -->
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-header bg-warning text-dark">📁 Google Drive (Backups)</div>
+      <div class="card-body">
+        {% if drive.connected %}
+        <h4 class="mb-1">{{ drive.file_count }} <small class="text-muted">files</small></h4>
+        <p class="small text-muted">JSON backups of toppers + archives. 15 GB free tier.</p>
+        <p class="small mb-0">Full drive quota: see <a href="https://drive.google.com/drive/quota" target="_blank">drive.google.com/drive/quota</a></p>
+        {% else %}
+        <p class="text-muted small mb-0">⚠️ Drive not connected. Set up when laptop is available.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- LOCAL -->
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-header bg-secondary text-white">🖥️ PythonAnywhere Disk (Code + Temp)</div>
+      <div class="card-body">
+        <h4 class="mb-1">{{ pa.size_mb }} MB <small class="text-muted">/ {{ pa_limit }} MB</small></h4>
+        <div class="progress mb-2" style="height:12px">
+          <div class="progress-bar bg-{% if pa_pct > 80 %}danger{% elif pa_pct > 50 %}warning{% else %}secondary{% endif %}"
+               style="width:{{ pa_pct }}%">{{ pa_pct }}%</div>
+        </div>
+        <p class="small mb-0"><strong>Files:</strong> {{ pa.files }} (excludes venv + chunks)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">📊 What Breaks First</div>
+  <div class="card-body small">
+    <ol class="mb-0">
+      <li><strong>Groq API</strong> — rate limit (30 req/min) — hits before any storage limit</li>
+      <li><strong>PythonAnywhere CPU</strong> — 100 sec/day — slows generation on heavy days</li>
+      <li><strong>PythonAnywhere disk</strong> — {{ pa.size_mb }}/{{ pa_limit }} MB — clean old backups if over 80%</li>
+      <li><strong>Supabase</strong> — {{ db.estimated_mb }}/{{ db_limit }} MB — comfortable room</li>
+      <li><strong>B2</strong> — {{ b2_used_gb }}/{{ b2_limit }} GB — barely touched</li>
+    </ol>
+  </div>
+</div>
+
+<div class="alert alert-info small mb-0">
+  <strong>Note:</strong> Supabase size is estimated from Postgres <code>pg_database_size</code>. B2 file size counts only the first 5,000 files.
+  For exact numbers, check each provider's dashboard.
+</div>
+
+<div class="d-flex gap-2 mt-3 flex-wrap">
+<a href="{{ url_for('storage_dashboard') }}" class="btn btn-primary">🔄 Refresh</a>
+<form method="post" action="{{ url_for('library_migrate_to_b2') }}" style="display:inline;margin:0" onsubmit="return confirm('Move local PDFs to B2?')">
+  <button class="btn btn-success">☁️ Migrate Local Books to B2</button>
+</form>
+</div>
+{% endblock %}

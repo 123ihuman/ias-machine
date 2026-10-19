@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('twin_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← Twin Home</a>
+<h3>{{ topper.topper_name }}
+  {% if topper.year %}· {{ topper.year }}{% endif %}
+  {% if topper.rank %}· AIR {{ topper.rank }}{% endif %}
+</h3>
+<p class="text-muted">
+  <span class="badge bg-secondary">{{ topper.paper }}</span>
+  {% if topper.optional %}<span class="badge bg-info text-dark">{{ topper.optional }}</span>{% endif %}
+  · {{ topper.word_count }} words · {{ topper.paragraph_count }} paragraphs
+</p>
+
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <form method="post" action="{{ url_for('twin_backup_b2', tid=topper.id) }}">
+    <button class="btn btn-sm btn-success">☁️ Backup to B2</button>
+  </form>
+  <form method="post" action="{{ url_for('b2_restore', tid=topper.id) }}" onsubmit="return confirm('Restore from B2? This will overwrite the current version.')">
+    <button class="btn btn-sm btn-warning">⬇ Restore from B2</button>
+  </form>
+  <a href="{{ url_for('twin_export', tid=topper.id) }}" class="btn btn-sm btn-outline-primary">⬇ Export JSON</a>
+  {% if topper.drive_url %}<span class="badge bg-success">☁️ Backed up</span>{% endif %}
+</div>
+
+<h5>Paragraphs ({{ paragraphs|length }})</h5>
+{% for p in paragraphs %}
+<div class="card mb-2">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between mb-1">
+      <span class="badge bg-{% if p.arg_type=='intro' %}success{% elif p.arg_type=='conclusion' %}primary{% elif p.arg_type=='counter' %}warning text-dark{% elif p.arg_type=='evidence' %}info text-dark{% else %}secondary{% endif %}">#{{ p.para_index + 1 }} · {{ p.arg_type }}</span>
+      <small class="text-muted">{{ p.word_count }} words</small>
+    </div>
+    <p class="mb-0" style="white-space:pre-wrap">{{ p.text }}</p>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

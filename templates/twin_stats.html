@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('twin_home') }}" class="btn btn-sm btn-outline-secondary mb-2">← Twin Home</a>
+<h2>📊 Topper Twin Stats</h2>
+
+<div class="row mb-3">
+  <div class="col-md-3"><div class="card text-center"><div class="card-body py-2"><small>Toppers</small><h3>{{ toppers|length }}</h3></div></div></div>
+  <div class="col-md-3"><div class="card text-center"><div class="card-body py-2"><small>Total Words</small><h3>{{ total_words }}</h3></div></div></div>
+  <div class="col-md-3"><div class="card text-center"><div class="card-body py-2"><small>Paragraphs</small><h3>{{ total_paras }}</h3></div></div></div>
+  <div class="col-md-3"><div class="card text-center"><div class="card-body py-2"><small>Storage Est.</small><h3>~{{ (total_words // 5) }} KB</h3></div></div></div>
+</div>
+
+<div class="row">
+  <div class="col-md-4 mb-3">
+    <div class="card"><div class="card-header">By Paper</div>
+    <ul class="list-group list-group-flush">
+      {% for k, v in papers.items() %}<li class="list-group-item d-flex justify-content-between">{{ k }}<span class="badge bg-primary">{{ v }}</span></li>{% endfor %}
+    </ul></div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card"><div class="card-header">By Year</div>
+    <ul class="list-group list-group-flush">
+      {% for k, v in years.items() %}<li class="list-group-item d-flex justify-content-between">{{ k }}<span class="badge bg-secondary">{{ v }}</span></li>{% endfor %}
+    </ul></div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card"><div class="card-header">By Optional</div>
+    <ul class="list-group list-group-flush">
+      {% for k, v in opt.items() %}<li class="list-group-item d-flex justify-content-between">{{ k }}<span class="badge bg-info text-dark">{{ v }}</span></li>{% endfor %}
+    </ul></div>
+  </div>
+</div>
+
+<div class="alert alert-success">
+  <strong>Storage:</strong> {{ total_words }} words ≈ {{ (total_words // 5) }} KB in database.
+  {{ (total_words // 5) }} KB used out of 500 MB ({{ ((total_words // 5) * 100 / 512000)|round(2) }}%).
+  Room for ~{{ (512000 // (total_words // 5 + 1)) if total_words > 0 else 0 }}x more copies.
+</div>
+{% endblock %}

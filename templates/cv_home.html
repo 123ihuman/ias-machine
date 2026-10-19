@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📄 CV / Resume Maker</h2>
+<p class="text-muted">Create professional CVs in 6 templates. Free PDF download.</p>
+
+<a href="{{ url_for('cv_new') }}" class="btn btn-primary mb-3">+ Create New CV</a>
+
+<div class="row">
+  {% for c in cvs %}
+  <div class="col-md-6 mb-2">
+    <div class="card">
+      <div class="card-body py-2 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ c.name or 'Untitled' }}</strong>
+          <div class="small text-muted">{{ c.role or '' }} · {{ c.created_at.strftime('%d %b %Y') }}</div>
+        </div>
+        <div class="text-end">
+          <a href="{{ url_for('cv_view', cid=c.id) }}" class="btn btn-sm btn-primary">View</a>
+          <a href="{{ url_for('cv_edit', cid=c.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+          <form action="{{ url_for('cv_delete', cid=c.id) }}" method="post" style="display:inline" onsubmit="return confirm('Delete CV?')">
+            <button class="btn btn-sm btn-outline-danger">Del</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12"><div class="alert alert-info">No CVs yet. Click <strong>+ Create New CV</strong>.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

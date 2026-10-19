@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔥 Study Streak</h2>
+<div class="card mb-3 border-danger">
+  <div class="card-body text-center">
+    <h1 style="font-size:3rem">{{ current }}</h1>
+    <p class="mb-0">consecutive days</p>
+    <small class="text-muted">
+      {% if current >= 30 %}Legendary! Keep going.
+      {% elif current >= 7 %}Strong streak. Don't break it.
+      {% elif current >= 1 %}Good start. Come back tomorrow.
+      {% else %}Open the app daily to build streak.{% endif %}
+    </small>
+  </div>
+</div>
+
+<h5>Last 30 Days</h5>
+<div class="row">
+  {% for log in logs %}
+  <div class="col-auto mb-2">
+    <div class="card text-center" style="width:64px">
+      <div class="card-body p-2">
+        <small class="text-muted">{{ log.date[5:] }}</small>
+        <div class="fw-bold">{{ log.hits }}</div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p class="text-muted">No activity logged yet. Start using the app daily.</p>
+  {% endfor %}
+</div>
+{% endblock %}

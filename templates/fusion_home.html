@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔮 Fusion Prediction Engine</h2>
+<p class="text-muted">7-layer analysis: PYQ frequency + recency + cycle detection + news linkage + subject spread + scenario assignment + AI questions. The 70%+ predictor.</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="post" action="{{ url_for('fusion_start') }}">
+      <label class="small fw-bold">Run Name (optional)</label>
+      <input class="form-control mb-2" name="name" placeholder="e.g., Prelims 2027 Run 1">
+      <label class="small fw-bold">Exam Type</label>
+      <select class="form-select mb-3" name="exam_type">
+        <option value="UPSC_PRELIMS">UPSC Prelims GS</option>
+        <option value="UPSC_CSAT">UPSC CSAT</option>
+        <option value="UPPSC">UPPSC Prelims</option>
+        <option value="BPSC">BPSC Prelims</option>
+        <option value="MAINS">UPSC Mains (GS1-4)</option>
+      </select>
+      <button class="btn btn-primary w-100">🎯 Start New Prediction Run</button>
+      <small class="text-muted d-block mt-2">Uses your PYQ database + news feed. Compute takes ~30 sec.</small>
+    </form>
+  </div>
+</div>
+
+<h5>Recent Runs</h5>
+{% for r in runs %}
+<div class="card mb-2">
+  <div class="card-body py-2 d-flex justify-content-between align-items-center">
+    <div>
+      <strong>{{ r.name }}</strong>
+      <div class="small text-muted">{{ r.exam_type }} · {{ r.total_topics }} topics · {{ r.created_at.strftime('%d %b %Y %H:%M') }}</div>
+    </div>
+    <div>
+      <a href="{{ url_for('fusion_run', rid=r.id) }}" class="btn btn-sm btn-primary">Open</a>
+      <form action="{{ url_for('fusion_delete', rid=r.id) }}" method="post" style="display:inline" onsubmit="return confirm('Delete?')">
+        <button class="btn btn-sm btn-outline-danger">Del</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">No runs yet. Create one above.</div>
+{% endfor %}
+{% endblock %}

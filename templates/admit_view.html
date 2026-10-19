@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h3>Admit Card Preview</h3>
+  <a href="{{ url_for('admit_card_print', cid=card.id) }}" target="_blank" class="btn btn-success">📄 Print / PDF</a>
+</div>
+<div style="background:#f5f1e8;padding:20px;border-radius:8px">
+{% include '_admit_layout.html' %}
+</div>
+{% endblock %}

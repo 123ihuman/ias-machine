@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 Review Session</h2>
+{% if not cards %}
+<div class="alert alert-success">✅ No cards due right now. Come back later!</div>
+<a href="{{ url_for('flashcards_list') }}" class="btn btn-primary">← Back</a>
+{% else %}
+<p class="text-muted">{{ cards|length }} cards in this session.</p>
+<div class="card mb-3">
+  <div class="card-body text-center">
+    <small class="text-muted" id="progress">Card 1 of {{ cards|length }}</small>
+    <h4 id="qText" class="mt-3 mb-4" style="min-height:80px">{{ cards[0].question }}</h4>
+    <div id="answerBox" style="display:none">
+      <hr>
+      <p id="aText" style="white-space:pre-wrap">{{ cards[0].answer }}</p>
+    </div>
+    <button class="btn btn-primary btn-lg mb-2" id="showBtn">Show Answer</button>
+    <div id="rateRow" style="display:none">
+      <p class="text-muted small">How well did you recall?</p>
+      <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <button class="btn btn-danger" onclick="rate(0)">Again</button>
+        <button class="btn btn-warning" onclick="rate(1)">Hard</button>
+        <button class="btn btn-success" onclick="rate(2)">Good</button>
+        <button class="btn btn-info text-white" onclick="rate(3)">Easy</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="text-center">
+  <a href="{{ url_for('flashcards_list') }}" class="btn btn-outline-secondary btn-sm">End Session</a>
+</div>
+
+<script>
+const cards = {{ cards|map(attribute='id')|list|tojson }};
+const questions = {{ cards|map(attribute='question')|list|tojson }};
+const answers = {{ cards|map(attribute='answer')|list|tojson }};
+let idx = 0;
+
+function render() {
+  if (idx >= cards.length) {
+    document.querySelector('.card-body').innerHTML = '<h4 class="text-success">🎉 Session complete!</h4><p>Great job. Come back tomorrow for the next batch.</p>';
+    return;
+  }
+  document.getElementById('progress').innerText = 'Card ' + (idx+1) + ' of ' + cards.length;
+  document.getElementById('qText').innerText = questions[idx];
+  document.getElementById('aText').innerText = answers[idx];
+  document.getElementById('answerBox').style.display = 'none';
+  document.getElementById('rateRow').style.display = 'none';
+  document.getElementById('showBtn').style.display = 'inline-block';
+}
+
+document.getElementById('showBtn').onclick = () => {
+  document.getElementById('answerBox').style.display = 'block';
+  document.getElementById('rateRow').style.display = 'block';
+  document.getElementById('showBtn').style.display = 'none';
+};
+
+async function rate(r) {
+  const cid = cards[idx];
+  try {
+    await fetch('/flashcards/review/submit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'cid=' + cid + '&rating=' + r
+    });
+  } catch(e) {}
+  idx++;
+  render();
+}
+
+render();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,71 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IAS Machine</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>IAS Machine</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}"> <meta name="theme-color" content="#0d1117"> <meta name="apple-mobile-web-app-capable" content="yes"> <meta name="apple-mobile-web-app-title" content="IAS Machine"> <style> @media (max-width: 991px) { .navbar-collapse.show, .navbar-collapse.collapsing { background: #0d1117; padding: 10px; border-radius: 0 0 10px 10px; } .navbar-nav { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-bottom: 12px !important; } .navbar-nav .nav-item { width: 100%; } .navbar-nav .nav-link { font-size: 0.95rem !important; font-weight: 500; padding: 12px 14px !important; background: #1a1f2b; border-radius: 8px; border: 1px solid #30363d; width: 100%; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .navbar-nav .nav-link:active { background: #2a3140; } .navbar-nav .dropdown-menu { background: #1a1f2b; border: 1px solid #30363d; grid-column: span 2; position: static !important; transform: none !important; margin-top: 6px; padding: 8px; } .navbar-nav .dropdown-item { font-size: 0.9rem; padding: 10px 14px; border-radius: 6px; color: #e6edf3 !important; } .navbar-nav .dropdown-item:active { background: #30363d; } .navbar-collapse .d-flex { width: 100%; } .navbar-collapse .d-flex .form-control { font-size: 0.95rem; padding: 12px 14px; } .navbar-collapse .d-flex .btn { padding: 12px 18px; font-size: 0.95rem; } } </style> <style id="ias-mobile-force"> @media (min-width: 768px) { html { background: #0d1117; } body { max-width: 540px !important; margin: 0 auto !important; box-shadow: 0 0 40px rgba(0,0,0,0.4); } .container, .container-fluid, .container-lg, .container-xl { max-width: 540px !important; } .navbar-collapse.show { max-width: 540px; margin: 0 auto; } } </style> 
+<style id="ias-mobile-nav">
+  /* Always-mobile navbar: hide expanded links, force hamburger */
+  @media (min-width: 576px) {
+    .navbar-toggler { display: block !important; }
+    .navbar-collapse:not(.show) { display: none !important; }
+    .navbar-collapse.show { display: block !important; }
+    .navbar-nav { display: block !important; width: 100% !important; }
+    .navbar-nav .nav-item { width: 100% !important; }
+    .navbar-nav .nav-link { padding: 12px 16px !important; border-bottom: 1px solid #30363d; }
+    .navbar-collapse.show { max-height: 70vh; overflow-y: auto; }
+  }
+</style>
+
+
+
+<style id="ias-navsearch2">
+  #ias-hs-wrap {
+    padding: 12px 16px;
+    border-bottom: 1px solid #30363d;
+    margin-bottom: 6px;
+  }
+  #ias-hs-box {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    border-radius: 10px;
+    border: 1px solid #30363d;
+    background: #0d1117;
+    color: #e6edf3;
+    font-size: 15px;
+    outline: none;
+  }
+  #ias-hs-box:focus { border-color: #d4a017; }
+  #ias-hs-wrap { position: relative; }
+  #ias-hs-wrap::before {
+    content: '🔎';
+    position: absolute;
+    left: 26px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  #ias-hs-empty {
+    padding: 12px 16px;
+    color: #8b949e;
+    font-size: 13px;
+    display: none;
+  }
+</style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">IAS Machine</a>
-            <ul class="navbar-nav me-auto">
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Library</a></li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('questions_list') }}">Questions</a></li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('predict') }}">Predict</a></li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('weightage') }}">Weightage</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('study_plan_list') }}">Study Plan</a></li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('cutoffs') }}">Cut-offs</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('toppers_list') }}">Toppers</a></li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('news_list') }}">News</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('exam_list') }}">Exam Sim</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('interview_sim_list') }}">Interview Sim</a></li>
-    <li class="nav-item"><a class="nav-link" href="{{ url_for('interview_list') }}">Interview</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('mock_list') }}">Mock Tests</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('my_answers') }}">My Answers</a></li>
-</ul>
-            <form class="d-flex ms-auto" action="{{ url_for('search') }}" method="get">
-                <input class="form-control me-2" type="search" name="q" placeholder="Search books..." aria-label="Search">
-                <button class="btn btn-outline-light" type="submit">Search</button>
-            </form>
-        </div>
-    </nav>
-    <div class="container mt-4">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-info">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+ <body> {% if reminder %} <div id="reminder-banner" style="background:linear-gradient(90deg,#0d6efd,#6610f2);color:#fff;padding:8px 14px;font-size:.85rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"> <span> {% if reminder.days_left < 9999 %}⏰ <strong>{{ reminder.days_left }}</strong> days to exam ·{% endif %} 🔥 <strong>{{ reminder.current_streak }}</strong>-day streak {% if reminder.overdue > 0 %} · <span style="background:#dc3545;padding:2px 8px;border-radius:10px">⚠️ {{ reminder.overdue }} overdue</span>{% endif %} {% if reminder.due_soon > 0 %} · <span style="background:#ffc107;color:#000;padding:2px 8px;border-radius:10px">⚡ {{ reminder.due_soon }} due soon</span>{% endif %} </span> <a href="{{ url_for('streak_dashboard') }}" style="color:#fff;text-decoration:underline;font-size:.8rem">View streak →</a> </div> {% endif %} <nav class="navbar navbar-dark bg-dark"> <div class="container-fluid"> <a class="navbar-brand" href="{{ url_for('today_digest') }}">IAS Machine</a> <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"> <span class="navbar-toggler-icon"></span> </button> <div class="collapse navbar-collapse" id="mainNav">
+
+<div id="ias-hs-wrap">
+  <input id="ias-hs-box" type="search" placeholder="Search features… (library, mock, csat)" autocomplete="off">
+  <div id="ias-hs-empty">No match — try different word</div>
+</div>
+
+ <ul class="navbar-nav me-auto mb-2 mb-lg-0"> <li class="nav-item"><a class="nav-link" href="{{ url_for('today_digest') }}">☀️ Today</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">📚 Library</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('quiz_tracker') }}">🎯 Quiz</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('yesterday_recall') }}">📚 Recall</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('weekly_mock_home') }}">🎓 Weekly Mock</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('predictive_paper_home') }}">📝 Predictive Paper</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('optional_hub') }}">📚 Optional</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('ethics_home') }}">⚖️ Ethics</a></li><li class="nav-item"><a class="nav-link" href="{{ url_for('admit_card_home') }}">🎫 Admit Card</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('cv_home') }}">📄 CV Maker</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('toolkit_home') }}">🧰 Toolkit</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('essay_hub') }}">✍️ Essay</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('coaching_hub') }}">🎓 Coaching</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('questions_list') }}">❓ Questions</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('voice_mentor') }}">🎤 Voice</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('adv_eval_home') }}">🎯 Eval</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('word_bank_home') }}">💎 Word Bank</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('sa_home') }}">♟️ Assist</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('topper_clone_home') }}">🧬 Topper Clone</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('twin_home') }}">🧬 Topper Twin</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('simple_exam_home') }}">⚡ Simple Exam</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('csat_home') }}">🎯 CSAT</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('mains_photo') }}">📷 Photo Mains</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('answer_helper') }}">✍️ Answer Helper</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('icopy_notebook') }}">📝 Notebook</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('answer_key_home') }}">🔑 Answer Key</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('paste_home') }}">📋 Paste</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('notes_home') }}">📝 Notes</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('ocr_queue') }}">☁️ OCR Queue</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('storage_dashboard') }}">💾 Storage</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('offline_home') }}">📴 Offline</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('tools_home') }}">🧰 Tools</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('book_chat') }}">📖 Book Chat</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('flashcards_list') }}">🃏 Flashcards</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('trend_predictor') }}">🔮 Trend AI</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('heatmap_v2') }}">🎯 Probabilities</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('predict_engine') }}">🚀 Predict Engine</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('fusion_home') }}">🔮 Fusion</a></li> <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">📝 Study</a> <ul class="dropdown-menu"> <li><a class="dropdown-item" href="{{ url_for('study_plan_list') }}">Study Plan</a></li> <li><a class="dropdown-item" href="{{ url_for('adaptive_plan') }}">Adaptive Plan</a></li> <li><a class="dropdown-item" href="{{ url_for('syllabus_tracker') }}">Syllabus Tracker</a></li> <li><a class="dropdown-item" href="{{ url_for('syllabus_pace') }}">Pace Alert</a></li> <li><a class="dropdown-item" href="{{ url_for('weightage') }}">Weightage</a></li> <li><a class="dropdown-item" href="{{ url_for('cutoffs') }}">Cut-offs</a></li> <li><a class="dropdown-item" href="{{ url_for('selection_stats') }}">Selection Stats</a></li> <li><a class="dropdown-item" href="{{ url_for('mistakes_list') }}">Common Mistakes</a></li> <li><a class="dropdown-item" href="{{ url_for('delta_dashboard') }}">📈 Delta</a></li> <li><a class="dropdown-item" href="{{ url_for('correlation_dashboard') }}">🔬 Correlation</a></li> <li><a class="dropdown-item" href="{{ url_for('streak_dashboard') }}">🔥 Streak</a></li> </ul> </li> <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">🏆 Toppers</a> <ul class="dropdown-menu"> <li><a class="dropdown-item" href="{{ url_for('toppers_list') }}">Topper List</a></li> <li><a class="dropdown-item" href="{{ url_for('toppers_compare') }}">Compare</a></li> <li><a class="dropdown-item" href="{{ url_for('toppers_admin') }}">Manage Data</a></li> </ul> </li> <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">🎯 Practice</a> <ul class="dropdown-menu"> <li><a class="dropdown-item" href="{{ url_for('mock_list') }}">Mock Tests</a></li> <li><a class="dropdown-item" href="{{ url_for('exam_list') }}">Exam Simulator</a></li> <li><a class="dropdown-item" href="{{ url_for('weak_topics') }}">Weak Topics</a></li> <li><a class="dropdown-item" href="{{ url_for('mcq_answer_key') }}">Answer Keys</a></li> <li><a class="dropdown-item" href="{{ url_for('my_answers') }}">My Answers</a></li> </ul> </li> <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">🎤 Interview</a> <ul class="dropdown-menu"> <li><a class="dropdown-item" href="{{ url_for('interview_list') }}">Topper Interviews</a></li> <li><a class="dropdown-item" href="{{ url_for('interview_sim_list') }}">Voice Simulator</a></li> </ul> </li> <li class="nav-item"><a class="nav-link" href="{{ url_for('news_list') }}">📰 News</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('epaper_lazy') }}">📰 E-Paper</a></li> <li class="nav-item"><a class="nav-link" href="{{ url_for('weather_dashboard') }}">🌦️ Weather</a></li> </ul> <form class="d-flex" action="{{ url_for('search') }}" method="get"> <input class="form-control me-2" type="search" name="q" placeholder="Search books..." aria-label="Search"> <button class="btn btn-outline-light" type="submit">Search</button> </form> </div> </div> </nav> <div class="container mt-4"> {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %} <div class="alert alert-info">{{ message }}</div> {% endfor %} {% endif %} {% endwith %} {% block content %}{% endblock %} </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> <script src="{{ url_for('static', filename='offline.js') }}"></script> <script> if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/static/sw.js').catch(function(){}); } </script> 
 <script>
-function askAI(urlTemplate, questionText) {
-    // Copy question to clipboard
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(questionText).then(function() {
-            console.log('Question copied');
-        }).catch(function() {
-            // fallback
-            var ta = document.createElement('textarea');
-            ta.value = questionText;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-        });
+(function(){
+  function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+  ready(function(){
+    const box = document.getElementById('ias-hs-box');
+    const empty = document.getElementById('ias-hs-empty');
+    if(!box) return;
+
+    // Collect all filterable items: every <li> that contains a nav-link or dropdown-item
+    const lis = Array.from(document.querySelectorAll('.navbar-nav > li.nav-item'));
+
+    // Save original display
+    lis.forEach(li => li.dataset.origDisplay = li.style.display || '');
+
+    // Also tag dropdown items
+    const dropdownItems = Array.from(document.querySelectorAll('.navbar-nav .dropdown-item'));
+
+    function norm(s){ return (s||'').toLowerCase().trim(); }
+
+    function matches(li, q){
+      if (!q) return true;
+      const label = norm(li.textContent);
+      const href = norm(li.querySelector('a')?.getAttribute('href'));
+      // substring
+      if (label.indexOf(q) !== -1) return true;
+      if (href.indexOf(q) !== -1) return true;
+      // subsequence
+      let qi=0; for (let i=0;i<label.length && qi<q.length;i++) if(label[i]===q[qi]) qi++;
+      if (qi===q.length) return true;
+      return false;
     }
-    // Build URL with question if template supports it
-    var url = urlTemplate;
-    if (urlTemplate.indexOf('{Q}') !== -1) {
-        url = urlTemplate.replace('{Q}', encodeURIComponent(questionText));
+
+    function filter(){
+      const q = norm(box.value);
+      let visible = 0;
+      lis.forEach(li => {
+        if (matches(li, q)) { li.style.display = li.dataset.origDisplay || ''; visible++; }
+        else { li.style.display = 'none'; }
+      });
+      // Also filter within dropdowns
+      dropdownItems.forEach(di => {
+        if (!q) { di.style.display = ''; return; }
+        di.style.display = matches(di, q) ? '' : 'none';
+      });
+      empty.style.display = (q && visible === 0) ? 'block' : 'none';
     }
-    window.open(url, '_blank');
-}
+
+    box.addEventListener('input', filter);
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { box.value=''; filter(); }
+      if (e.key === 'Enter') {
+        // go to first visible link
+        const first = lis.find(li => li.style.display !== 'none' && li.querySelector('a[href]'));
+        if (first) location.href = first.querySelector('a[href]').getAttribute('href');
+      }
+    });
+  });
+})();
 </script>
-</body>
-</html>
+
+</body> </html> 

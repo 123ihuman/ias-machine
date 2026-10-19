@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📚 Optional Subject Hub</h2>
+<p class="text-muted">UPSC Mains Paper VI & VII — Optional subject resources, PYQs, and AI-generated practice questions.</p>
+<div class="row">
+  {% for key, s in subjects.items() %}
+  <div class="col-md-6 col-lg-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6>{{ s.label }}</h6>
+        <p class="small text-muted mb-2">{{ s.papers|length }} sub-sections</p>
+        <ul class="small mb-2">{% for p in s.papers[:3] %}<li>{{ p }}</li>{% endfor %}</ul>
+        <a href="{{ url_for('optional_subject', key=key) }}" class="btn btn-sm btn-primary w-100">Open</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

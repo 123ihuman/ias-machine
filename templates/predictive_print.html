@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{{ paper.name }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:wght@400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:15mm}
+body{font-family:'Lora',serif;color:#111;background:#fff;padding:16px;line-height:1.5;font-size:12px}
+.bar{background:#1a3a6b;color:#fff;padding:10px;text-align:center;margin:-16px -16px 20px;position:sticky;top:0;z-index:99}
+.bar button{background:#fff;color:#1a3a6b;border:none;padding:8px 20px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:1px;cursor:pointer;border-radius:4px;margin-left:8px}
+.head{text-align:center;border-top:3px double #111;border-bottom:3px double #111;padding:10px 0;margin-bottom:6px}
+.head h1{font-family:'Playfair Display',serif;font-weight:900;font-size:1.5rem;margin:0}
+.meta{display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:.75rem;padding:6px 0;border-bottom:1px solid #111;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.instr{background:#f8f8f8;padding:10px;font-size:.8rem;margin-bottom:16px;border-left:3px solid #666}
+.q{margin-bottom:14px;page-break-inside:avoid}
+.qn{font-weight:700}
+.opt{display:block;margin-left:20px;margin-top:2px}
+.sec{font-family:'Oswald',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;text-align:center;border-top:1px solid #111;border-bottom:1px solid #111;padding:4px 0;margin:18px 0 12px}
+.ak{page-break-before:always}
+.ak h2{font-family:'Playfair Display',serif;text-align:center;margin-bottom:14px}
+.ak table{width:100%;border-collapse:collapse;font-size:.75rem}
+.ak td,.ak th{border:1px solid #999;padding:4px 6px;text-align:left}
+.ak th{background:#eee}
+@media print{.bar{display:none}body{padding:0}}
+</style>
+</head>
+<body>
+<div class="bar">
+  🖨️ Save as PDF — Print
+  <button onclick="window.print()">PRINT / SAVE PDF</button>
+  <button onclick="window.close()">Close</button>
+</div>
+
+<div class="head">
+  <h1>{{ paper.name }}</h1>
+  <div style="font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:#666;margin-top:4px">Time: {{ paper.duration_minutes }} min · Max Marks: {{ paper.total_marks }}</div>
+</div>
+<div class="meta">
+  <span>Total Questions: {{ paper.total_questions }}</span>
+  <span>Negative: {{ paper.negative_marking }} per wrong</span>
+  <span>Date: {{ paper.created_at.strftime('%d %b %Y') }}</span>
+</div>
+
+<div class="instr">
+  <strong>INSTRUCTIONS:</strong> All questions are compulsory. Each question carries equal marks. Negative marking of {{ paper.negative_marking }} for each wrong answer. Read each question carefully before answering.
+</div>
+
+{% set last_subject = namespace(v='') %}
+{% for q in questions %}
+  {% if q.subject != last_subject.v %}
+    <div class="sec">{{ q.subject }}</div>
+    {% set last_subject.v = q.subject %}
+  {% endif %}
+  <div class="q">
+    <span class="qn">Q{{ q.q_number }}.</span>
+    <span>{{ q.question }}</span>
+    {% if q.option_a %}
+    <span class="opt">(a) {{ q.option_a }}</span>
+    <span class="opt">(b) {{ q.option_b }}</span>
+    <span class="opt">(c) {{ q.option_c }}</span>
+    <span class="opt">(d) {{ q.option_d }}</span>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<div class="ak">
+  <h2>ANSWER KEY</h2>
+  <table>
+    <thead><tr><th>Q.No</th><th>Subject</th><th>Answer</th><th>Q.No</th><th>Subject</th><th>Answer</th></tr></thead>
+    <tbody>
+      {% set half = (questions|length + 1) // 2 %}
+      {% for i in range(half) %}
+      <tr>
+        <td>{{ questions[i].q_number }}</td>
+        <td>{{ questions[i].subject }}</td>
+        <td>{{ questions[i].correct or '—' }}</td>
+        {% if i + half < questions|length %}
+        <td>{{ questions[i+half].q_number }}</td>
+        <td>{{ questions[i+half].subject }}</td>
+        <td>{{ questions[i+half].correct or '—' }}</td>
+        {% else %}<td></td><td></td><td></td>{% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

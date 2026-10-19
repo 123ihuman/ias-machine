@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('syllabus_tracker', stage=subject.stage) }}" class="btn btn-sm btn-outline-secondary mb-2">← All Subjects</a>
+<h2>{{ subject.name }} <small class="text-muted">({{ subject.stage }})</small></h2>
+
+{% set weight = {'Not Started':0,'Reading':25,'Revised 1x':50,'Revised 2x':75,'Confident':100} %}
+{% set ns = namespace(v=0, c=0) %}
+{% for t in subject.children %}
+  {% set ns.v = ns.v + weight.get(t.status, 0) %}
+  {% set ns.c = ns.c + 1 %}
+{% endfor %}
+{% set pct = (ns.v / ns.c) if ns.c else 0 %}
+
+<div class="card mb-3"><div class="card-body">
+  <div class="d-flex justify-content-between"><span>Progress</span><strong>{{ pct|round(1) }}%</strong></div>
+  <div class="progress" style="height:14px;"><div class="progress-bar bg-primary" style="width:{{ pct }}%"></div></div>
+  <small class="text-muted">{{ ns.c }} topics total</small>
+</div></div>
+
+<div class="table-responsive">
+<table class="table table-sm">
+  <thead><tr><th>Topic</th><th style="width:180px;">Status</th><th>Target Date</th><th></th></tr></thead>
+  <tbody>
+    {% for t in subject.children %}
+    <tr>
+      <td>{{ t.name }}</td>
+      <td>
+        <form method="post" action="{{ url_for('syllabus_update', nid=t.id) }}">
+          <input type="hidden" name="return_to" value="{{ url_for('syllabus_subject', sid=subject.id) }}">
+          <select class="form-control form-control-sm" name="status" onchange="this.form.submit()">
+            {% for s in ['Not Started','Reading','Revised 1x','Revised 2x','Confident'] %}
+            <option value="{{ s }}" {% if s == t.status %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('syllabus_update', nid=t.id) }}">
+          <input type="hidden" name="return_to" value="{{ url_for('syllabus_subject', sid=subject.id) }}">
+          <input type="hidden" name="status" value="{{ t.status }}">
+          <input type="date" class="form-control form-control-sm" name="target_date" value="{{ t.target_date or '' }}" onchange="this.form.submit()">
+        </form>
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('syllabus_delete', nid=t.id) }}" onsubmit="return confirm('Delete?')">
+          <button class="btn btn-sm btn-outline-danger">✕</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">Add Topic</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('syllabus_add') }}" class="row g-2">
+      <input type="hidden" name="parent_id" value="{{ subject.id }}">
+      <div class="col-md-9"><input class="form-control" name="name" placeholder="New topic" required></div>
+      <div class="col-md-3"><button class="btn btn-primary w-100">Add</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

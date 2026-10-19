@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⚡ Quick Upload (Auto-Process)</h2>
+<p class="text-muted">Upload any size PDF. Auto-splits into chunks → sends → reassembles → extracts text → shows in Library.</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="mb-2"><label class="small fw-bold">Book PDF</label>
+      <input type="file" id="fileInput" class="form-control" accept=".pdf">
+      <small class="text-muted">Any size — server splits it automatically.</small>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-6"><input class="form-control" id="titleInput" placeholder="Title (auto if blank)"></div>
+      <div class="col-6"><input class="form-control" id="authorInput" placeholder="Author"></div>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-6"><input class="form-control" id="subjectInput" placeholder="Subject (Polity / GK / Reasoning)"></div>
+      <div class="col-6">
+        <select class="form-select" id="categoryInput">
+          <option value="book">Book</option>
+          <option value="paper">Past Paper</option>
+          <option value="notes">Notes</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary w-100" id="uploadBtn" onclick="quickUpload()">⚡ Upload & Auto-Process</button>
+    <small class="text-muted d-block mt-1">Large files (>60 MB) auto-split into chunks. Total time: ~1 min per 30 MB.</small>
+  </div>
+</div>
+
+<div class="alert alert-info" id="statusBox" style="display:none">
+  <strong id="statusText">Preparing upload...</strong>
+  <div class="progress mt-2" style="height:10px">
+    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="progBar" style="width:0%"></div>
+  </div>
+  <small id="chunkInfo" class="d-block mt-2"></small>
+</div>
+
+<div class="alert alert-success" id="doneBox" style="display:none">
+  <h5 id="doneTitle">✅ Done!</h5>
+  <p id="doneDetails" class="mb-2"></p>
+  <a id="openBookLink" class="btn btn-sm btn-primary" href="#">Open Book</a>
+  <a class="btn btn-sm btn-secondary" href="/library/quick-upload-page">Upload Another</a>
+</div>
+
+<script>
+const CHUNK_SIZE = 30 * 1024 * 1024;  // 30 MB per chunk
+
+async function quickUpload(){
+  const f = document.getElementById('fileInput').files[0];
+  if (!f) { alert('Choose a PDF'); return; }
+
+  const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const totalChunks = Math.ceil(f.size / CHUNK_SIZE);
+  const sizeMB = (f.size / 1024 / 1024).toFixed(1);
+
+  const title = document.getElementById('titleInput').value.trim() || f.name.replace('.pdf', '');
+  const author = document.getElementById('authorInput').value.trim();
+  const subject = document.getElementById('subjectInput').value.trim();
+  const category = document.getElementById('categoryInput').value;
+
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('statusBox').style.display = 'block';
+  document.getElementById('doneBox').style.display = 'none';
+  document.getElementById('chunkInfo').innerText = `${sizeMB} MB · ${totalChunks} chunk${totalChunks>1?'s':''}`;
+
+  let lastResp = null;
+
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * CHUNK_SIZE;
+    const end = Math.min(start + CHUNK_SIZE, f.size);
+    const blob = f.slice(start, end);
+
+    document.getElementById('statusText').innerText = `Uploading chunk ${i+1} of ${totalChunks}...`;
+    const pct = Math.round((i / totalChunks) * 90);
+    document.getElementById('progBar').style.width = pct + '%';
+
+    const fd = new FormData();
+    fd.append('upload_id', uploadId);
+    fd.append('chunk_index', i);
+    fd.append('total_chunks', totalChunks);
+    fd.append('filename', f.name);
+    fd.append('title', title);
+    fd.append('author', author);
+    fd.append('subject', subject);
+    fd.append('category', category);
+    fd.append('chunk', blob, 'part_' + i + '.bin');
+
+    try {
+      const r = await fetch('/library/chunk-upload', { method: 'POST', body: fd });
+      const txt = await r.text();
+      let d;
+      try { d = JSON.parse(txt); } catch(e) {
+        alert('Server error on chunk ' + (i+1) + '. File: ' + f.name + '\n\nRetry.');
+        document.getElementById('uploadBtn').disabled = false;
+        document.getElementById('statusBox').style.display = 'none';
+        return;
+      }
+      if (d.error) {
+        alert(d.error);
+        document.getElementById('uploadBtn').disabled = false;
+        document.getElementById('statusBox').style.display = 'none';
+        return;
+      }
+      lastResp = d;
+      document.getElementById('progBar').style.width = Math.round(((i+1) / totalChunks) * 90) + '%';
+    } catch(e) {
+      alert('Network error: ' + e.message);
+      document.getElementById('uploadBtn').disabled = false;
+      document.getElementById('statusBox').style.display = 'none';
+      return;
+    }
+  }
+
+  // All chunks sent — check final response
+  document.getElementById('statusText').innerText = 'Processing (reassembling + extracting text)...';
+  document.getElementById('progBar').style.width = '95%';
+
+  // Trigger processing by checking the final response (last chunk may have returned complete status)
+  // Poll once more just in case
+  if (lastResp && lastResp.status === 'complete') {
+    finishUpload(lastResp);
+  } else if (lastResp && lastResp.status === 'received') {
+    // Server didn't complete yet — send a dummy final trigger
+    document.getElementById('statusText').innerText = 'Finalizing on server...';
+    // In practice, the last chunk triggers completion — but just in case, show partial
+    setTimeout(() => {
+      alert('Upload sent but processing not confirmed. Refresh Library in 30 seconds to see the book.');
+      document.getElementById('uploadBtn').disabled = false;
+      document.getElementById('statusBox').style.display = 'none';
+    }, 2000);
+  } else {
+    document.getElementById('statusText').innerText = 'Waiting for server confirmation...';
+    setTimeout(() => {
+      alert('All chunks sent. Check Library in 30 seconds.');
+      document.getElementById('uploadBtn').disabled = false;
+      document.getElementById('statusBox').style.display = 'none';
+    }, 3000);
+  }
+}
+
+function finishUpload(d){
+  document.getElementById('progBar').style.width = '100%';
+  document.getElementById('statusBox').style.display = 'none';
+  document.getElementById('doneBox').style.display = 'block';
+  document.getElementById('doneTitle').innerText = '✅ ' + (d.title || 'Book uploaded');
+  const details = d.extract_status === 'text_extracted'
+    ? `${d.pages} pages extracted · ${d.size_mb} MB · Full-text search ready`
+    : `${d.size_mb} MB · PDF stored (text extraction skipped)`;
+  document.getElementById('doneDetails').innerText = details;
+  document.getElementById('openBookLink').href = '/book/' + d.book_id;
+}
+</script>
+{% endblock %}

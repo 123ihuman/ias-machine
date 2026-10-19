@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📖 Book Chat</h2>
+<p class="text-muted">Ask a question. Get answers grounded in YOUR library books, with exact page citations.</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <textarea id="q" class="form-control mb-2" rows="3" placeholder="e.g., What is Article 356? Or: Explain the causes of the 1857 revolt"></textarea>
+    <button class="btn btn-primary w-100" id="askBtn">Ask Question</button>
+  </div>
+</div>
+
+<div class="alert alert-info" id="status" style="display:none">
+  <strong>Searching your library + thinking...</strong> ~10-20 sec
+</div>
+
+<div id="result" style="display:none">
+  <div class="card mb-3 border-primary">
+    <div class="card-header bg-primary text-white">🤖 Answer (grounded in your books)</div>
+    <div class="card-body" id="answerBox" style="white-space:pre-wrap"></div>
+  </div>
+  <div class="card mb-3">
+    <div class="card-header">📚 Sources Used</div>
+    <div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        <thead><tr><th>#</th><th>Book</th><th>Page</th><th></th></tr></thead>
+        <tbody id="citeBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <button class="btn btn-outline-primary" id="againBtn">Ask Another</button>
+</div>
+
+<script>
+document.getElementById('askBtn').onclick = async () => {
+  const q = document.getElementById('q').value.trim();
+  if (!q) { alert('Enter a question.'); return; }
+  document.getElementById('askBtn').disabled = true;
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+
+  const fd = new FormData();
+  fd.append('query', q);
+  try {
+    const r = await fetch('/book-chat/ask', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.error) {
+      alert(data.error);
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('askBtn').disabled = false;
+      return;
+    }
+    document.getElementById('answerBox').innerText = data.answer;
+    const tb = document.getElementById('citeBody');
+    tb.innerHTML = data.citations.map(c =>
+      '<tr><td>[' + c.n + ']</td><td><a href="/book/' + c.book_id + '">' + c.book + '</a></td><td>' + c.page + '</td><td><a href="/book/' + c.book_id + '" class="btn btn-sm btn-outline-primary">Open</a></td></tr>'
+    ).join('');
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('askBtn').disabled = false;
+  } catch(e) {
+    alert('Error: ' + e.message);
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('askBtn').disabled = false;
+  }
+};
+
+document.getElementById('againBtn').onclick = () => {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('q').value = '';
+};
+</script>
+{% endblock %}

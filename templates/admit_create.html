@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Admit Card</h2>
+<form method="post" enctype="multipart/form-data" class="mb-4">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-header">Exam Details</div>
+        <div class="card-body">
+          <label class="small">Exam Preset</label>
+          <select class="form-select mb-2" name="preset" id="preset">
+            {% for k, p in presets.items() %}
+            <option value="{{ k }}" data-name="{{ p.exam_name }}" data-code="{{ p.exam_code }}">{{ p.exam_body }} — {{ p.exam_name[:50] }}</option>
+            {% endfor %}
+          </select>
+          <label class="small">Exam Name</label>
+          <input class="form-control mb-2" name="exam_name" id="examName" value="{{ presets['UPSC_PRELIMS'].exam_name }}">
+          <label class="small">Exam Code</label>
+          <input class="form-control mb-2" name="exam_code" id="examCode" value="{{ presets['UPSC_PRELIMS'].exam_code }}">
+          <label class="small">Exam Date</label>
+          <input class="form-control mb-2" type="date" name="exam_date">
+          <label class="small">Exam Timing</label>
+          <input class="form-control mb-2" name="exam_time" placeholder="e.g., 09:30 AM to 11:30 AM">
+          <label class="small">Reporting Time</label>
+          <input class="form-control" name="reporting_time" placeholder="e.g., 08:00 AM">
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-header">Candidate Details</div>
+        <div class="card-body">
+          <label class="small">Full Name</label>
+          <input class="form-control mb-2" name="candidate_name" required>
+          <div class="row g-2">
+            <div class="col"><label class="small">Roll No.</label><input class="form-control" name="roll_number"></div>
+            <div class="col"><label class="small">Registration No.</label><input class="form-control" name="registration_no"></div>
+          </div>
+          <label class="small mt-2">Father's Name</label>
+          <input class="form-control mb-2" name="father_name">
+          <label class="small">Mother's Name</label>
+          <input class="form-control mb-2" name="mother_name">
+          <div class="row g-2 mb-2">
+            <div class="col"><label class="small">Date of Birth</label><input class="form-control" name="dob" type="date"></div>
+            <div class="col"><label class="small">Gender</label><select class="form-select" name="gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+          </div>
+          <label class="small">Category</label>
+          <select class="form-select mb-2" name="category">
+            <option>General</option><option>OBC</option><option>SC</option><option>ST</option><option>EWS</option>
+          </select>
+          <label class="small">Photo (upload)</label>
+          <input class="form-control mb-2" type="file" name="photo_file" accept="image/*">
+          <label class="small">Photo URL (optional)</label>
+          <input class="form-control mb-2" name="photo_url" placeholder="Or paste image URL">
+          <label class="small">Signature (upload)</label>
+          <input class="form-control" type="file" name="signature_file" accept="image/*">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Centre Details</div>
+    <div class="card-body">
+      <label class="small">Venue</label>
+      <input class="form-control mb-2" name="exam_centre" placeholder="e.g., MAHARAJA COSSIMBAZAR POLYTECHNIC INSTITUTE, 3 NANDAL LAL BOSE LANE">
+      <label class="small">City</label>
+      <input class="form-control" name="exam_city" placeholder="e.g., Kolkata - 700 003">
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Instructions (edit if needed)</div>
+    <div class="card-body">
+      <textarea class="form-control" name="instructions" rows="8">{{ defaults }}</textarea>
+    </div>
+  </div>
+
+  <button class="btn btn-primary w-100">Create Admit Card</button>
+</form>
+
+<script>
+document.getElementById('preset').onchange = function(){
+  const opt = this.options[this.selectedIndex];
+  document.getElementById('examName').value = opt.dataset.name;
+  document.getElementById('examCode').value = opt.dataset.code;
+};
+</script>
+{% endblock %}

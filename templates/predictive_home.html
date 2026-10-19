@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📝 Predictive Exam Paper Generator</h2>
+<p class="text-muted">Generate full-length mock papers — UPSC Prelims, CSAT, Mains, Essay, State PSC. Subject-wise distribution + PYQ-based + AI-generated new questions.</p>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header">Create New Paper</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('predictive_paper_create') }}">
+          <label class="form-label small fw-bold">Exam Pattern</label>
+          <select class="form-select mb-3" name="exam_type">
+            {% for key, p in presets.items() %}
+            <option value="{{ key }}">{{ p.label }} — {{ p.total_q }} Q · {{ p.marks }} marks · {{ p.minutes }} min</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-primary w-100">🎯 Generate Paper</button>
+          <small class="text-muted d-block mt-2">Uses your PYQ database + AI generation. Takes 3-8 min for full 150-Q paper.</small>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <h5>Your Papers</h5>
+    {% for p in papers %}
+    <div class="card mb-2">
+      <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ p.name }}</strong>
+            <div class="small text-muted">{{ p.total_questions }} Q · {{ p.total_marks }} marks · {{ p.duration_minutes }} min · neg {{ p.negative_marking }}</div>
+          </div>
+          <div class="text-end">
+            {% if p.status == 'ready' %}
+            <span class="badge bg-success">Ready</span>
+            <a href="{{ url_for('predictive_paper_view', pid=p.id) }}" class="btn btn-sm btn-outline-primary mt-1">View</a>
+            <a href="{{ url_for('predictive_paper_print', pid=p.id) }}" target="_blank" class="btn btn-sm btn-outline-success mt-1">PDF</a>
+            {% else %}
+            <span class="badge bg-warning text-dark">Generating</span>
+            <a href="{{ url_for('predictive_paper_generate', pid=p.id) }}" class="btn btn-sm btn-warning mt-1">Resume</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-muted">No papers yet. Create one on the left.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

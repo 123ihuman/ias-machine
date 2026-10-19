@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔑 Prelims Answer Key Manager</h2>
+<p class="text-muted">Paste or upload answer keys. AI parses → auto-scores any PYQ.</p>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header">📋 Paste Answer Key</div>
+      <div class="card-body">
+        <select class="form-select mb-2" id="patternSel">
+          {% for k, p in patterns.items() %}
+          <option value="{{ k }}">{{ k.replace('_',' ') }} — {{ p.total }} Q</option>
+          {% endfor %}
+        </select>
+        <input class="form-control mb-2" id="yearInput" placeholder="Year (e.g., 2024)" type="number">
+        <textarea id="rawKey" class="form-control mb-2" rows="6" placeholder="Paste like:&#10;1. (b)  2. (c)  3. (a)  4. (d)&#10;or&#10;Q1-B Q2-C Q3-A Q4-D..."></textarea>
+        <button class="btn btn-primary w-100" id="parseBtn" onclick="parseKey()">🧠 Parse with AI</button>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">✏️ Manual Single Entry</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('answer_key_manual_add') }}">
+          <input class="form-control mb-2" name="exam" placeholder="Exam (UPSC_PRELIMS)" required>
+          <input class="form-control mb-2" name="year" placeholder="Year" type="number" required>
+          <input class="form-control mb-2" name="paper" placeholder="Paper (GS1/CSAT)" required>
+          <div class="row g-2 mb-2">
+            <div class="col"><input class="form-control" name="q_number" placeholder="Q#" type="number" required></div>
+            <div class="col"><input class="form-control" name="correct_option" placeholder="A/B/C/D" maxlength="1" required></div>
+          </div>
+          <button class="btn btn-outline-primary w-100">Add Single</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div id="previewBox" style="display:none">
+      <div class="card mb-3 border-success">
+        <div class="card-header bg-success text-white">✅ AI Parsed — Review & Save</div>
+        <div class="card-body">
+          <p><strong id="previewCount">0</strong> answers detected. <span id="previewPattern"></span></p>
+          <div class="table-responsive" style="max-height:300px;overflow-y:auto">
+            <table class="table table-sm">
+              <thead><tr><th>Q#</th><th>Answer</th><th>Explanation</th></tr></thead>
+              <tbody id="previewTable"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-success w-100 mt-2" id="saveBtn" onclick="saveKey()">💾 Save All to Database</button>
+        </div>
+      </div>
+    </div>
+
+    {% if sessions %}
+    <h5>Saved Answer Keys ({{ sessions|length }})</h5>
+    {% for s in sessions %}
+    <div class="card mb-2">
+      <div class="card-body py-2 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ s.name }}</strong>
+          <div class="small text-muted">{{ s.exam }} · {{ s.year or '—' }} · {{ s.paper }} · {{ s.total_questions }} Q · {{ s.source }}</div>
+        </div>
+        <form action="{{ url_for('answer_key_session_delete', sid=s.id) }}" method="post" onsubmit="return confirm('Delete this key set?')">
+          <button class="btn btn-sm btn-outline-danger">✕</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+<script>
+let parsedAnswers = null;
+let parsedPattern = null;
+
+async function parseKey(){
+  const text = document.getElementById('rawKey').value.trim();
+  if (text.length < 10) { alert('Paste at least a few answers'); return; }
+  const pattern = document.getElementById('patternSel').value;
+  const btn = document.getElementById('parseBtn');
+  btn.disabled = true; btn.innerText = '🧠 AI parsing...';
+  const fd = new FormData();
+  fd.append('raw_text', text);
+  fd.append('exam_pattern', pattern);
+  try {
+    const r = await fetch('/answer-key/parse', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { alert(d.error); btn.disabled = false; btn.innerText = '🧠 Parse with AI'; return; }
+    parsedAnswers = d.all;
+    parsedPattern = d.pattern;
+    document.getElementById('previewCount').innerText = d.count;
+    document.getElementById('previewPattern').innerText = '· ' + d.pattern;
+    let rows = '';
+    d.preview.forEach(a => {
+      rows += '<tr><td>' + a.q + '</td><td><span class="badge bg-primary">' + a.answer + '</span></td><td class="small">' + (a.explanation || '—') + '</td></tr>';
+    });
+    if (d.count > 15) rows += '<tr><td colspan="3" class="text-muted small">... and ' + (d.count - 15) + ' more</td></tr>';
+    document.getElementById('previewTable').innerHTML = rows;
+    document.getElementById('previewBox').style.display = 'block';
+    btn.disabled = false; btn.innerText = '🔄 Re-parse';
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerText = '🧠 Parse with AI'; }
+}
+
+async function saveKey(){
+  if (!parsedAnswers) { alert('Parse first'); return; }
+  const year = document.getElementById('yearInput').value.trim();
+  const fd = new FormData();
+  fd.append('exam_pattern', parsedPattern);
+  fd.append('year', year);
+  fd.append('answers_json', JSON.stringify(parsedAnswers));
+  try {
+    const r = await fetch('/answer-key/save', {method:'POST', body: fd});
+    if (r.redirected) { window.location = r.url; return; }
+    alert('Saved');
+    window.location.reload();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+</script>
+{% endblock %}

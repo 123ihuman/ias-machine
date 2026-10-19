@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🎯 CSAT Trainer (Paper II)</h2>
+<p class="text-muted">Qualifying paper — need only 67/200 (33%). Skip smart, pass guaranteed.</p>
+
+<div class="row mb-3">
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2">
+    <small>Pass Threshold</small><h3 class="text-danger mb-0">66.67</h3>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2">
+    <small>Sessions Passed</small><h3 class="{% if passed > 0 %}text-success{% else %}text-muted{% endif %} mb-0">{{ passed }}/{{ total }}</h3>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body py-2">
+    <small>Average Score</small><h3 class="{% if avg >= 66.67 %}text-success{% elif avg >= 40 %}text-warning{% else %}text-danger{% endif %} mb-0">{{ avg }}</h3>
+  </div></div></div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">🚀 Start Practice</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('csat_start') }}">
+      <label class="small fw-bold">Mode</label>
+      <select class="form-select mb-2" name="mode">
+        <option value="practice">Practice (10 Q · reasoning focus)</option>
+        <option value="sprint">Sprint Test (30 Q · 40 min pressure)</option>
+        <option value="full">Full Mock (80 Q · 2 hours — real CSAT)</option>
+      </select>
+      <label class="small fw-bold">Subject (optional — leave blank for mixed)</label>
+      <select class="form-select mb-3" name="subject">
+        <option value="">Mixed / Weighted</option>
+        <option value="Comprehension">Comprehension</option>
+        <option value="Logical Reasoning">Logical Reasoning</option>
+        <option value="Basic Numeracy">Basic Numeracy</option>
+        <option value="Data Interpretation">Data Interpretation</option>
+        <option value="Decision Making">Decision Making</option>
+      </select>
+      <label class="small fw-bold">Question Count (for practice mode)</label>
+      <input type="number" class="form-control mb-3" name="count" value="10" min="5" max="80">
+      <button class="btn btn-primary w-100">▶ Start CSAT Session</button>
+      <small class="text-muted d-block mt-2">Generation takes 15-90 sec depending on count. Each AI call ~2 sec.</small>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">💡 CSAT Passing Strategy — Section Tips</div>
+  <div class="card-body">
+    {% for k, v in tips.items() %}
+    <div class="mb-2"><strong>{{ k }}:</strong><br><span class="small">{{ v }}</span></div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card mb-3 border-success">
+  <div class="card-header bg-success text-white">🏆 The Winning Formula</div>
+  <div class="card-body">
+    <ul class="mb-0">
+      <li><strong>Attempt only 45-50 questions</strong> out of 80 — rest are traps</li>
+      <li><strong>25 Comprehension + 20 Reasoning</strong> = 45 correct = 90 marks ✅</li>
+      <li><strong>Skip all tough maths</strong> — beyond 30-sec thinking</li>
+      <li><strong>Decision Making: attempt all</strong> (no negative marking)</li>
+      <li><strong>Negative marking only 0.66</strong> — one wrong = lose 0.66, not 2</li>
+    </ul>
+  </div>
+</div>
+
+<h5>Recent Sessions</h5>
+{% for s in sessions %}
+<div class="card mb-2">
+  <div class="card-body py-2 d-flex justify-content-between">
+    <div>
+      <strong>{{ s.mode|title }}</strong>
+      <div class="small text-muted">{{ s.started_at.strftime('%d %b %H:%M') }} · {{ s.total_correct }}/{{ s.total_attempted }} correct · {{ s.total_skipped }} skipped</div>
+    </div>
+    <div class="text-end">
+      <span class="badge bg-{% if s.passed %}success{% else %}danger{% endif %}">{{ s.score }}/200</span>
+      <a href="{{ url_for('csat_result', sid=s.id) }}" class="btn btn-sm btn-outline-primary ms-1">View</a>
+    </div>
+  </div>
+</div>
+{% else %}
+<p class="text-muted">No sessions yet.</p>
+{% endfor %}
+{% endblock %}

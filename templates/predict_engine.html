@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🚀 Advanced Prediction Engine</h2>
+<p class="text-muted">EQPM-style analysis with recency weighting, cycle detection, and trend regression.</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-2">
+    <select class="form-select" name="phase">
+      <option value="prelims" {% if phase=='prelims' %}selected{% endif %}>Prelims</option>
+      <option value="mains" {% if phase=='mains' %}selected{% endif %}>Mains</option>
+      <option value="essay" {% if phase=='essay' %}selected{% endif %}>Essay</option>
+    </select>
+  </div>
+  <div class="col-md-2">
+    <input class="form-control" name="year" value="{{ year }}" placeholder="2027">
+  </div>
+  <div class="col-md-4">
+    <select class="form-select" name="subject">
+      <option value="">All Subjects</option>
+      {% for s in subjects %}<option value="{{ s }}" {% if s==subject %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4"><button class="btn btn-primary w-100">Analyze</button></div>
+</form>
+
+{% if predictions %}
+<h5>📊 Top 50 Predicted Topics — {{ phase|title }} {{ year }}</h5>
+<div class="table-responsive">
+<table class="table table-sm" style="font-size:.8rem">
+  <thead><tr><th>#</th><th>Topic</th><th>Prob %</th><th>Trend</th><th>Cycle</th><th>Series</th><th>Avg Marks</th><th></th></tr></thead>
+  <tbody>
+    {% for p in predictions %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td><a href="{{ url_for('topic_detail', topic_name=p.topic) }}"><strong>{{ p.topic }}</strong></a></td>
+      <td><span class="badge bg-{% if p.probability >= 70 %}danger{% elif p.probability >= 40 %}warning text-dark{% else %}secondary{% endif %}">{{ p.probability }}%</span></td>
+      <td>{% if p.trend == 'rising' %}<span class="text-success">↑</span>{% elif p.trend == 'falling' %}<span class="text-danger">↓</span>{% else %}→{% endif %}</td>
+      <td>{% if p.cycle_due %}<span class="badge bg-warning text-dark">Due</span>{% endif %}</td>
+      <td><code style="font-size:.7rem">{{ p.series|join('-') }}</code></td>
+      <td>{{ p.avg_marks }}</td>
+      <td><button class="btn btn-sm btn-outline-info" onclick="explain('{{ p.topic }}')">🤖</button></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div id="aiBox" style="display:none" class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">🤖 AI Analysis: <span id="aiTopic"></span></div>
+  <div class="card-body" id="aiText"></div>
+</div>
+{% else %}
+<div class="alert alert-warning">No data. Upload past papers and run Auto-Extract first.</div>
+{% endif %}
+
+<script>
+async function explain(topic) {
+  document.getElementById('aiTopic').innerText = topic;
+  document.getElementById('aiText').innerText = 'Analyzing...';
+  document.getElementById('aiBox').style.display = 'block';
+  const fd = new FormData();
+  fd.append('topic', topic);
+  fd.append('phase', '{{ phase }}');
+  try {
+    const r = await fetch('/predict-engine/ai-explain', {method:'POST', body: fd});
+    const data = await r.json();
+    document.getElementById('aiText').innerText = data.explanation || data.error || 'No response';
+  } catch(e) { document.getElementById('aiText').innerText = 'Error: ' + e.message; }
+}
+</script>
+{% endblock %}

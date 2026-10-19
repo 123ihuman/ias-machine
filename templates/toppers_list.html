@@ -33,7 +33,12 @@
                 {% elif t.rank == 3 %}🥉
                 {% else %}{{ t.rank }}{% endif %}
             </td>
-            <td><a href="{{ url_for('topper_detail', tid=t.id) }}">{{ t.name }}</a></td>
+            <td>
+                {% if t.photo_url %}
+                <img src="{{ t.photo_url }}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">
+                {% endif %}
+                <a href="{{ url_for('topper_detail', tid=t.id) }}">{{ t.name }}</a>
+            </td>
             <td>{{ t.category or '—' }}</td>
             <td>{{ t.optional_subject or '—' }}</td>
             <td>{{ t.written_marks or '—' }}</td>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⭐ Top Current Affairs (AI Ranked)</h2>
+<p class="text-muted">Sorted by UPSC relevance score. Only 7+ is worth your time.</p>
+
+{% if items %}
+{% for it in items %}
+<div class="card mb-2">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <h6 class="mb-1"><a href="{{ url_for('news_detail', aid=it.art.id) }}">{{ it.art.title }}</a></h6>
+      <span class="badge bg-{% if it.score >= 8 %}danger{% elif it.score >= 5 %}warning text-dark{% else %}secondary{% endif %}">{{ it.score }}/10</span>
+    </div>
+    <p class="small text-muted mb-1">
+      {% if it.gs %}<span class="badge bg-info text-dark">{{ it.gs }}</span>{% endif %}
+      <span class="badge bg-secondary">{{ it.art.subject }}</span>
+      {% if it.reason %}<span class="ms-2">{{ it.reason }}</span>{% endif %}
+    </p>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-info">
+  No ranked articles yet. Go to <a href="{{ url_for('news_list') }}">News</a> and click <strong>AI Rank</strong>.
+</div>
+{% endif %}
+{% endblock %}
